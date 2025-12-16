@@ -1,17 +1,34 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+"use client";
 
-import { MadeWithDyad } from "@/components/made-with-dyad";
+import React, { useState } from "react";
+import Sidebar from "@/components/Sidebar";
+import SiteHeader from "@/components/SiteHeader";
+import Hero from "@/components/Hero";
+import FeatureSystem from "@/components/FeatureSystem";
+import ChoiceSection from "@/components/ChoiceSection";
+import Roadmap from "@/components/Roadmap";
+import BusinessSection from "@/components/BusinessSection";
+import FAQ from "@/components/FAQ";
+import PageFooter from "@/components/PageFooter";
 
-const Index = () => {
+const Index: React.FC = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">
-          Start building your amazing project here!
-        </p>
-      </div>
-      <MadeWithDyad />
+    <div className="min-h-screen bg-black">
+      <SiteHeader onOpenMenu={() => setMenuOpen(true)} />
+      <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
+
+      <main className="pt-14">
+        <Hero onOpenMenu={() => setMenuOpen(true)} />
+        <FeatureSystem />
+        <ChoiceSection />
+        <Roadmap />
+        <BusinessSection />
+        <FAQ />
+      </main>
+
+      <PageFooter />
     </div>
   );
 };
