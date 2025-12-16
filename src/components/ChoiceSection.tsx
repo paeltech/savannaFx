@@ -23,8 +23,8 @@ const ChoiceSection: React.FC = () => {
             <button
               className={`px-4 py-2 rounded-full text-sm font-medium transition ${
                 selected === "traditional"
-                  ? "bg-red-600 text-white"
-                  : "text-gray-300 hover:text-white"
+                  ? "bg-[#6c340e] text-white"
+                  : "text-[#f4c464] hover:text-white"
               }`}
               onClick={() => setSelected("traditional")}
             >
@@ -33,59 +33,59 @@ const ChoiceSection: React.FC = () => {
             <button
               className={`px-4 py-2 rounded-full text-sm font-medium transition ${
                 selected === "forex"
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-300 hover:text-white"
+                  ? "bg-[#697452] text-white"
+                  : "text-[#f4c464] hover:text-white"
               }`}
               onClick={() => setSelected("forex")}
             >
-              Forex Trading Path
+              SavannaFX Trading Path
             </button>
           </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
           <Card
-            className={`bg-gray-900/60 border ${
-              selected === "traditional" ? "border-red-500/60" : "border-gray-800"
+            className={`bg-[#14241f] border ${
+              selected === "traditional" ? "border-[#6c340e]/60" : "border-[#270f05]/40"
             }`}
           >
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
-                <Briefcase className="text-red-400" />
+                <Briefcase className="text-[#6c340e]" />
                 Traditional 9-5 Path
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-gray-300">
+            <CardContent className="space-y-2 text-[#f4c464]/80">
               <ListItem text="40+ years of daily 9-5 grind" />
               <ListItem text="Limited salary growth potential" />
               <ListItem text="Financial stress and uncertainty" />
               <ListItem text="Retirement may not be enough" />
-              <ListItem text="No control over your time" />
-              <p className="text-gray-400 mt-4 italic">
-                "Work for 40 years, hope for a decent retirement"
+              <ListItem text="Little control over your time" />
+              <p className="text-[#f4c464]/70 mt-4 italic">
+                "Work for decades and hope for a decent retirement."
               </p>
             </CardContent>
           </Card>
 
           <Card
-            className={`bg-gray-900/60 border ${
-              selected === "forex" ? "border-blue-500/60" : "border-gray-800"
+            className={`bg-[#14241f] border ${
+              selected === "forex" ? "border-[#697452]/60" : "border-[#270f05]/40"
             }`}
           >
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-white">
-                <Rocket className="text-blue-400" />
-                Forex Trading Path
+                <Rocket className="text-[#697452]" />
+                SavannaFX Trading Path
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-gray-300">
-              <ListItem text="Learn profitable trading strategies" />
-              <ListItem text="Generate income from anywhere" />
+            <CardContent className="space-y-2 text-[#f4c464]/80">
+              <ListItem text="Train the predator mindset" />
+              <ListItem text="Trade with discipline and patience" />
               <ListItem text="Build multiple income streams" />
-              <ListItem text="Unlimited earning potential" />
-              <ListItem text="Join successful trading community" />
-              <p className="text-gray-400 mt-4 italic">
-                "Master trading skills, create lasting wealth"
+              <ListItem text="Reward skill, timing, and awareness" />
+              <ListItem text="Thrive with a focused community" />
+              <p className="text-[#f4c464]/70 mt-4 italic">
+                "Survive and thrive in the savanna—the market."
               </p>
             </CardContent>
           </Card>
@@ -97,7 +97,7 @@ const ChoiceSection: React.FC = () => {
               <p className="text-gray-300 mb-4">
                 The decision you make today will determine your financial future. Stop settling for average and start building the life you deserve.
               </p>
-              <Button className="bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold rounded-full px-6">
+              <Button className="bg-gradient-to-r from-[#6c340e] to-[#f4c464] text-white font-semibold rounded-full px-6">
                 Choose Financial Freedom
               </Button>
             </CardContent>

@@ -7,18 +7,18 @@ import { TrendingUp, Shield, Trophy } from "lucide-react";
 const FeatureSystem: React.FC = () => {
   const items = [
     {
-      title: "Proven Strategy",
-      desc: "Time-tested approach with consistent results",
-      Icon: TrendingUp,
-    },
-    {
-      title: "Risk Management",
-      desc: "Protect your capital with smart position sizing",
+      title: "Predator Mindset",
+      desc: "Develop discipline, patience, and calm execution",
       Icon: Shield,
     },
     {
-      title: "Profit Maximization",
-      desc: "Optimize your trades for maximum returns",
+      title: "Skill & Timing",
+      desc: "Learn setups that favor awareness over impulse",
+      Icon: TrendingUp,
+    },
+    {
+      title: "Thrive, Not Survive",
+      desc: "Scale your edge and maximize results responsibly",
       Icon: Trophy,
     },
   ];
@@ -29,27 +29,27 @@ const FeatureSystem: React.FC = () => {
         <div className="space-y-6">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white">
             The{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6c340e] to-[#f4c464]">
               System
             </span>{" "}
             That Works
           </h2>
-          <p className="text-gray-300 max-w-2xl">
-            Discover the trading methodology that has transformed thousands of traders worldwide.
+          <p className="text-[#f4c464]/90 max-w-2xl">
+            Master the mindset and mechanics that the markets reward: skill, timing, and awareness.
           </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 mt-12">
           {items.map(({ title, desc, Icon }) => (
-            <Card key={title} className="bg-gray-900/60 border-gray-800">
+            <Card key={title} className="bg-[#14241f] border-[#270f05]/50">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-white">
-                  <Icon className="text-blue-400" />
+                  <Icon className="text-[#f4c464]" />
                   {title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-400">{desc}</p>
+                <p className="text-[#f4c464]/80">{desc}</p>
               </CardContent>
             </Card>
           ))}

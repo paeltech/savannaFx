@@ -44,11 +44,11 @@ const BusinessSection: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-bold text-white text-center">
           Build Your Business{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6c340e] to-[#f4c464]">
             Right from Your Browser
           </span>
         </h2>
-        <p className="text-gray-300 text-center mt-2">
+        <p className="text-[#f4c464]/80 text-center mt-2">
           Everything you need to start, grow, and scale your trading business is accessible from any device.
         </p>
 
