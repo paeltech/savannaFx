@@ -35,7 +35,7 @@ const Hero: React.FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
             </div>
           </div>
 
-          <div className="relative h-[100vh]">
+          <div className="relative">
             <div className="relative h-full">
               <img
                 src="/assets/placeholder.svg"
