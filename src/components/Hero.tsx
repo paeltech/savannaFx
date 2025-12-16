@@ -38,12 +38,15 @@ const Hero: React.FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
           <div className="relative">
             <div className="relative h-full">
               <img
-                src="/assets/placeholder.svg"
+                src="/assets/pexels-anna-nekrashevich-6801633.jpg"
                 alt="savanna visual"
                 className="absolute inset-0 w-full h-full rounded-xl object-cover"
               />
               <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-[#270f05]/60 via-[#14241f]/60 to-transparent" />
               <div className="absolute inset-0 z-20 bg-transparent select-none">
+                <div className="absolute top-24 right-4 bg-[#270f05]/70 backdrop-blur-sm text-[#f4c464] px-3 py-2 rounded-lg text-sm font-medium">
+                  Scrolling...
+                </div>
               </div>
             </div>
           </div>
@@ -53,7 +56,7 @@ const Hero: React.FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
       {/* Mobile layout */}
       <div className="lg:hidden relative z-10 w-full h-full min-h-screen flex items-center justify-center px-4 sm:px-6">
         <div className="absolute inset-0 w-full h-full opacity-15">
-          <img src="/assets/placeholder.svg" alt="savanna visual" className="w-full h-full object-cover" />
+          <img src="/assets/pexels-anna-nekrashevich-6801633.jpg" alt="savanna visual" className="w-full h-full object-cover" />
         </div>
         <div className="relative z-10 text-center space-y-7 max-w-3xl mx-auto">
           <h1 className="text-4xl sm:text-7xl md:text-6xl lg:text-6xl font-bold text-white leading-tight tracking-tight">
