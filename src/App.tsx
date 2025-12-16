@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import DashboardFeature from "./pages/DashboardFeature";
+import TradeWithSavanna from "./pages/TradeWithSavanna";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/trade-with-savanna" element={<TradeWithSavanna />} />
           <Route path="/dashboard/:section" element={<DashboardFeature />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
