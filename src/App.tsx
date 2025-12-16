@@ -11,6 +11,7 @@ import TradeWithSavanna from "./pages/TradeWithSavanna";
 import Signals from "./pages/Signals";
 import CoursePage from "./pages/Course";
 import OneOnOne from "./pages/OneOnOne";
+import EventsPage from "./pages/Events";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/dashboard/signals" element={<Signals />} />
           <Route path="/dashboard/course" element={<CoursePage />} />
           <Route path="/dashboard/one-on-one" element={<OneOnOne />} />
+          <Route path="/dashboard/events" element={<EventsPage />} />
           <Route path="/dashboard/:section" element={<DashboardFeature />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
