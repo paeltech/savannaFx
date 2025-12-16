@@ -17,19 +17,20 @@ import {
   CalendarClock,
   CircleHelp,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
+import SavannaCard from "@/components/dashboard/SavannaCard";
 
 const Dashboard: React.FC = () => {
   return (
     <DashboardLayout>
-      <Card className="bg-slate-900/60 border-slate-800 mb-6">
+      <SavannaCard className="mb-6">
         <CardContent className="p-6">
           <h2 className="text-2xl md:text-3xl font-semibold text-white">Welcome back, Trader 👋</h2>
           <p className="text-slate-400 mt-2">
             Here's your complete navigation hub. Click any card to access that section.
           </p>
         </CardContent>
-      </Card>
+      </SavannaCard>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <DashboardTile

@@ -2,7 +2,8 @@
 
 import React from "react";
 import DashboardLayout from "../components/dashboard/DashboardLayout.tsx";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import SavannaCard from "@/components/dashboard/SavannaCard";
 import { Button } from "@/components/ui/button";
 import {
   Target,
@@ -83,7 +84,7 @@ const OneOnOne: React.FC = () => {
   return (
     <DashboardLayout>
       {/* Header banner */}
-      <Card className="bg-slate-900/60 border-slate-800 mb-6">
+      <SavannaCard className="mb-6">
         <CardContent className="p-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
@@ -107,10 +108,10 @@ const OneOnOne: React.FC = () => {
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </SavannaCard>
 
       {/* Who this is for */}
-      <Card className="bg-slate-900/60 border-slate-800 mb-6">
+      <SavannaCard className="mb-6">
         <CardContent className="p-6">
           <h2 className="text-slate-200 font-medium mb-3">Who this is for:</h2>
           <p className="text-slate-400">
@@ -118,10 +119,10 @@ const OneOnOne: React.FC = () => {
             rebuild their psychology, and get a custom trading system that actually works for them.
           </p>
         </CardContent>
-      </Card>
+      </SavannaCard>
 
       {/* What You Get */}
-      <Card className="bg-slate-900/60 border-slate-800 mb-6">
+      <SavannaCard className="mb-6">
         <CardContent className="p-6">
           <h2 className="text-slate-200 font-medium mb-4">What You Get:</h2>
           <div className="grid md:grid-cols-2 gap-4">
@@ -162,10 +163,10 @@ const OneOnOne: React.FC = () => {
             />
           </div>
         </CardContent>
-      </Card>
+      </SavannaCard>
 
       {/* Additional Perks */}
-      <Card className="bg-slate-900/60 border-slate-800 mb-6">
+      <SavannaCard className="mb-6">
         <CardContent className="p-6">
           <h2 className="text-slate-200 font-medium mb-4">Additional Perks:</h2>
           <div className="grid md:grid-cols-3 gap-4">
@@ -186,11 +187,11 @@ const OneOnOne: React.FC = () => {
             />
           </div>
         </CardContent>
-      </Card>
+      </SavannaCard>
 
       {/* Two-column: investment highlights + pricing panel */}
       <div className="grid md:grid-cols-3 gap-6 mb-6">
-        <Card className="md:col-span-2 bg-gradient-to-br from-indigo-900/40 via-purple-900/40 to-indigo-900/40 border-slate-800">
+        <SavannaCard className="md:col-span-2 bg-gradient-to-br from-indigo-900/40 via-purple-900/40 to-indigo-900/40 border-slate-800">
           <CardContent className="p-6 space-y-4">
             <h3 className="text-white text-lg font-semibold">
               Why This Investment Changes Everything
@@ -219,9 +220,9 @@ const OneOnOne: React.FC = () => {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </SavannaCard>
 
-        <Card className="bg-slate-900/60 border-slate-800">
+        <SavannaCard>
           <CardContent className="p-6">
             <div className="text-center">
               <div className="text-red-500 text-3xl font-bold">$1,500</div>
@@ -250,7 +251,7 @@ const OneOnOne: React.FC = () => {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </SavannaCard>
       </div>
 
       {/* Testimonials */}
@@ -266,7 +267,7 @@ const OneOnOne: React.FC = () => {
       </div>
 
       {/* Success stories */}
-      <Card className="bg-slate-900/60 border-slate-800 mb-6">
+      <SavannaCard className="mb-6">
         <CardContent className="p-6">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center">
@@ -278,10 +279,10 @@ const OneOnOne: React.FC = () => {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </SavannaCard>
 
       {/* Confidence builder */}
-      <Card className="bg-slate-900/60 border-slate-800">
+      <SavannaCard>
         <CardContent className="p-6">
           <h3 className="text-white text-lg font-semibold">
             Build your confidence to find answers to your questions!
@@ -309,7 +310,7 @@ const OneOnOne: React.FC = () => {
             />
           </div>
         </CardContent>
-      </Card>
+      </SavannaCard>
     </DashboardLayout>
   );
 };

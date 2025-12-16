@@ -3,7 +3,8 @@
 import React from "react";
 import DashboardLayout from "../components/dashboard/DashboardLayout.tsx";
 import CourseCard, { Course } from "../components/course/CourseCard";
-import { Card, CardContent } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
+import SavannaCard from "@/components/dashboard/SavannaCard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
@@ -76,7 +77,7 @@ const CoursePage: React.FC = () => {
   return (
     <DashboardLayout>
       {/* Header */}
-      <Card className="bg-slate-900/60 border-slate-800 mb-6">
+      <SavannaCard className="mb-6">
         <CardContent className="p-6">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
@@ -85,7 +86,7 @@ const CoursePage: React.FC = () => {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </SavannaCard>
 
       {/* Tabs */}
       <div className="mb-4">
@@ -151,7 +152,7 @@ const CoursePage: React.FC = () => {
           />
         ))}
         {filtered.length === 0 && (
-          <Card className="bg-slate-900/60 border-slate-800">
+          <SavannaCard>
             <CardContent className="p-6 text-center text-slate-400">
               No courses match your filters.
               <div className="mt-3">
@@ -169,7 +170,7 @@ const CoursePage: React.FC = () => {
                 </Button>
               </div>
             </CardContent>
-          </Card>
+          </SavannaCard>
         )}
       </div>
     </DashboardLayout>

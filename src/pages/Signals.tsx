@@ -2,7 +2,8 @@
 
 import React from "react";
 import DashboardLayout from "../components/dashboard/DashboardLayout.tsx";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import SavannaCard from "@/components/dashboard/SavannaCard";
 import { Button } from "@/components/ui/button";
 import {
   ShoppingBag,
@@ -70,7 +71,7 @@ const Signals: React.FC = () => {
   return (
     <DashboardLayout>
       {/* Service header */}
-      <Card className="bg-slate-900/60 border-slate-800 mb-6">
+      <SavannaCard className="mb-6">
         <CardContent className="p-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
@@ -94,10 +95,10 @@ const Signals: React.FC = () => {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </SavannaCard>
 
       {/* Who this is for */}
-      <Card className="bg-slate-900/60 border-slate-800 mb-6">
+      <SavannaCard className="mb-6">
         <CardContent className="p-6">
           <h2 className="text-slate-200 font-medium mb-3">Who this is for:</h2>
           <p className="text-slate-400">
@@ -105,10 +106,10 @@ const Signals: React.FC = () => {
             high-probability setups that are actually explained — not just dumped.
           </p>
         </CardContent>
-      </Card>
+      </SavannaCard>
 
       {/* What you get grid */}
-      <Card className="bg-slate-900/60 border-slate-800 mb-6">
+      <SavannaCard className="mb-6">
         <CardContent className="p-6">
           <h2 className="text-slate-200 font-medium mb-4">What You Get:</h2>
           <div className="grid md:grid-cols-2 gap-4">
@@ -144,10 +145,10 @@ const Signals: React.FC = () => {
             />
           </div>
         </CardContent>
-      </Card>
+      </SavannaCard>
 
       {/* Why you should join */}
-      <Card className="bg-slate-900/60 border-slate-800 mb-6">
+      <SavannaCard className="mb-6">
         <CardContent className="p-6 space-y-4">
           <h2 className="text-slate-200 font-medium">Why You Should Join:</h2>
           <div className="space-y-4">
@@ -168,10 +169,10 @@ const Signals: React.FC = () => {
             />
           </div>
         </CardContent>
-      </Card>
+      </SavannaCard>
 
       {/* Key highlights band */}
-      <Card className="bg-gradient-to-r from-purple-900/50 via-indigo-900/40 to-purple-900/50 border-slate-800 mb-6">
+      <SavannaCard className="mb-6">
         <CardContent className="p-6">
           <div className="grid md:grid-cols-3 gap-6 text-center">
             <div>
@@ -188,10 +189,10 @@ const Signals: React.FC = () => {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </SavannaCard>
 
       {/* CTA: Ready to Start Trading Like a Pro? */}
-      <Card className="bg-slate-900/60 border-slate-800">
+      <SavannaCard>
         <CardContent className="p-6">
           <div className="text-center space-y-3">
             <h3 className="text-white text-xl md:text-2xl font-semibold">
@@ -230,7 +231,7 @@ const Signals: React.FC = () => {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </SavannaCard>
     </DashboardLayout>
   );
 };

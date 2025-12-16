@@ -3,7 +3,8 @@
 import React from "react";
 import DashboardLayout from "../components/dashboard/DashboardLayout.tsx";
 import EventCard, { EventItem } from "@/components/events/EventCard";
-import { Card, CardContent } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
+import SavannaCard from "@/components/dashboard/SavannaCard";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { showSuccess } from "@/utils/toast";
@@ -56,7 +57,7 @@ const EventsPage: React.FC = () => {
   return (
     <DashboardLayout>
       {/* Header */}
-      <Card className="bg-slate-900/60 border-slate-800 mb-6">
+      <SavannaCard className="mb-6">
         <CardContent className="p-6">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
@@ -65,7 +66,7 @@ const EventsPage: React.FC = () => {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </SavannaCard>
 
       {/* Filters */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
@@ -117,11 +118,11 @@ const EventsPage: React.FC = () => {
           <EventCard key={ev.id} event={ev} onView={handleView} onViewSessions={handleViewSessions} />
         ))}
         {filtered.length === 0 && (
-          <Card className="bg-slate-900/60 border-slate-800">
-            <CardContent className="p-6 text-center text-slate-400">
-              No events match your filters.
-            </CardContent>
-          </Card>
+          <SavannaCard>
+             <CardContent className="p-6 text-center text-slate-400">
+               No events match your filters.
+             </CardContent>
+          </SavannaCard>
         )}
       </div>
     </DashboardLayout>

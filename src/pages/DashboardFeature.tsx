@@ -3,7 +3,8 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
 import DashboardLayout from "../components/dashboard/DashboardLayout.tsx";
-import { Card, CardContent } from "@/components/ui/card";
+import { CardContent } from "@/components/ui/card";
+import SavannaCard from "@/components/dashboard/SavannaCard";
 import { Button } from "@/components/ui/button";
 
 const friendlyTitle = (slug: string) =>
@@ -18,7 +19,7 @@ const DashboardFeature: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <Card className="bg-slate-900/60 border-slate-800">
+      <SavannaCard>
         <CardContent className="p-6 space-y-3">
           <h2 className="text-2xl md:text-3xl font-semibold text-white">{title}</h2>
           <p className="text-slate-400">
@@ -31,7 +32,7 @@ const DashboardFeature: React.FC = () => {
             <Button className="bg-[#697452] hover:bg-[#697452]/90 text-white">Open Tool</Button>
           </div>
         </CardContent>
-      </Card>
+      </SavannaCard>
     </DashboardLayout>
   );
 };

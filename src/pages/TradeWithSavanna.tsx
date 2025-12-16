@@ -3,6 +3,7 @@
 import React from "react";
 import DashboardLayout from "../components/dashboard/DashboardLayout.tsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import SavannaCard from "@/components/dashboard/SavannaCard";
 import { Button } from "@/components/ui/button";
 import {
   Handshake,
@@ -54,7 +55,7 @@ const TradeWithSavanna: React.FC = () => {
   return (
     <DashboardLayout>
       {/* Header banner */}
-      <Card className="bg-slate-900/60 border-slate-800 mb-6">
+      <SavannaCard className="mb-6">
         <CardContent className="p-6">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-md bg-[#6c340e] flex items-center justify-center">
@@ -65,15 +66,15 @@ const TradeWithSavanna: React.FC = () => {
             </h1>
           </div>
           <p className="text-slate-400 mt-2">
-            Open a real Exness account with SavannaFX’s referral link and get lifetime access to free signals.
+            Open a real Exness account with SavannaFX's referral link and get lifetime access to free signals.
           </p>
         </CardContent>
-      </Card>
+      </SavannaCard>
 
       {/* Main content: 2-column layout */}
       <div className="grid lg:grid-cols-[1fr_360px] gap-6">
         {/* Left: Info and benefits */}
-        <Card className="bg-slate-900/60 border-slate-800">
+        <SavannaCard>
           <CardContent className="p-6">
             <div className="rounded-lg border border-slate-800 bg-slate-900/40 p-5">
               <div className="flex items-center gap-2 mb-3">
@@ -127,10 +128,10 @@ const TradeWithSavanna: React.FC = () => {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </SavannaCard>
 
         {/* Right: Signup panel */}
-        <Card className="bg-slate-900/60 border-slate-800">
+        <SavannaCard>
           <CardContent className="p-6">
             <div className="text-center">
               <div className="text-green-500 text-2xl font-bold">FREE</div>
@@ -178,7 +179,7 @@ const TradeWithSavanna: React.FC = () => {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </SavannaCard>
       </div>
     </DashboardLayout>
   );
