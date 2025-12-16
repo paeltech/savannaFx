@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import DashboardFeature from "./pages/DashboardFeature";
 import TradeWithSavanna from "./pages/TradeWithSavanna";
 import Signals from "./pages/Signals";
+import CoursePage from "./pages/Course";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/trade-with-savanna" element={<TradeWithSavanna />} />
           <Route path="/dashboard/signals" element={<Signals />} />
+          <Route path="/dashboard/course" element={<CoursePage />} />
           <Route path="/dashboard/:section" element={<DashboardFeature />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
