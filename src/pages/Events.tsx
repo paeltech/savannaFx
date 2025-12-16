@@ -13,14 +13,14 @@ const initialEvents: EventItem[] = [
   {
     id: "pips-and-chills",
     title: "PIPS & CHILLS",
-    organizer: "KOJOFOREX",
+    organizer: "SavannaFX",
     description:
       "Kojoforex's meet and greet dubbed Pips and Chills is happening this saturday 18th October 2025 at Vida e Cafe, Abelemkpe in Accra. Come meet and greet Ghana's top trader Kojoforex in person.",
     category: "Networking",
     type: "Physical",
     priceType: "Free",
     sessions: 1,
-    location: "Accra, Ghana",
+    location: "Accra, Tanzania",
     capacity: 1000,
     registered: 1033,
     coverUrl: "/assets/placeholder.svg",

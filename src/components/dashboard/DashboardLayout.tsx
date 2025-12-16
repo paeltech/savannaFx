@@ -60,30 +60,30 @@ const navItems: NavItem[] = [
 
 const Topbar: React.FC = () => {
   return (
-    <div className="flex h-14 items-center justify-between px-4 border-b border-slate-800 bg-slate-900/70 backdrop-blur">
+    <div className="flex h-14 items-center justify-between px-4 border-b border-[#270f05]/50 bg-[#14241f]/70 backdrop-blur">
       <div className="flex items-center gap-3">
         <Link to="/" className="flex items-center gap-2">
           <img src="/assets/placeholder.svg" alt="SavannaFX" className="w-7 h-7 rounded-md" />
           <span className="font-semibold text-[#f4c464]">SavannaFX</span>
         </Link>
-        <span className="text-slate-300/80">Dashboard</span>
+        <span className="text-[#f4c464]/80">Dashboard</span>
       </div>
 
       <div className="flex items-center gap-3">
-        <Button variant="outline" className="h-8 border-slate-700 text-slate-200 hover:bg-slate-800">
+        <Button variant="outline" className="h-8 border-[#270f05]/60 text-[#f4c464] hover:bg-[#270f05]/30">
           <span className="mr-2">Forecast</span>
           <Badge variant="secondary" className="bg-red-600 text-white">NEW</Badge>
         </Button>
-        <Button variant="ghost" size="icon" className="text-slate-300 hover:text-white">
+        <Button variant="ghost" size="icon" className="text-[#f4c464]/80 hover:text-[#f4c464]">
           <Settings />
         </Button>
         <div className="relative">
-          <Button variant="ghost" size="icon" className="text-slate-300 hover:text-white">
+          <Button variant="ghost" size="icon" className="text-[#f4c464]/80 hover:text-[#f4c464]">
             <Bell />
           </Button>
           <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] rounded-full px-1.5">2</span>
         </div>
-        <Button variant="ghost" className="gap-2 text-slate-200 hover:text-white">
+        <Button variant="ghost" className="gap-2 text-[#f4c464] hover:text-white">
           <UserRound className="opacity-80" />
           <span className="hidden sm:inline">Trader</span>
         </Button>
@@ -96,11 +96,11 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const location = useLocation();
 
   return (
-    <SidebarProvider className="min-h-screen bg-slate-950 text-slate-200">
-      <Sidebar side="left" variant="sidebar">
+    <SidebarProvider className="min-h-screen bg-[#14241f] text-[#f4c464]">
+      <Sidebar side="left" variant="sidebar" className="bg-[#14241f] border-r border-[#270f05]/50 text-[#f4c464]">
         <SidebarHeader className="pt-3">
           <SidebarGroup>
-            <SidebarGroupLabel className="text-slate-400">Navigation</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-[#f4c464]/70">Navigation</SidebarGroupLabel>
             <SidebarContent>
               <SidebarMenu>
                 {navItems.map((item) => {
@@ -109,7 +109,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
                   return (
                     <SidebarMenuItem key={item.label}>
                       <Link to={item.to}>
-                        <SidebarMenuButton isActive={isActive} className="text-slate-300 hover:text-white">
+                        <SidebarMenuButton isActive={isActive} className="text-[#f4c464]/80 hover:text-white">
                           <Icon />
                           <span>{item.label}</span>
                         </SidebarMenuButton>

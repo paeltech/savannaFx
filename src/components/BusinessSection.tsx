@@ -19,7 +19,7 @@ const services: Service[] = [
     cta: "Apply Now",
   },
   {
-    title: "KOJOFOREX Academy",
+    title: "SavannaFX Academy",
     price: "From GHS 700",
     bullets: ["Hands-on training", "Live market sessions", "All skill levels"],
     cta: "Apply Now",

@@ -43,8 +43,8 @@ const PageFooter: React.FC = () => {
           <div>
             <h4 className="text-white font-semibold mb-3">Contact</h4>
             <ul className="space-y-2 text-sm">
-              <li>Email: support@kojoforex.local</li>
-              <li>Location: Accra, Ghana</li>
+              <li>Email: support@savannafx.local</li>
+              <li>Location: Accra, Tanzania</li>
             </ul>
             <Button className="mt-4 bg-[#697452] hover:bg-[#697452]/90 text-white">Subscribe Now</Button>
           </div>
