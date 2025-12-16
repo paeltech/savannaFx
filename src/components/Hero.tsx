@@ -36,7 +36,7 @@ const Hero: React.FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
           </div>
 
           <div className="relative">
-            <div className="relative h-full">
+            <div className="relative h-[520px] md:h-[640px] lg:h-[700px]">
               <img
                 src="/assets/pexels-anna-nekrashevich-6801633.jpg"
                 alt="savanna visual"
