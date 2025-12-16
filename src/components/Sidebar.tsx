@@ -83,12 +83,14 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
 
           <div className="flex-shrink-0 p-6 border-t border-[#270f05]/40">
             <div className="space-y-3">
-              <Button
-                variant="outline"
-                className="w-full border-2 border-[#697452] text-[#f4c464] hover:bg-[#270f05]/30 hover:border-[#697452]/80 transition-all duration-200 font-medium"
-              >
-                Login
-              </Button>
+              <Link to="/login">
+                <Button
+                  variant="outline"
+                  className="w-full border-2 border-[#697452] text-[#f4c464] hover:bg-[#270f05]/30 hover:border-[#697452]/80 transition-all duration-200 font-medium"
+                >
+                  Login
+                </Button>
+              </Link>
               <Link to="/dashboard">
                 <Button className="w-full bg-gradient-to-r from-[#6c340e] to-[#f4c464] hover:from-[#6c340e] hover:to-[#f4c464] text-white font-semibold transition-all duration-200 hover:scale-105 hover:shadow-lg shadow-[#6c340e]/25">
                   GET STARTED

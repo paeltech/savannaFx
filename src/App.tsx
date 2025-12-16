@@ -12,6 +12,9 @@ import Signals from "./pages/Signals";
 import CoursePage from "./pages/Course";
 import OneOnOne from "./pages/OneOnOne";
 import EventsPage from "./pages/Events";
+import Login from "./pages/Login";
+import SupabaseSessionProvider from "@/components/auth/SupabaseSessionProvider";
+import RequireAuth from "@/components/auth/RequireAuth";
 
 const queryClient = new QueryClient();
 
@@ -21,18 +24,21 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/dashboard/trade-with-savanna" element={<TradeWithSavanna />} />
-          <Route path="/dashboard/signals" element={<Signals />} />
-          <Route path="/dashboard/course" element={<CoursePage />} />
-          <Route path="/dashboard/one-on-one" element={<OneOnOne />} />
-          <Route path="/dashboard/events" element={<EventsPage />} />
-          <Route path="/dashboard/:section" element={<DashboardFeature />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <SupabaseSessionProvider>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+            <Route path="/dashboard/trade-with-savanna" element={<RequireAuth><TradeWithSavanna /></RequireAuth>} />
+            <Route path="/dashboard/signals" element={<RequireAuth><Signals /></RequireAuth>} />
+            <Route path="/dashboard/course" element={<RequireAuth><CoursePage /></RequireAuth>} />
+            <Route path="/dashboard/one-on-one" element={<RequireAuth><OneOnOne /></RequireAuth>} />
+            <Route path="/dashboard/events" element={<RequireAuth><EventsPage /></RequireAuth>} />
+            <Route path="/dashboard/:section" element={<RequireAuth><DashboardFeature /></RequireAuth>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </SupabaseSessionProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

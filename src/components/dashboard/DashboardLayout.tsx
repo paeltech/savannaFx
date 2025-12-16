@@ -33,7 +33,10 @@ import {
   Bell,
   Settings,
   UserRound,
+  LogOut,
 } from "lucide-react";
+import supabase from "@/integrations/supabase/client";
+import { showSuccess } from "@/utils/toast";
 
 type NavItem = {
   label: string;
@@ -87,6 +90,16 @@ const Topbar: React.FC = () => {
           <UserRound className="opacity-80" />
           <span className="hidden sm:inline">Trader</span>
         </Button>
+        <button
+          className="p-2 rounded-lg hover:bg-[#270f05]/40 text-[#f4c464]"
+          onClick={async () => {
+            await supabase.auth.signOut();
+            showSuccess("Signed out");
+          }}
+          aria-label="Sign out"
+        >
+          <LogOut size={18} />
+        </button>
       </div>
     </div>
   );
