@@ -9,7 +9,7 @@ const Hero: React.FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
     <section className="relative min-h-screen flex items-start justify-start bg-[#14241f] overflow-hidden">
       {/* Desktop layout */}
       <div className="hidden lg:block relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 md:pt-2">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-12 items-center mt-32">
           <div className="space-y-10">
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight tracking-tight">
               <span className="text-transparent lg:text-7xl sm:text-5xl bg-clip-text bg-gradient-to-r from-[#6c340e] to-[#f4c464]">
