@@ -44,9 +44,6 @@ const Hero: React.FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
               />
               <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-[#270f05]/60 via-[#14241f]/60 to-transparent" />
               <div className="absolute inset-0 z-20 bg-transparent select-none">
-                <div className="absolute top-24 right-4 bg-[#270f05]/70 backdrop-blur-sm text-[#f4c464] px-3 py-2 rounded-lg text-sm font-medium">
-                  Scrolling...
-                </div>
               </div>
             </div>
           </div>
