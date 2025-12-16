@@ -15,16 +15,13 @@ const Hero: React.FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
               <span className="text-transparent lg:text-7xl sm:text-5xl bg-clip-text bg-gradient-to-r from-[#6c340e] to-[#f4c464]">
                 Train like a predator.
               </span>
-              // <br />
-              // <span className="text-transparent lg:text-7xl sm:text-5xl bg-clip-text bg-gradient-to-r from-[#6c340e] to-[#f4c464]">
-              //   Trade with patience.
-              // </span>
+            
               <br />
               Survive the markets.
             </h1>
             <p className="text-xl md:text-2xl lg:pt-20 text-[#f4c464]/90 max-w-xl leading-relaxed font-light">
               The savanna is vast, harsh, and unforgiving—only the disciplined, adaptive, and patient thrive.
-              // Just like the markets, success rewards skill, timing, and awareness—not emotion or impulse.
+             
               SavannaFX empowers you to survive and thrive in the savanna we call market.
             </p>
             <div className="flex gap-3">
