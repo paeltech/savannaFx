@@ -3,6 +3,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
+import { Link } from "react-router-dom";
 
 type SiteHeaderProps = {
   onOpenMenu: () => void;
@@ -17,14 +18,18 @@ const SiteHeader: React.FC<SiteHeaderProps> = ({ onOpenMenu }) => {
           <span className="font-semibold text-[#f4c464]">SavannaFX</span>
         </a>
         <nav className="hidden md:flex items-center gap-6 text-sm text-[#f4c464]/80">
-          <a href="#" className="hover:text-[#f4c464]">Signals</a>
-          <a href="#" className="hover:text-[#f4c464]">Course</a>
-          <a href="#" className="hover:text-[#f4c464]">Mentorship</a>
-          <a href="#" className="hover:text-[#f4c464]">Dashboard</a>
+          <Link to="/dashboard/signals" className="hover:text-[#f4c464]">Signals</Link>
+          <Link to="/dashboard/course" className="hover:text-[#f4c464]">Course</Link>
+          <Link to="/dashboard/one-on-one" className="hover:text-[#f4c464]">Mentorship</Link>
+          <Link to="/dashboard" className="hover:text-[#f4c464]">Dashboard</Link>
         </nav>
         <div className="flex items-center gap-3">
-          <Button variant="ghost" className="text-[#f4c464] hidden sm:inline-flex">Dashboard</Button>
-          <Button className="bg-gradient-to-r from-[#6c340e] to-[#f4c464] text-white rounded-full">GET STARTED</Button>
+          <Link to="/dashboard">
+            <Button variant="ghost" className="text-[#f4c464] hidden sm:inline-flex">Dashboard</Button>
+          </Link>
+          <Link to="/dashboard">
+            <Button className="bg-gradient-to-r from-[#6c340e] to-[#f4c464] text-white rounded-full">GET STARTED</Button>
+          </Link>
           <button
             className="p-2 rounded-lg hover:bg-[#270f05]/40 text-[#f4c464] md:hidden"
             aria-label="Open menu"

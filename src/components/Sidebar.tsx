@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import {
   House,
   TrendingUp,
@@ -21,15 +22,15 @@ type SidebarProps = {
 };
 
 const navItems = [
-  { label: "Home", icon: House },
-  { label: "Signals", icon: TrendingUp },
-  { label: "Course", icon: GraduationCap },
-  { label: "Mentorship", icon: Users },
-  { label: "Trade With Savanna", icon: Handshake },
-  { label: "Collaborations", icon: Megaphone },
-  { label: "Academy", icon: Building },
-  { label: "Booking", icon: Calendar },
-  { label: "Dashboard", icon: ChartColumn },
+  { label: "Home", icon: House, to: "/" },
+  { label: "Signals", icon: TrendingUp, to: "/dashboard/signals" },
+  { label: "Course", icon: GraduationCap, to: "/dashboard/course" },
+  { label: "Mentorship", icon: Users, to: "/dashboard/one-on-one" },
+  { label: "Trade With Savanna", icon: Handshake, to: "/dashboard/trade-with-savanna" },
+  { label: "Collaborations", icon: Megaphone, to: "/dashboard/collaborations" },
+  { label: "Academy", icon: Building, to: "/dashboard/academy" },
+  { label: "Booking", icon: Calendar, to: "/dashboard/booking" },
+  { label: "Dashboard", icon: ChartColumn, to: "/dashboard" },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
@@ -44,14 +45,14 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
         aria-hidden={!open}
       >
         <div className="flex items-center justify-between p-6 border-b border-[#270f05]/40 flex-shrink-0">
-          <a className="flex items-center space-x-3 group" href="/">
+          <Link className="flex items-center space-x-3 group" to="/">
             <div className="w-8 h-8 rounded-lg overflow-hidden shadow-lg ring-2 ring-[#f4c464]/30">
               <img src="/assets/placeholder.svg" alt="placeholder" className="w-full h-full object-cover" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-[#6c340e] to-[#f4c464] bg-clip-text text-transparent group-hover:from-[#6c340e]/90 group-hover:to-[#f4c464]/90 transition-all duration-300">
               SavannaFX
             </span>
-          </a>
+          </Link>
           <button
             aria-label="Close sidebar"
             className="p-2 hover:bg-[#270f05]/40 rounded-xl transition-all duration-200 hover:scale-105"
@@ -64,17 +65,18 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
         <div className="flex flex-col flex-1 min-h-0">
           <div className="flex-1 overflow-y-auto px-6 py-4">
             <div className="space-y-1 mb-8">
-              {navItems.map(({ label, icon: Icon }) => (
-                <button
+              {navItems.map(({ label, icon: Icon, to }) => (
+                <Link
                   key={label}
-                  className="flex items-center gap-4 py-3 px-4 text-[#f4c464]/80 hover:text-[#f4c464] hover:bg-[#270f05]/30 rounded-xl transition-all duration-200 group w-full text-left"
+                  to={to}
                   onClick={onClose}
+                  className="flex items-center gap-4 py-3 px-4 text-[#f4c464]/80 hover:text-[#f4c464] hover:bg-[#270f05]/30 rounded-xl transition-all duration-200 group w-full text-left"
                 >
                   <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#14241f] group-hover:bg-[#6c340e] transition-colors duration-200">
                     <Icon className="group-hover:scale-110 transition-transform duration-200" size={18} />
                   </div>
                   <span className="font-medium">{label}</span>
-                </button>
+                </Link>
               ))}
             </div>
           </div>
@@ -87,9 +89,11 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
               >
                 Login
               </Button>
-              <Button className="w-full bg-gradient-to-r from-[#6c340e] to-[#f4c464] hover:from-[#6c340e] hover:to-[#f4c464] text-white font-semibold transition-all duration-200 hover:scale-105 hover:shadow-lg shadow-[#6c340e]/25">
-                GET STARTED
-              </Button>
+              <Link to="/dashboard">
+                <Button className="w-full bg-gradient-to-r from-[#6c340e] to-[#f4c464] hover:from-[#6c340e] hover:to-[#f4c464] text-white font-semibold transition-all duration-200 hover:scale-105 hover:shadow-lg shadow-[#6c340e]/25">
+                  GET STARTED
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
