@@ -18,6 +18,8 @@ import {
   Wallet,
 } from "lucide-react";
 import { showSuccess } from "@/utils/toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import ExnessVerificationForm from "@/components/forms/ExnessVerificationForm.tsx";
 
 const BenefitItem = ({
   icon: Icon,
@@ -48,9 +50,7 @@ const TradeWithSavanna: React.FC = () => {
     window.open("https://www.exness.com/", "_blank", "noopener,noreferrer");
   };
 
-  const handleVerifyEmail = () => {
-    showSuccess("We'll verify your email and grant access shortly.");
-  };
+  const [verifyOpen, setVerifyOpen] = React.useState(false);
 
   return (
     <DashboardLayout>
@@ -151,7 +151,7 @@ const TradeWithSavanna: React.FC = () => {
               <Button
                 variant="outline"
                 className="mt-2 w-full h-11 rounded-md border-slate-700 text-slate-200 hover:bg-slate-800"
-                onClick={handleVerifyEmail}
+                onClick={() => setVerifyOpen(true)}
               >
                 SUBMIT EMAIL FOR VERIFICATION
               </Button>
@@ -181,6 +181,16 @@ const TradeWithSavanna: React.FC = () => {
           </CardContent>
         </SavannaCard>
       </div>
+
+      <Dialog open={verifyOpen} onOpenChange={setVerifyOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Submit Verification</DialogTitle>
+            <DialogDescription>Provide your email and optional details to request access.</DialogDescription>
+          </DialogHeader>
+          <ExnessVerificationForm onSubmitted={() => setVerifyOpen(false)} />
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };

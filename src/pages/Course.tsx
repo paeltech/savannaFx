@@ -11,6 +11,9 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { showSuccess } from "@/utils/toast";
 import { Search } from "lucide-react";
+import supabase from "@/integrations/supabase/client";
+import { useSupabaseSession } from "@/components/auth/SupabaseSessionProvider";
+import FilterSaveBar from "@/components/forms/FilterSaveBar.tsx";
 
 const initialCourses: Course[] = [
   {
@@ -44,6 +47,7 @@ const initialCourses: Course[] = [
 ];
 
 const CoursePage: React.FC = () => {
+  const { session } = useSupabaseSession();
   const [tab, setTab] = React.useState<"all" | "mine">("all");
   const [searchTerm, setSearchTerm] = React.useState("");
   const [levelFilter, setLevelFilter] = React.useState<"all" | "Beginner" | "Advanced">("all");
@@ -56,6 +60,17 @@ const CoursePage: React.FC = () => {
     if (course.price === 0) {
       if (!enrolledIds.includes(courseId)) {
         setEnrolledIds((prev) => [...prev, courseId]);
+      }
+      if (session?.user?.id) {
+        // Save enrollment to Supabase for free courses
+        supabase.from("user_course_enrollments").insert({
+          user_id: session.user.id,
+          course_id: courseId,
+        }).then(({ error }) => {
+          if (error) {
+            throw error;
+          }
+        });
       }
       showSuccess("Enrolled successfully. Access granted.");
     } else {
@@ -139,6 +154,13 @@ const CoursePage: React.FC = () => {
             <SelectItem value="Advanced">Advanced</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="mb-6">
+        <FilterSaveBar
+          page="courses"
+          values={{ tab, searchTerm, levelFilter, categoryFilter }}
+        />
       </div>
 
       {/* Course grid */}

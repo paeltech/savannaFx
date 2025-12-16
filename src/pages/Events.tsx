@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { showSuccess } from "@/utils/toast";
 import { Search } from "lucide-react";
+import FilterSaveBar from "@/components/forms/FilterSaveBar.tsx";
 
 const initialEvents: EventItem[] = [
   {
@@ -110,6 +111,13 @@ const EventsPage: React.FC = () => {
             <SelectItem value="Webinar">Webinar</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="mb-6">
+        <FilterSaveBar
+          page="events"
+          values={{ search, typeFilter, pricingFilter, categoryFilter }}
+        />
       </div>
 
       {/* Event list */}
