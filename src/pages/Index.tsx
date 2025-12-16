@@ -15,7 +15,7 @@ const Index: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-[#14241f]">
       <SiteHeader onOpenMenu={() => setMenuOpen(true)} />
       <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
 

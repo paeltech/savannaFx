@@ -96,7 +96,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const location = useLocation();
 
   return (
-    <SidebarProvider className="min-h-screen bg-[#14241f] text-[#f4c464]">
+    <SidebarProvider className="min-h-screen bg-background text-foreground">
       <Sidebar side="left" variant="sidebar" className="bg-[#14241f] border-r border-[#270f05]/50 text-[#f4c464]">
         <SidebarHeader className="pt-3">
           <SidebarGroup>
