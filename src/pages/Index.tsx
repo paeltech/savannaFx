@@ -10,26 +10,41 @@ import Roadmap from "@/components/Roadmap";
 import BusinessSection from "@/components/BusinessSection";
 import FAQ from "@/components/FAQ";
 import PageFooter from "@/components/PageFooter";
+import { PageTransition, ScrollReveal } from "@/lib/animations";
 
 const Index: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#14241f]">
-      <SiteHeader onOpenMenu={() => setMenuOpen(true)} />
-      <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
+    <PageTransition>
+      <div className="min-h-screen bg-[#14241f]">
+        <SiteHeader onOpenMenu={() => setMenuOpen(true)} />
+        <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
-      <main className="pt-14">
-        <Hero onOpenMenu={() => setMenuOpen(true)} />
-        <FeatureSystem />
-        <ChoiceSection />
-        <Roadmap />
-        <BusinessSection />
-        <FAQ />
-      </main>
+        <main className="pt-14">
+          <Hero onOpenMenu={() => setMenuOpen(true)} />
+          <ScrollReveal>
+            <FeatureSystem />
+          </ScrollReveal>
+          <ScrollReveal>
+            <ChoiceSection />
+          </ScrollReveal>
+          <ScrollReveal>
+            <Roadmap />
+          </ScrollReveal>
+          <ScrollReveal>
+            <BusinessSection />
+          </ScrollReveal>
+          <ScrollReveal>
+            <FAQ />
+          </ScrollReveal>
+        </main>
 
-      <PageFooter />
-    </div>
+        <ScrollReveal>
+          <PageFooter />
+        </ScrollReveal>
+      </div>
+    </PageTransition>
   );
 };
 

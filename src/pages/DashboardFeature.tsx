@@ -6,6 +6,8 @@ import DashboardLayout from "../components/dashboard/DashboardLayout.tsx";
 import { CardContent } from "@/components/ui/card";
 import SavannaCard from "@/components/dashboard/SavannaCard";
 import { Button } from "@/components/ui/button";
+import { PageTransition, ScrollReveal, fadeInUp, HoverScale } from "@/lib/animations";
+import { motion } from "framer-motion";
 
 const friendlyTitle = (slug: string) =>
   slug
@@ -18,22 +20,47 @@ const DashboardFeature: React.FC = () => {
   const title = section ? friendlyTitle(section) : "Section";
 
   return (
-    <DashboardLayout>
-      <SavannaCard>
-        <CardContent className="p-6 space-y-3">
-          <h2 className="text-2xl md:text-3xl font-semibold text-white">{title}</h2>
-          <p className="text-slate-400">
-            This is a placeholder page for {title}. We can plug in real data and tools here.
-          </p>
-          <div className="flex gap-3">
-            <Link to="/dashboard">
-              <Button variant="outline" className="border-slate-700 text-slate-200">Back to Dashboard</Button>
-            </Link>
-            <Button className="bg-[#697452] hover:bg-[#697452]/90 text-white">Open Tool</Button>
-          </div>
-        </CardContent>
-      </SavannaCard>
-    </DashboardLayout>
+    <PageTransition>
+      <DashboardLayout>
+        <ScrollReveal>
+          <HoverScale>
+            <SavannaCard>
+              <CardContent className="p-6 space-y-3">
+                <motion.h2
+                  initial="hidden"
+                  animate="visible"
+                  variants={fadeInUp}
+                  className="text-2xl md:text-3xl font-semibold text-white"
+                >
+                  {title}
+                </motion.h2>
+                <motion.p
+                  initial="hidden"
+                  animate="visible"
+                  variants={fadeInUp}
+                  transition={{ delay: 0.2 }}
+                  className="text-slate-400"
+                >
+                  This is a placeholder page for {title}. We can plug in real data and tools here.
+                </motion.p>
+                <motion.div
+                  initial="hidden"
+                  animate="visible"
+                  variants={fadeInUp}
+                  transition={{ delay: 0.4 }}
+                  className="flex gap-3"
+                >
+                  <Link to="/dashboard">
+                    <Button variant="outline" className="border-slate-700 text-slate-200">Back to Dashboard</Button>
+                  </Link>
+                  <Button className="bg-[#697452] hover:bg-[#697452]/90 text-white">Open Tool</Button>
+                </motion.div>
+              </CardContent>
+            </SavannaCard>
+          </HoverScale>
+        </ScrollReveal>
+      </DashboardLayout>
+    </PageTransition>
   );
 };
 

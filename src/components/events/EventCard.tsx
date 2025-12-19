@@ -11,6 +11,8 @@ import {
   MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { HoverScale, fadeInUp } from "@/lib/animations";
+import { motion } from "framer-motion";
 
 export type EventItem = {
   id: string;
@@ -38,7 +40,9 @@ const EventCard: React.FC<Props> = ({ event, onView, onViewSessions }) => {
   const progressValue = Math.min(100, Math.round((event.registered / event.capacity) * 100));
 
   return (
-    <Card className="bg-slate-900/60 border-slate-800 overflow-hidden">
+    <motion.div variants={fadeInUp} initial="hidden" animate="visible">
+      <HoverScale>
+        <Card className="bg-slate-900/60 border-slate-800 overflow-hidden transition-all duration-300 hover:border-[#f4c464]/30">
       {/* Cover with overlay badges */}
       <div className="relative">
         <img
@@ -120,7 +124,9 @@ const EventCard: React.FC<Props> = ({ event, onView, onViewSessions }) => {
           </Button>
         </div>
       </CardContent>
-    </Card>
+        </Card>
+      </HoverScale>
+    </motion.div>
   );
 };
 

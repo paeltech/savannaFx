@@ -20,6 +20,8 @@ import {
 import { showSuccess } from "@/utils/toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import ExnessVerificationForm from "@/components/forms/ExnessVerificationForm.tsx";
+import { PageTransition, ScrollReveal, StaggerChildren, fadeInUp, HoverScale } from "@/lib/animations";
+import { motion } from "framer-motion";
 
 const BenefitItem = ({
   icon: Icon,
@@ -30,17 +32,27 @@ const BenefitItem = ({
   title: string;
   desc: string;
 }) => (
-  <Card className="bg-slate-900/60 border-slate-800">
-    <CardHeader className="pb-2">
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-md bg-slate-800 flex items-center justify-center">
-          <Icon className="text-[#f4c464]" size={18} />
+  <motion.div
+    whileHover={{ scale: 1.02, y: -2 }}
+    transition={{ duration: 0.2 }}
+    variants={fadeInUp}
+  >
+    <Card className="bg-slate-900/60 border-slate-800 transition-all duration-300 hover:border-[#f4c464]/30">
+      <CardHeader className="pb-2">
+        <div className="flex items-center gap-2">
+          <motion.div
+            whileHover={{ rotate: 360 }}
+            transition={{ duration: 0.5 }}
+            className="w-8 h-8 rounded-md bg-slate-800 flex items-center justify-center"
+          >
+            <Icon className="text-[#f4c464]" size={18} />
+          </motion.div>
+          <CardTitle className="text-white text-base">{title}</CardTitle>
         </div>
-        <CardTitle className="text-white text-base">{title}</CardTitle>
-      </div>
-    </CardHeader>
-    <CardContent className="text-slate-400 text-sm">{desc}</CardContent>
-  </Card>
+      </CardHeader>
+      <CardContent className="text-slate-400 text-sm">{desc}</CardContent>
+    </Card>
+  </motion.div>
 );
 
 const TradeWithSavanna: React.FC = () => {
@@ -53,26 +65,33 @@ const TradeWithSavanna: React.FC = () => {
   const [verifyOpen, setVerifyOpen] = React.useState(false);
 
   return (
-    <DashboardLayout>
-      {/* Header banner */}
-      <SavannaCard className="mb-6">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-md bg-[#6c340e] flex items-center justify-center">
-              <Handshake className="text-white" size={18} />
-            </div>
-            <h1 className="text-xl md:text-2xl font-semibold text-white">
-              Trade With Savanna via <span className="text-red-500 italic">EXNESS</span>
-            </h1>
-          </div>
-          <p className="text-slate-400 mt-2">
-            Open a real Exness account with SavannaFX's referral link and get lifetime access to free signals.
-          </p>
-        </CardContent>
-      </SavannaCard>
+    <PageTransition>
+      <DashboardLayout>
+        {/* Header banner */}
+        <ScrollReveal>
+          <SavannaCard className="mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <motion.div
+                  whileHover={{ rotate: 360 }}
+                  transition={{ duration: 0.5 }}
+                  className="w-9 h-9 rounded-md bg-[#6c340e] flex items-center justify-center"
+                >
+                  <Handshake className="text-white" size={18} />
+                </motion.div>
+                <h1 className="text-xl md:text-2xl font-semibold text-white">
+                  Trade With Savanna via <span className="text-red-500 italic">EXNESS</span>
+                </h1>
+              </div>
+              <p className="text-slate-400 mt-2">
+                Open a real Exness account with SavannaFX's referral link and get lifetime access to free signals.
+              </p>
+            </CardContent>
+          </SavannaCard>
+        </ScrollReveal>
 
-      {/* Main content: 2-column layout */}
-      <div className="grid lg:grid-cols-[1fr_360px] gap-6">
+        {/* Main content: 2-column layout */}
+        <div className="grid lg:grid-cols-[1fr_360px] gap-6">
         {/* Left: Info and benefits */}
         <SavannaCard>
           <CardContent className="p-6">
@@ -93,7 +112,7 @@ const TradeWithSavanna: React.FC = () => {
 
               <div className="mt-6">
                 <h3 className="text-slate-200 font-medium mb-3">What You Get:</h3>
-                <div className="grid md:grid-cols-2 gap-4">
+                <StaggerChildren className="grid md:grid-cols-2 gap-4">
                   <BenefitItem
                     icon={ShieldCheck}
                     title="Lifetime Access to VIP Signal Group"
@@ -124,18 +143,28 @@ const TradeWithSavanna: React.FC = () => {
                     title="Monthly Live Recaps"
                     desc="Exness-only traders performance analysis sessions."
                   />
-                </div>
+                </StaggerChildren>
               </div>
             </div>
           </CardContent>
         </SavannaCard>
 
         {/* Right: Signup panel */}
-        <SavannaCard>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <div className="text-green-500 text-2xl font-bold">FREE</div>
-              <div className="text-slate-300">Lifetime Access</div>
+        <ScrollReveal>
+          <HoverScale>
+            <SavannaCard>
+              <CardContent className="p-6">
+                <div className="text-center">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    whileInView={{ scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ type: "spring" }}
+                    className="text-green-500 text-2xl font-bold"
+                  >
+                    FREE
+                  </motion.div>
+                  <div className="text-slate-300">Lifetime Access</div>
 
               <div className="mt-6 text-slate-400">Don't have an account?</div>
               <Button
@@ -179,7 +208,9 @@ const TradeWithSavanna: React.FC = () => {
               </div>
             </div>
           </CardContent>
-        </SavannaCard>
+            </SavannaCard>
+          </HoverScale>
+        </ScrollReveal>
       </div>
 
       <Dialog open={verifyOpen} onOpenChange={setVerifyOpen}>
@@ -191,7 +222,8 @@ const TradeWithSavanna: React.FC = () => {
           <ExnessVerificationForm onSubmitted={() => setVerifyOpen(false)} />
         </DialogContent>
       </Dialog>
-    </DashboardLayout>
+      </DashboardLayout>
+    </PageTransition>
   );
 };
 

@@ -12,6 +12,7 @@ import Signals from "./pages/Signals";
 import CoursePage from "./pages/Course";
 import OneOnOne from "./pages/OneOnOne";
 import EventsPage from "./pages/Events";
+import Sentiment from "./pages/Sentiment";
 import Login from "./pages/Login";
 import SupabaseSessionProvider from "@/components/auth/SupabaseSessionProvider";
 import RequireAuth from "@/components/auth/RequireAuth";
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/dashboard/course" element={<RequireAuth><CoursePage /></RequireAuth>} />
             <Route path="/dashboard/one-on-one" element={<RequireAuth><OneOnOne /></RequireAuth>} />
             <Route path="/dashboard/events" element={<RequireAuth><EventsPage /></RequireAuth>} />
+            <Route path="/dashboard/sentiment" element={<RequireAuth><Sentiment /></RequireAuth>} />
             <Route path="/dashboard/:section" element={<RequireAuth><DashboardFeature /></RequireAuth>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

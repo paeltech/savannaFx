@@ -25,6 +25,8 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { showSuccess } from "@/utils/toast";
+import { PageTransition, ScrollReveal, StaggerChildren, fadeInUp, HoverScale, HoverLift } from "@/lib/animations";
+import { motion } from "framer-motion";
 
 type ItemProps = {
   icon: React.ComponentType<any>;
@@ -33,24 +35,39 @@ type ItemProps = {
 };
 
 const FeatureItem = ({ icon: Icon, title, desc }: ItemProps) => (
-  <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
+  <motion.div
+    whileHover={{ scale: 1.02, y: -2 }}
+    transition={{ duration: 0.2 }}
+    variants={fadeInUp}
+    className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 transition-all duration-300 hover:border-[#f4c464]/30"
+  >
     <div className="flex items-center gap-3">
-      <div className="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center shrink-0">
+      <motion.div
+        whileHover={{ rotate: 360 }}
+        transition={{ duration: 0.5 }}
+        className="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center shrink-0"
+      >
         <Icon className="text-slate-200" size={18} />
-      </div>
+      </motion.div>
       <div>
         <div className="text-slate-200 font-medium">{title}</div>
         <div className="text-slate-400 text-sm">{desc}</div>
       </div>
     </div>
-  </div>
+  </motion.div>
 );
 
 const Bullet = ({ icon: Icon, text }: { icon: React.ComponentType<any>; text: string }) => (
-  <div className="flex items-start gap-2 text-slate-300">
+  <motion.div
+    initial={{ opacity: 0, x: -10 }}
+    whileInView={{ opacity: 1, x: 0 }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.3 }}
+    className="flex items-start gap-2 text-slate-300"
+  >
     <Icon className="text-emerald-500 mt-0.5" size={16} />
     <span className="text-sm">{text}</span>
-  </div>
+  </motion.div>
 );
 
 const TestimonialCard = ({
@@ -60,7 +77,12 @@ const TestimonialCard = ({
   quote: string;
   name: string;
 }) => (
-  <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 flex items-start gap-3">
+  <motion.div
+    whileHover={{ scale: 1.02, y: -2 }}
+    transition={{ duration: 0.2 }}
+    variants={fadeInUp}
+    className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 flex items-start gap-3 transition-all duration-300 hover:border-[#f4c464]/30"
+  >
     <div className="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center shrink-0">
       <UserRound className="text-slate-300" size={18} />
     </div>
@@ -71,7 +93,7 @@ const TestimonialCard = ({
       </div>
       <div className="mt-2 text-slate-400 text-xs font-medium">{name}</div>
     </div>
-  </div>
+  </motion.div>
 );
 
 const OneOnOne: React.FC = () => {
@@ -82,15 +104,21 @@ const OneOnOne: React.FC = () => {
   };
 
   return (
+    <PageTransition>
     <DashboardLayout>
       {/* Header banner */}
+        <ScrollReveal>
       <SavannaCard className="mb-6">
         <CardContent className="p-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-md bg-[#6c340e] flex items-center justify-center">
+                  <motion.div
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.5 }}
+                    className="w-9 h-9 rounded-md bg-[#6c340e] flex items-center justify-center"
+                  >
                 <Target className="text-white" size={18} />
-              </div>
+                  </motion.div>
               <div>
                 <h1 className="text-xl md:text-2xl font-semibold text-white">
                   One-on-One Mentorship — <span className="text-red-500">$1,500</span>
@@ -109,6 +137,7 @@ const OneOnOne: React.FC = () => {
           </div>
         </CardContent>
       </SavannaCard>
+        </ScrollReveal>
 
       {/* Who this is for */}
       <SavannaCard className="mb-6">
@@ -122,10 +151,11 @@ const OneOnOne: React.FC = () => {
       </SavannaCard>
 
       {/* What You Get */}
+        <ScrollReveal>
       <SavannaCard className="mb-6">
         <CardContent className="p-6">
           <h2 className="text-slate-200 font-medium mb-4">What You Get:</h2>
-          <div className="grid md:grid-cols-2 gap-4">
+              <StaggerChildren className="grid md:grid-cols-2 gap-4">
             <FeatureItem
               icon={UserRound}
               title="5 Personalized Coaching Sessions"
@@ -161,9 +191,10 @@ const OneOnOne: React.FC = () => {
               title="Certificate of Completion"
               desc="Mentored by SavannaFX — adds credibility to your status"
             />
-          </div>
+              </StaggerChildren>
         </CardContent>
       </SavannaCard>
+        </ScrollReveal>
 
       {/* Additional Perks */}
       <SavannaCard className="mb-6">
@@ -255,7 +286,8 @@ const OneOnOne: React.FC = () => {
       </div>
 
       {/* Testimonials */}
-      <div className="grid md:grid-cols-2 gap-4 mb-6">
+        <ScrollReveal>
+          <StaggerChildren className="grid md:grid-cols-2 gap-4 mb-6">
         <TestimonialCard
           quote="Join our community and never miss out on style tips, exclusive offers, and inspiration."
           name="Laura Basmar"
@@ -264,7 +296,8 @@ const OneOnOne: React.FC = () => {
           quote="The aim of education is to sharpen intelligence, strengthen will, and refine feelings."
           name="Supitar"
         />
-      </div>
+          </StaggerChildren>
+        </ScrollReveal>
 
       {/* Success stories */}
       <SavannaCard className="mb-6">
@@ -312,6 +345,7 @@ const OneOnOne: React.FC = () => {
         </CardContent>
       </SavannaCard>
     </DashboardLayout>
+    </PageTransition>
   );
 };
 

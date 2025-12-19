@@ -17,11 +17,11 @@ const SiteHeader: React.FC<SiteHeaderProps> = ({ onOpenMenu }) => {
           <img src="/assets/placeholder.svg" alt="placeholder" className="w-7 h-7 rounded-lg" />
           <span className="font-semibold text-[#f4c464]">SavannaFX</span>
         </a>
-        <nav className="hidden md:flex items-center gap-6 text-sm text-[#f4c464]/80">
-          <Link to="/dashboard/signals" className="hover:text-[#f4c464]">Signals</Link>
-          <Link to="/dashboard/course" className="hover:text-[#f4c464]">Course</Link>
-          <Link to="/dashboard/one-on-one" className="hover:text-[#f4c464]">Mentorship</Link>
-          <Link to="/dashboard" className="hover:text-[#f4c464]">Dashboard</Link>
+        <nav className="hidden md:flex items-center gap-6 text-sm text-[#f4c464] font-medium">
+          <Link to="/dashboard/signals" className="hover:text-[#f4c464] transition-colors">Signals</Link>
+          <Link to="/dashboard/course" className="hover:text-[#f4c464] transition-colors">Course</Link>
+          <Link to="/dashboard/one-on-one" className="hover:text-[#f4c464] transition-colors">Mentorship</Link>
+          <Link to="/dashboard" className="hover:text-[#f4c464] transition-colors">Dashboard</Link>
         </nav>
         <div className="flex items-center gap-3">
           <Link to="/dashboard">
