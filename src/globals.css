@@ -116,6 +116,17 @@
   font-display: swap;
 }
 
+/* Legquinne Font Family */
+@font-face {
+  font-family: 'Legquinne';
+  src: url('/fonts/legquinne-7.woff2') format('woff2'),
+       url('/fonts/legquinne-7.woff') format('woff'),
+       url('/fonts/legquinne-7.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -166,41 +177,41 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 0 0% 0%; /* #000000 Pure Black */
+    --foreground: 0 0% 98%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 15%; /* #262625 Nero */
+    --card-foreground: 0 0% 98%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 15%; /* #262625 Nero */
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 45 85% 68%; /* #F4C464 Gold */
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 0 0% 47%; /* #777674 Steel Wool */
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 0 0% 47%; /* #777674 Steel Wool */
+    --muted-foreground: 0 0% 64%; /* #A4A4A4 Rainy Grey */
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 0 0% 15%; /* #262625 Nero */
+    --accent-foreground: 45 85% 68%; /* #F4C464 Gold */
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 0 0% 47%; /* #777674 Steel Wool */
+    --input: 0 0% 47%; /* #777674 Steel Wool */
+    --ring: 45 85% 68%; /* #F4C464 Gold */
+    --sidebar-background: 0 0% 0%; /* #000000 Pure Black */
+    --sidebar-foreground: 0 0% 64%; /* #A4A4A4 Rainy Grey */
+    --sidebar-primary: 45 85% 68%; /* #F4C464 Gold */
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 15%; /* #262625 Nero */
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 0 0% 47%; /* #777674 Steel Wool */
+    --sidebar-ring: 45 85% 68%; /* #F4C464 Gold */
   }
 }
 
@@ -212,39 +223,49 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Axiforma', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-weight: 300;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
 
-  /* Improved typography defaults */
+  /* Apply Legquinne font to all headings */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
+    font-family: 'Legquinne', serif;
+    font-weight: bold;
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+  }
+
+  /* All body text uses Axiforma Light font */
+  p, span, div, a, label, input, textarea, select, button, li {
+    font-family: 'Axiforma', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 300;
   }
 
   p {
-    line-height: 1.7;
+    line-height: 1.75;
     letter-spacing: 0.01em;
   }
 
   /* Better readability for body text */
   body, p, span, div {
-    line-height: 1.6;
+    line-height: 1.7;
   }
 
   /* Improved contrast for small text */
   small, .text-sm {
-    line-height: 1.5;
+    font-weight: 300;
+    line-height: 1.6;
   }
 
   /* Better spacing for lists */
   ul, ol {
-    line-height: 1.7;
+    font-weight: 300;
+    line-height: 1.8;
   }
 
   li {
-    line-height: 1.6;
+    line-height: 1.7;
   }
 }

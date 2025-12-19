@@ -7,8 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Clock, PlayCircle, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { HoverScale, fadeInUp } from "@/lib/animations";
-import { motion } from "framer-motion";
 
 export type Course = {
   id: string;
@@ -36,9 +34,7 @@ const CourseCard: React.FC<Props> = ({ course, enrolled, onEnroll }) => {
   const isFree = course.price === 0;
 
   return (
-    <motion.div variants={fadeInUp} initial="hidden" animate="visible">
-      <HoverScale>
-        <Card className="bg-slate-900/60 border-slate-800 overflow-hidden transition-all duration-300 hover:border-[#f4c464]/30">
+        <Card className="bg-nero overflow-hidden hover:border-gold/30">
       <div className="relative">
         <img
           src={course.coverUrl}
@@ -155,9 +151,7 @@ const CourseCard: React.FC<Props> = ({ course, enrolled, onEnroll }) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-        </Card>
-      </HoverScale>
-    </motion.div>
+    </Card>
   );
 };
 

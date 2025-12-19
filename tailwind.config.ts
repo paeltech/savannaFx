@@ -1,5 +1,4 @@
 import type { Config } from "tailwindcss";
-import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -19,28 +18,6 @@ export default {
       },
     },
     extend: {
-      fontFamily: {
-        sans: [
-          "Axiforma",
-          "-apple-system",
-          "BlinkMacSystemFont",
-          '"Segoe UI"',
-          "Roboto",
-          '"Helvetica Neue"',
-          "Arial",
-          "sans-serif",
-          '"Apple Color Emoji"',
-          '"Segoe UI Emoji"',
-          '"Segoe UI Symbol"',
-        ],
-      },
-      lineHeight: {
-        relaxed: "1.7",
-        "extra-relaxed": "1.8",
-      },
-      letterSpacing: {
-        readable: "0.01em",
-      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -85,6 +62,17 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Luxury color palette
+        gold: {
+          DEFAULT: "#F4C464",
+          light: "#F5D085",
+          dark: "#D4A854",
+        },
+        "rainy-grey": "#A4A4A4",
+        "steel-wool": "#777674",
+        "dark-green": "#14241F",
+        nero: "#262625",
+        "cursed-black": "#000000",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -113,7 +101,20 @@ export default {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
+      fontFamily: {
+        heading: ["Legquinne", "serif"],
+        sans: [
+          "Axiforma",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          '"Segoe UI"',
+          "Roboto",
+          '"Helvetica Neue"',
+          "Arial",
+          "sans-serif",
+        ],
+      },
     },
   },
-  plugins: [tailwindcssAnimate],
+  plugins: [require("tailwindcss-animate")],
 } satisfies Config;

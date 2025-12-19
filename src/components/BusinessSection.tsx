@@ -3,8 +3,6 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { StaggerChildren, HoverScale, fadeInUp } from "@/lib/animations";
-import { motion } from "framer-motion";
 
 type Service = {
   title: string;
@@ -44,70 +42,41 @@ const BusinessSection: React.FC = () => {
   return (
     <section className="py-16 md:py-20">
       <div className="max-w-7xl mx-auto px-4">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeInUp}
-        >
-          <h2 className="text-3xl md:text-4xl font-bold text-white text-center">
-            Build Your Business <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6c340e] to-[#f4c464]">Right from Your Browser</span>
-          </h2>
-          <p className="text-[#f4c464] text-center mt-4 text-lg leading-relaxed">
-            Everything you need to start, grow, and scale your trading business is accessible from any device.
-          </p>
-        </motion.div>
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center">
+          Build Your Business <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-dark to-gold">Right from Your Browser</span>
+        </h2>
+        <p className="text-gold text-center mt-6 text-lg leading-relaxed">
+          Everything you need to start, grow, and scale your trading business is accessible from any device.
+        </p>
 
-        <StaggerChildren className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
-          {services.map((s, index) => (
-            <motion.div key={s.title} variants={fadeInUp}>
-              <HoverScale>
-                <Card className={`border-[#270f05] flex flex-col transition-all duration-300 hover:border-[#f4c464]/30 ${
-                  index === 0 ? "bg-[#1a2d28]" :
-                  index === 1 ? "bg-[#1f352f]" :
-                  index === 2 ? "bg-[#243a33]" :
-                  "bg-[#1a2d28]"
-                }`}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-white">{s.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-[#f4c464]">
-                    <div className="text-[#f4c464] font-semibold text-lg mb-3">{s.price}</div>
-                    <ul className="mt-3 space-y-2.5">
-                      {s.bullets.map((b, idx) => (
-                        <motion.li
-                          key={b}
-                          initial={{ opacity: 0, x: -10 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: idx * 0.1 }}
-                          className="text-sm leading-relaxed"
-                        >
-                          • {b}
-                        </motion.li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                  <CardFooter className="mt-auto">
-                    <Button className="w-full bg-gradient-to-r from-[#6c340e] to-[#f4c464] hover:brightness-110 text-white rounded-md">{s.cta}</Button>
-                  </CardFooter>
-                </Card>
-              </HoverScale>
-            </motion.div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mt-16">
+          {services.map((s) => (
+            <Card key={s.title} className="bg-nero flex flex-col hover:border-gold/40 hover:shadow-lg hover:shadow-gold/10">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-white">{s.title}</CardTitle>
+              </CardHeader>
+              <CardContent className="text-gold">
+                <div className="text-gold font-semibold text-lg mb-4">{s.price}</div>
+                <ul className="mt-3 space-y-3">
+                  {s.bullets.map((b) => (
+                    <li key={b} className="text-sm text-rainy-grey leading-relaxed">
+                      • {b}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              <CardFooter className="mt-auto pt-4">
+                <Button className="w-full bg-gradient-to-r from-gold-dark to-gold text-cursed-black hover:shadow-lg hover:shadow-gold/20 transition-all duration-300 rounded-md font-semibold">{s.cta}</Button>
+              </CardFooter>
+            </Card>
           ))}
-        </StaggerChildren>
+        </div>
 
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeInUp}
-          className="text-center mt-10"
-        >
-          <Button className="bg-gradient-to-r from-[#6c340e] to-[#f4c464] hover:brightness-110 text-white rounded-full px-6 py-2">
+        <div className="text-center mt-12">
+          <Button className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black hover:shadow-lg hover:shadow-gold/20 transition-all duration-300 rounded-full px-8 py-6 font-semibold">
             Start Building Today
           </Button>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

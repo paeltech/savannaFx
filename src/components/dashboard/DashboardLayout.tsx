@@ -40,7 +40,7 @@ import { showSuccess } from "@/utils/toast";
 
 type NavItem = {
   label: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string; size?: number }>;
   to: string;
   badge?: string;
 };
@@ -63,35 +63,35 @@ const navItems: NavItem[] = [
 
 const Topbar: React.FC = () => {
   return (
-    <div className="flex h-14 items-center justify-between px-4 border-b border-[#270f05]/50 bg-[#14241f]/70 backdrop-blur">
-      <div className="flex items-center gap-3">
+    <div className="flex h-16 items-center justify-between px-6 border-b border-steel-wool bg-black/90 backdrop-blur-md">
+      <div className="flex items-center gap-4">
         <Link to="/" className="flex items-center gap-2">
-          <img src="/assets/placeholder.svg" alt="SavannaFX" className="w-7 h-7 rounded-md" />
-          <span className="font-semibold text-[#f4c464]">SavannaFX</span>
+          <img src="/assets/placeholder.svg" alt="SavannaFX" className="w-8 h-8 rounded-md" />
+          <span className="font-semibold text-gold text-lg">SavannaFX</span>
         </Link>
-        <span className="text-[#f4c464]/80">Dashboard</span>
+        <span className="text-rainy-grey">Dashboard</span>
       </div>
 
-      <div className="flex items-center gap-3">
-        <Button variant="outline" className="h-8 border-[#270f05]/60 text-[#f4c464] hover:bg-[#270f05]/30">
+      <div className="flex items-center gap-4">
+        <Button variant="outline" className="h-9 border-steel-wool text-rainy-grey hover:bg-nero hover:text-gold hover:border-gold/40 transition-all duration-200">
           <span className="mr-2">Forecast</span>
           <Badge variant="secondary" className="bg-red-600 text-white">NEW</Badge>
         </Button>
-        <Button variant="ghost" size="icon" className="text-[#f4c464]/80 hover:text-[#f4c464]">
+        <Button variant="ghost" size="icon" className="text-rainy-grey hover:text-gold transition-colors duration-200">
           <Settings />
         </Button>
         <div className="relative">
-          <Button variant="ghost" size="icon" className="text-[#f4c464]/80 hover:text-[#f4c464]">
+          <Button variant="ghost" size="icon" className="text-rainy-grey hover:text-gold transition-colors duration-200">
             <Bell />
           </Button>
           <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] rounded-full px-1.5">2</span>
         </div>
-        <Button variant="ghost" className="gap-2 text-[#f4c464] hover:text-white">
+        <Button variant="ghost" className="gap-2 text-rainy-grey hover:text-gold transition-colors duration-200">
           <UserRound className="opacity-80" />
           <span className="hidden sm:inline">Trader</span>
         </Button>
         <button
-          className="p-2 rounded-lg hover:bg-[#270f05]/40 text-[#f4c464]"
+          className="p-2 rounded-lg hover:bg-nero/50 text-rainy-grey hover:text-gold transition-colors duration-200"
           onClick={async () => {
             await supabase.auth.signOut();
             showSuccess("Signed out");
@@ -109,20 +109,25 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const location = useLocation();
 
   return (
-    <SidebarProvider className="min-h-screen bg-background text-foreground">
-      <Sidebar side="left" variant="sidebar" className="bg-[#14241f] border-r border-[#270f05]/50 text-[#f4c464]">
-        <SidebarHeader className="pt-3">
+    <SidebarProvider className="min-h-screen bg-black text-foreground">
+      <Sidebar side="left" variant="sidebar" className="bg-black border-r border-steel-wool text-rainy-grey">
+        <SidebarHeader className="pt-4">
           <SidebarGroup>
-            <SidebarGroupLabel className="text-[#f4c464]/70">Navigation</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-rainy-grey mb-4">Navigation</SidebarGroupLabel>
             <SidebarContent>
-              <SidebarMenu>
+              <SidebarMenu className="space-y-1">
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.to || (item.to !== "/dashboard" && location.pathname.startsWith(item.to));
                   return (
                     <SidebarMenuItem key={item.label}>
                       <Link to={item.to}>
-                        <SidebarMenuButton isActive={isActive} className="text-[#f4c464]/80 hover:text-white">
+                        <SidebarMenuButton 
+                          isActive={isActive} 
+                          className={`text-rainy-grey hover:text-gold transition-colors duration-200 ${
+                            isActive ? "text-gold bg-nero" : ""
+                          }`}
+                        >
                           <Icon />
                           <span>{item.label}</span>
                         </SidebarMenuButton>
@@ -139,9 +144,9 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
         </SidebarHeader>
       </Sidebar>
 
-      <SidebarInset>
+      <SidebarInset className="bg-black">
         <Topbar />
-        <div className="px-6 py-6">
+        <div className="px-6 py-8">
           {children}
         </div>
       </SidebarInset>

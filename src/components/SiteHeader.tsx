@@ -11,27 +11,27 @@ type SiteHeaderProps = {
 
 const SiteHeader: React.FC<SiteHeaderProps> = ({ onOpenMenu }) => {
   return (
-    <header className="fixed top-0 left-0 right-0 z-30 bg-[#14241f]/80 backdrop-blur supports-[backdrop-filter]:bg-[#14241f]/70 border-b border-[#270f05]">
-      <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
+    <header className="fixed top-0 left-0 right-0 z-30 bg-black/90 backdrop-blur-md supports-[backdrop-filter]:bg-black/80 border-b border-nero">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <a href="/" className="flex items-center gap-3">
-          <img src="/assets/placeholder.svg" alt="placeholder" className="w-7 h-7 rounded-lg" />
-          <span className="font-semibold text-[#f4c464]">SavannaFX</span>
+          <img src="/assets/placeholder.svg" alt="placeholder" className="w-8 h-8 rounded-lg" />
+          <span className="font-semibold text-gold text-lg">SavannaFX</span>
         </a>
-        <nav className="hidden md:flex items-center gap-6 text-sm text-[#f4c464] font-medium">
-          <Link to="/dashboard/signals" className="hover:text-[#f4c464] transition-colors">Signals</Link>
-          <Link to="/dashboard/course" className="hover:text-[#f4c464] transition-colors">Course</Link>
-          <Link to="/dashboard/one-on-one" className="hover:text-[#f4c464] transition-colors">Mentorship</Link>
-          <Link to="/dashboard" className="hover:text-[#f4c464] transition-colors">Dashboard</Link>
+        <nav className="hidden md:flex items-center gap-8 text-sm text-rainy-grey font-medium">
+          <Link to="/dashboard/signals" className="hover:text-gold transition-colors duration-200">Signals</Link>
+          <Link to="/dashboard/course" className="hover:text-gold transition-colors duration-200">Course</Link>
+          <Link to="/dashboard/one-on-one" className="hover:text-gold transition-colors duration-200">Mentorship</Link>
+          <Link to="/dashboard" className="hover:text-gold transition-colors duration-200">Dashboard</Link>
         </nav>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <Link to="/dashboard">
-            <Button variant="ghost" className="text-[#f4c464] hidden sm:inline-flex">Dashboard</Button>
+            <Button variant="ghost" className="text-rainy-grey hover:text-gold hidden sm:inline-flex">Dashboard</Button>
           </Link>
           <Link to="/dashboard">
-            <Button className="bg-gradient-to-r from-[#6c340e] to-[#f4c464] text-white rounded-full">GET STARTED</Button>
+            <Button className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black rounded-full px-6 font-semibold hover:shadow-lg hover:shadow-gold/20 transition-all duration-300">GET STARTED</Button>
           </Link>
           <button
-            className="p-2 rounded-lg hover:bg-[#270f05]/40 text-[#f4c464] md:hidden"
+            className="p-2 rounded-lg hover:bg-nero/50 text-gold md:hidden transition-colors duration-200"
             aria-label="Open menu"
             onClick={onOpenMenu}
           >

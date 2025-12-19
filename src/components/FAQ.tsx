@@ -4,8 +4,6 @@ import React from "react";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { StaggerChildren, HoverScale, fadeInUp } from "@/lib/animations";
-import { motion } from "framer-motion";
 
 const FAQ: React.FC = () => {
   const items = [
@@ -20,65 +18,33 @@ const FAQ: React.FC = () => {
   return (
     <section className="py-20">
       <div className="max-w-4xl mx-auto px-4">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeInUp}
-        >
-          <h2 className="text-3xl md:text-4xl font-bold text-white text-center">
-            Still Wondering If Trading Is{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6c340e] to-[#f4c464]">For You?</span>
-          </h2>
-          <p className="text-center text-[#f4c464] mt-3 text-lg leading-relaxed">
-            Find answers to common questions about surviving and thriving in the markets
-          </p>
-        </motion.div>
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center">
+          Still Wondering If Trading Is{" "}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-dark to-gold">For You?</span>
+        </h2>
+        <p className="text-center text-gold mt-6 text-lg leading-relaxed">
+          Find answers to common questions about surviving and thriving in the markets
+        </p>
 
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeInUp}
-          transition={{ delay: 0.2 }}
-          className="mt-8"
-        >
-          <Accordion type="single" collapsible className="w-full">
+        <div className="mt-12">
+          <Accordion type="single" collapsible className="w-full space-y-2">
             {items.map((it, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-              >
-                <AccordionItem value={`item-${idx}`}>
-                  <AccordionTrigger className="text-white">{it.q}</AccordionTrigger>
-                  <AccordionContent className="text-gray-200 leading-relaxed">{it.a}</AccordionContent>
-                </AccordionItem>
-              </motion.div>
+              <AccordionItem key={idx} value={`item-${idx}`} className="border-0 bg-nero rounded-lg px-4 mb-2 hover:border hover:border-steel-wool transition-all duration-300">
+                <AccordionTrigger className="text-white hover:text-gold transition-colors duration-200">{it.q}</AccordionTrigger>
+                <AccordionContent className="text-rainy-grey leading-relaxed">{it.a}</AccordionContent>
+              </AccordionItem>
             ))}
           </Accordion>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeInUp}
-          transition={{ delay: 0.4 }}
-        >
-          <HoverScale>
-            <Card className="bg-[#14241f] border-[#270f05]/50 mt-8 transition-all duration-300 hover:border-[#f4c464]/30">
-              <CardContent className="p-6 text-center">
-                <p className="text-[#f4c464] mb-4 leading-relaxed">
-                  Can't find the answer you're looking for? Our support team is here to help.
-                </p>
-                <Button className="bg-[#697452] hover:bg-[#697452]/90 text-white">Contact Support</Button>
-              </CardContent>
-            </Card>
-          </HoverScale>
-        </motion.div>
+        <Card className="bg-nero mt-12 hover:border-gold/40 hover:shadow-lg hover:shadow-gold/10">
+          <CardContent className="p-8 text-center">
+            <p className="text-rainy-grey mb-6 leading-relaxed text-lg">
+              Can't find the answer you're looking for? Our support team is here to help.
+            </p>
+            <Button className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black hover:shadow-lg hover:shadow-gold/20 transition-all duration-300 font-semibold">Contact Support</Button>
+          </CardContent>
+        </Card>
       </div>
     </section>
   );

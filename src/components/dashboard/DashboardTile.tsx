@@ -4,40 +4,30 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SavannaCard from "./SavannaCard";
-import { HoverLift, fadeInUp } from "@/lib/animations";
-import { motion } from "framer-motion";
 
 type Props = {
   to: string;
   title: string;
   description: string;
-  Icon: React.ComponentType<any>;
+  Icon: React.ComponentType<{ className?: string; size?: number }>;
   iconBg?: string;
 };
 
-const DashboardTile: React.FC<Props> = ({ to, title, description, Icon, iconBg = "bg-[#6c340e]" }) => {
+const DashboardTile: React.FC<Props> = ({ to, title, description, Icon, iconBg = "bg-gold" }) => {
   return (
-    <motion.div variants={fadeInUp} initial="hidden" animate="visible">
-      <Link to={to} className="block">
-        <HoverLift>
-          <SavannaCard className="transition-all duration-300 hover:border-[#f4c464]/30 cursor-pointer">
-            <CardHeader className="pb-3">
-              <motion.div
-                whileHover={{ rotate: 360, scale: 1.1 }}
-                transition={{ duration: 0.5 }}
-                className={`w-9 h-9 rounded-md ${iconBg} flex items-center justify-center mb-3`}
-              >
-                <Icon className="text-white/90" size={18} />
-              </motion.div>
-              <CardTitle className="text-white text-lg">{title}</CardTitle>
-            </CardHeader>
-            <CardContent className="text-[#f4c464] text-sm leading-relaxed">
-              {description}
-            </CardContent>
-          </SavannaCard>
-        </HoverLift>
-      </Link>
-    </motion.div>
+    <Link to={to} className="block">
+      <SavannaCard className="cursor-pointer">
+        <CardHeader className="pb-4">
+          <div className={`w-10 h-10 rounded-md ${iconBg} flex items-center justify-center mb-4`}>
+            <Icon className="text-cursed-black" size={20} />
+          </div>
+          <CardTitle className="text-white text-lg">{title}</CardTitle>
+        </CardHeader>
+        <CardContent className="text-rainy-grey text-sm leading-relaxed">
+          {description}
+        </CardContent>
+      </SavannaCard>
+    </Link>
   );
 };
 

@@ -5,54 +5,58 @@ import { Button } from "@/components/ui/button";
 
 const PageFooter: React.FC = () => {
   return (
-    <footer className="bg-[rgb(17_24_39/0.6)] text-[#f4c464] pt-12">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="grid md:grid-cols-4 gap-8">
+    <footer className="bg-black text-rainy-grey pt-16 pb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid md:grid-cols-4 gap-12">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mb-6">
               <img src="/assets/placeholder.svg" alt="placeholder" className="w-8 h-8 rounded-lg" />
-              <span className="text-white font-bold">SavannaFX</span>
+              <span className="text-white font-bold text-lg">SavannaFX</span>
             </div>
-            <p className="text-sm text-[#f4c464] mt-4 leading-relaxed">
+            <p className="text-sm text-rainy-grey leading-relaxed">
               SavannaFX teaches and empowers traders to survive and thrive in the markets with discipline, timing, and awareness.
             </p>
           </div>
 
           <div>
-            <h4 className="text-white font-semibold mb-3">Quick Links</h4>
-            <ul className="space-y-2.5 text-sm text-[#f4c464] leading-relaxed">
-              <li>Home</li>
-              <li>Course</li>
-              <li>Mentorship</li>
-              <li>Academy</li>
-              <li>Booking</li>
-              <li>Dashboard</li>
+            <h4 className="text-white font-semibold mb-4">Quick Links</h4>
+            <ul className="space-y-3 text-sm text-rainy-grey leading-relaxed">
+              <li className="hover:text-gold transition-colors duration-200 cursor-pointer">Home</li>
+              <li className="hover:text-gold transition-colors duration-200 cursor-pointer">Course</li>
+              <li className="hover:text-gold transition-colors duration-200 cursor-pointer">Mentorship</li>
+              <li className="hover:text-gold transition-colors duration-200 cursor-pointer">Academy</li>
+              <li className="hover:text-gold transition-colors duration-200 cursor-pointer">Booking</li>
+              <li className="hover:text-gold transition-colors duration-200 cursor-pointer">Dashboard</li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-white font-semibold mb-3">Services</h4>
-            <ul className="space-y-2.5 text-sm text-[#f4c464] leading-relaxed">
-              <li>Signals</li>
-              <li>Collaborations</li>
-              <li>Community</li>
-              <li>Strategy Course</li>
+            <h4 className="text-white font-semibold mb-4">Services</h4>
+            <ul className="space-y-3 text-sm text-rainy-grey leading-relaxed">
+              <li className="hover:text-gold transition-colors duration-200 cursor-pointer">Signals</li>
+              <li className="hover:text-gold transition-colors duration-200 cursor-pointer">Collaborations</li>
+              <li className="hover:text-gold transition-colors duration-200 cursor-pointer">Community</li>
+              <li className="hover:text-gold transition-colors duration-200 cursor-pointer">Strategy Course</li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-white font-semibold mb-3">Contact</h4>
-            <ul className="space-y-2.5 text-sm text-[#f4c464] leading-relaxed">
+            <h4 className="text-white font-semibold mb-4">Contact</h4>
+            <ul className="space-y-3 text-sm text-rainy-grey leading-relaxed mb-6">
               <li>Email: support@savannafx.com</li>
               <li>Location: Dar es salaam, Tanzania</li>
             </ul>
-            <Button className="mt-4 bg-[#697452] hover:bg-[#697452]/90 text-white">Subscribe Now</Button>
+            <Button className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black hover:shadow-lg hover:shadow-gold/20 transition-all duration-300">Subscribe Now</Button>
           </div>
         </div>
 
-        <div className="border-t border-[#14241f] mt-10 py-6 text-sm text-[#f4c464] leading-relaxed">
+        <div className="border-t border-nero mt-12 pt-8 text-sm text-rainy-grey leading-relaxed">
           <p>© {new Date().getFullYear()} SavannaFX — All rights reserved.</p>
-          <div className="mt-2.5">Privacy Policy • Terms</div>
+          <div className="mt-3 flex gap-4">
+            <span className="hover:text-gold transition-colors duration-200 cursor-pointer">Privacy Policy</span>
+            <span className="text-steel-wool">•</span>
+            <span className="hover:text-gold transition-colors duration-200 cursor-pointer">Terms</span>
+          </div>
         </div>
       </div>
     </footer>
