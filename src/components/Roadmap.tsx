@@ -16,9 +16,9 @@ const Roadmap: React.FC = () => {
   return (
     <section className="py-20">
       <div className="max-w-6xl mx-auto px-4 text-center">
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading text-white">
           Your Roadmap to{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-dark to-gold">
+          <span className="text-transparent font-heading bg-clip-text bg-gradient-to-r from-gold-dark to-gold">
             Survival
           </span>
         </h2>
@@ -30,7 +30,7 @@ const Roadmap: React.FC = () => {
           {steps.map((s) => (
             <Card key={s.number} className="bg-nero hover:border-gold/40 hover:shadow-lg hover:shadow-gold/10">
               <CardHeader className="pb-4">
-                <div className="text-4xl font-extrabold text-gold mb-2">{s.number}</div>
+                <div className="text-4xl font-extrabold text-gold mb-2 font-heading">{s.number}</div>
                 <CardTitle className="text-white text-lg">{s.title}</CardTitle>
               </CardHeader>
               <CardContent>

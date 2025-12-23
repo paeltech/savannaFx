@@ -6,10 +6,21 @@ import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { fadeInUp, slideInLeft, slideInRight, defaultTransition } from "@/lib/animations";
 import TypewriterText from "./TypewriterText";
+import Galaxy from "./Galaxy";
 
 const Hero: React.FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
   return (
     <section className="relative min-h-screen flex items-start justify-start bg-black overflow-hidden">
+      <Galaxy 
+        mouseRepulsion={true}
+        mouseInteraction={true}
+        density={0.3}
+        speed={0.2}
+        glowIntensity={0.2}
+        saturation={0.8}
+        hueShift={240}
+        transparent={true}
+      />
       {/* Desktop layout */}
       <div className="hidden lg:block relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-40 md:pt-12">
         <div className="max-w-4xl mt-32">
@@ -112,7 +123,7 @@ const Hero: React.FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ ...defaultTransition, delay: 1, repeat: Infinity, repeatType: "reverse", duration: 2 }}
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20"
       >
         <div className="w-6 h-10 border-2 border-rainy-grey/30 rounded-full flex justify-center">
           <div className="w-1 h-3 bg-gold/50 rounded-full mt-2"></div>

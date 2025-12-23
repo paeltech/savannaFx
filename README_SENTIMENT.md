@@ -50,3 +50,4 @@ The component uses Supabase client to:
 - Shows last updated timestamp
 - Loading states during refresh
 
+

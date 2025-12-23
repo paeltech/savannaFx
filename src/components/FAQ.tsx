@@ -20,7 +20,7 @@ const FAQ: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4">
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center">
           Still Wondering If Trading Is{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-dark to-gold">For You?</span>
+          <span className="text-transparent bg-clip-text font-heading bg-gradient-to-r from-gold-dark to-gold">For You?</span>
         </h2>
         <p className="text-center text-gold mt-6 text-lg leading-relaxed">
           Find answers to common questions about surviving and thriving in the markets

@@ -98,3 +98,4 @@ If you encounter any issues:
 2. Verify the SQL syntax is correct
 3. Ensure you have the correct permissions in Supabase
 
+

@@ -11,7 +11,7 @@ type SiteHeaderProps = {
 
 const SiteHeader: React.FC<SiteHeaderProps> = ({ onOpenMenu }) => {
   return (
-    <header className="fixed top-0 left-0 right-0 z-30 bg-black/90 backdrop-blur-md supports-[backdrop-filter]:bg-black/80 border-b border-nero">
+    <header className="fixed top-0 left-0 right-0 z-30 bg-black/90 backdrop-blur-md supports-[backdrop-filter]:bg-black/80 pt-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <a href="/" className="flex items-center gap-3">
           <img src="/assets/placeholder.svg" alt="placeholder" className="w-8 h-8 rounded-lg" />

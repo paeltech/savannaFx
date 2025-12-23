@@ -42,8 +42,8 @@ const BusinessSection: React.FC = () => {
   return (
     <section className="py-16 md:py-20">
       <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center">
-          Build Your Business <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-dark to-gold">Right from Your Browser</span>
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center font-heading">
+          Build Your Business <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-dark to-gold font-heading">Right from Your Browser</span>
         </h2>
         <p className="text-gold text-center mt-6 text-lg leading-relaxed">
           Everything you need to start, grow, and scale your trading business is accessible from any device.

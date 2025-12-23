@@ -29,7 +29,7 @@ const FeatureSystem: React.FC = () => {
         <div className="space-y-6">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white">
             The{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-dark to-gold">
+            <span className="text-transparent font-heading bg-clip-text bg-gradient-to-r from-gold-dark to-gold">
               System
             </span>{" "}
             That Works
