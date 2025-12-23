@@ -10,8 +10,9 @@ const PageFooter: React.FC = () => {
         <div className="grid md:grid-cols-4 gap-12">
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <img src="/assets/placeholder.svg" alt="placeholder" className="w-8 h-8 rounded-lg" />
-              <span className="text-white font-bold text-lg">SavannaFX</span>
+            
+              <img src="/assets/logo.png" alt="SavannaFX logo" className="w-32 rounded-lg" />
+              
             </div>
             <p className="text-sm text-rainy-grey leading-relaxed">
               SavannaFX teaches and empowers traders to survive and thrive in the markets with discipline, timing, and awareness.
