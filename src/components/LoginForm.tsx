@@ -87,13 +87,13 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-white text-gray-900 p-0 sm:rounded-lg [&>button]:text-gray-400 [&>button]:hover:text-gray-600">
+      <DialogContent className="max-w-md bg-nero border-steel-wool text-white p-0 sm:rounded-lg [&>button]:text-rainy-grey [&>button]:hover:text-gold">
         <div className="p-6 sm:p-8">
           <DialogHeader className="text-left mb-6">
-            <DialogTitle className="text-2xl font-bold text-gray-900 mb-1">
+            <DialogTitle className="text-2xl font-bold text-white mb-1 font-heading">
               Sign in
             </DialogTitle>
-            <DialogDescription className="text-sm text-gray-600">
+            <DialogDescription className="text-sm text-rainy-grey">
               Sign in to your SavannaFX account
             </DialogDescription>
           </DialogHeader>
@@ -105,14 +105,14 @@ const LoginForm: React.FC<LoginFormProps> = ({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">
+                    <FormLabel className="text-sm font-medium text-white">
                       Email Address
                     </FormLabel>
                     <FormControl>
                       <Input
                         type="email"
                         placeholder="Enter your email"
-                        className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus-visible:ring-blue-500"
+                        className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold"
                         {...field}
                       />
                     </FormControl>
@@ -126,7 +126,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">
+                    <FormLabel className="text-sm font-medium text-white">
                       Password
                     </FormLabel>
                     <FormControl>
@@ -134,13 +134,13 @@ const LoginForm: React.FC<LoginFormProps> = ({
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="Enter your password"
-                          className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus-visible:ring-blue-500 pr-10"
+                          className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold pr-10"
                           {...field}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-rainy-grey hover:text-gold transition-colors"
                         >
                           {showPassword ? (
                             <EyeOff className="h-4 w-4" />
@@ -158,7 +158,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
               <div className="flex items-center justify-end">
                 <button
                   type="button"
-                  className="text-sm text-blue-600 hover:underline"
+                  className="text-sm text-gold hover:underline transition-colors"
                   onClick={(e) => {
                     e.preventDefault();
                     // TODO: Implement forgot password
@@ -171,7 +171,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
               <Button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white h-11 rounded-md font-medium"
+                className="w-full bg-gradient-to-r from-gold-dark to-gold text-cursed-black h-11 rounded-md font-semibold hover:shadow-lg hover:shadow-gold/20 transition-all duration-300"
               >
                 Sign in
               </Button>
@@ -179,14 +179,14 @@ const LoginForm: React.FC<LoginFormProps> = ({
           </Form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-rainy-grey">
               Don't have an account?{" "}
               <button
                 onClick={() => {
                   onOpenChange(false);
                   onSwitchToSignup?.();
                 }}
-                className="text-blue-600 hover:underline font-medium"
+                className="text-gold hover:underline font-medium transition-colors"
               >
                 Get Started
               </button>

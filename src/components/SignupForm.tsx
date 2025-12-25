@@ -322,13 +322,13 @@ const SignupForm: React.FC<SignupFormProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-white text-gray-900 p-0 sm:rounded-lg [&>button]:text-gray-400 [&>button]:hover:text-gray-600">
+      <DialogContent className="max-w-md bg-nero border-steel-wool text-white p-0 sm:rounded-lg [&>button]:text-rainy-grey [&>button]:hover:text-gold">
         <div className="p-6 sm:p-8">
           <DialogHeader className="text-left mb-6">
-            <DialogTitle className="text-2xl font-bold text-gray-900 mb-1">
+            <DialogTitle className="text-2xl font-bold text-white mb-1 font-heading">
               Get Started
             </DialogTitle>
-            <DialogDescription className="text-sm text-gray-600">
+            <DialogDescription className="text-sm text-rainy-grey">
               Create your SavannaFX account
             </DialogDescription>
           </DialogHeader>
@@ -341,13 +341,13 @@ const SignupForm: React.FC<SignupFormProps> = ({
                   name="firstName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700">
+                      <FormLabel className="text-sm font-medium text-white">
                         First Name
                       </FormLabel>
                       <FormControl>
                         <Input
                           placeholder="First name"
-                          className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus-visible:ring-blue-500"
+                          className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold"
                           {...field}
                         />
                       </FormControl>
@@ -360,13 +360,13 @@ const SignupForm: React.FC<SignupFormProps> = ({
                   name="lastName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700">
+                      <FormLabel className="text-sm font-medium text-white">
                         Last Name
                       </FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Last name"
-                          className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus-visible:ring-blue-500"
+                          className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold"
                           {...field}
                         />
                       </FormControl>
@@ -381,14 +381,14 @@ const SignupForm: React.FC<SignupFormProps> = ({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">
+                    <FormLabel className="text-sm font-medium text-white">
                       Email Address
                     </FormLabel>
                     <FormControl>
                       <Input
                         type="email"
                         placeholder="Enter your email"
-                        className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus-visible:ring-blue-500"
+                        className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold"
                         {...field}
                       />
                     </FormControl>
@@ -398,7 +398,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
               />
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
+                <Label className="text-sm font-medium text-white">
                   WhatsApp Number
                 </Label>
                 <div className="flex gap-2">
@@ -412,15 +412,15 @@ const SignupForm: React.FC<SignupFormProps> = ({
                             value={field.value}
                             onValueChange={field.onChange}
                           >
-                            <SelectTrigger className="w-[140px] bg-white border-gray-300 text-gray-900 focus:ring-blue-500">
+                            <SelectTrigger className="w-[140px] bg-black border-steel-wool text-white focus:ring-gold focus:border-gold">
                               <SelectValue placeholder="Code" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="bg-nero border-steel-wool">
                               {countryCodes.map((country) => (
                                 <SelectItem
                                   key={country.code}
                                   value={country.code}
-                                  className="text-gray-900"
+                                  className="text-white hover:bg-black hover:text-gold focus:bg-black focus:text-gold cursor-pointer"
                                 >
                                   <span className="flex items-center gap-2">
                                     <span>{country.flag}</span>
@@ -443,7 +443,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
                         <FormControl>
                           <Input
                             placeholder="Enter phone number only"
-                            className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus-visible:ring-blue-500"
+                            className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold"
                             {...field}
                           />
                         </FormControl>
@@ -452,7 +452,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
                     )}
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-rainy-grey mt-1">
                   Select your country code first, then enter your phone number
                   without the country code or leading zeros. Numbers only
                   (0-9). Complete number must not exceed 15 digits.
@@ -464,7 +464,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">
+                    <FormLabel className="text-sm font-medium text-white">
                       Password
                     </FormLabel>
                     <FormControl>
@@ -472,13 +472,13 @@ const SignupForm: React.FC<SignupFormProps> = ({
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="Create a password"
-                          className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus-visible:ring-blue-500 pr-10"
+                          className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold pr-10"
                           {...field}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-rainy-grey hover:text-gold transition-colors"
                         >
                           {showPassword ? (
                             <EyeOff className="h-4 w-4" />
@@ -502,15 +502,15 @@ const SignupForm: React.FC<SignupFormProps> = ({
                       <Checkbox
                         checked={field.value}
                         onCheckedChange={field.onChange}
-                        className="mt-1 border-gray-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                        className="mt-1 border-steel-wool data-[state=checked]:bg-gold data-[state=checked]:border-gold"
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel className="text-sm text-gray-700 font-normal cursor-pointer">
+                      <FormLabel className="text-sm text-rainy-grey font-normal cursor-pointer">
                         I agree to the{" "}
                         <a
                           href="/terms"
-                          className="text-blue-600 hover:underline"
+                          className="text-gold hover:underline transition-colors"
                           onClick={(e) => e.preventDefault()}
                         >
                           Terms & Conditions
@@ -518,7 +518,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
                         ,{" "}
                         <a
                           href="/privacy"
-                          className="text-blue-600 hover:underline"
+                          className="text-gold hover:underline transition-colors"
                           onClick={(e) => e.preventDefault()}
                         >
                           Privacy Policy
@@ -526,7 +526,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
                         and{" "}
                         <a
                           href="/email-policy"
-                          className="text-blue-600 hover:underline"
+                          className="text-gold hover:underline transition-colors"
                           onClick={(e) => e.preventDefault()}
                         >
                           Email Policy
@@ -542,7 +542,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
 
               <Button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white h-11 rounded-md font-medium"
+                className="w-full bg-gradient-to-r from-gold-dark to-gold text-cursed-black h-11 rounded-md font-semibold hover:shadow-lg hover:shadow-gold/20 transition-all duration-300"
               >
                 Create Account
               </Button>
@@ -550,14 +550,14 @@ const SignupForm: React.FC<SignupFormProps> = ({
           </Form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-rainy-grey">
               Already have an account?{" "}
               <button
                 onClick={() => {
                   onOpenChange(false);
                   onSwitchToLogin?.();
                 }}
-                className="text-blue-600 hover:underline font-medium"
+                className="text-gold hover:underline font-medium transition-colors"
               >
                 Sign in
               </button>
