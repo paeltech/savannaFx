@@ -39,7 +39,7 @@ const DashboardFeature: React.FC = () => {
                   animate="visible"
                   variants={fadeInUp}
                   transition={{ delay: 0.2 }}
-                  className="text-slate-400"
+                  className="text-rainy-grey"
                 >
                   This is a placeholder page for {title}. We can plug in real data and tools here.
                 </motion.p>
@@ -51,9 +51,9 @@ const DashboardFeature: React.FC = () => {
                   className="flex gap-3"
                 >
                   <Link to="/dashboard">
-                    <Button variant="outline" className="border-slate-700 text-slate-200">Back to Dashboard</Button>
+                    <Button variant="outline" className="border-steel-wool text-rainy-grey hover:bg-nero/50 hover:border-gold/40">Back to Dashboard</Button>
                   </Link>
-                  <Button className="bg-[#697452] hover:bg-[#697452]/90 text-white">Open Tool</Button>
+                  <Button className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black hover:shadow-lg hover:shadow-gold/20 font-semibold">Open Tool</Button>
                 </motion.div>
               </CardContent>
             </SavannaCard>

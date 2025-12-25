@@ -5,7 +5,11 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Briefcase, Rocket } from "lucide-react";
 
-const ChoiceSection: React.FC = () => {
+interface ChoiceSectionProps {
+  onOpenSignup?: () => void;
+}
+
+const ChoiceSection: React.FC<ChoiceSectionProps> = ({ onOpenSignup }) => {
   const [selected, setSelected] = useState<"traditional" | "forex">("forex");
 
   const ListItem = ({ text }: { text: string }) => (
@@ -97,7 +101,10 @@ const ChoiceSection: React.FC = () => {
               <p className="text-rainy-grey mb-6 leading-relaxed text-lg">
                 The decision you make today will determine your financial future. Stop settling for average and start building the life you deserve.
               </p>
-              <Button className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black font-semibold rounded-full px-8 py-6 hover:shadow-lg hover:shadow-gold/20 transition-all duration-300">
+              <Button
+                className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black font-semibold rounded-full px-8 py-6 hover:shadow-lg hover:shadow-gold/20 transition-all duration-300"
+                onClick={() => onOpenSignup?.()}
+              >
                 Choose Financial Freedom
               </Button>
             </CardContent>

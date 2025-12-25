@@ -72,11 +72,11 @@ const BusinessSection: React.FC = () => {
           ))}
         </div>
 
-        <div className="text-center mt-12">
+        {/* <div className="text-center mt-12">
           <Button className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black hover:shadow-lg hover:shadow-gold/20 transition-all duration-300 rounded-full px-8 py-6 font-semibold">
             Start Building Today
           </Button>
-        </div>
+        </div> */}
       </div>
     </section>
   );

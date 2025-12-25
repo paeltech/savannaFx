@@ -13,7 +13,9 @@ import CoursePage from "./pages/Course";
 import OneOnOne from "./pages/OneOnOne";
 import EventsPage from "./pages/Events";
 import Sentiment from "./pages/Sentiment";
-import Login from "./pages/Login";
+import Enquiry from "./pages/Enquiry";
+import LotSize from "./pages/LotSize";
+import Collaborations from "./pages/Collaborations";
 import SupabaseSessionProvider from "@/components/auth/SupabaseSessionProvider";
 import RequireAuth from "@/components/auth/RequireAuth";
 
@@ -28,7 +30,6 @@ const App = () => (
         <SupabaseSessionProvider>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
             <Route path="/dashboard/trade-with-savanna" element={<RequireAuth><TradeWithSavanna /></RequireAuth>} />
@@ -37,6 +38,9 @@ const App = () => (
             <Route path="/dashboard/one-on-one" element={<RequireAuth><OneOnOne /></RequireAuth>} />
             <Route path="/dashboard/events" element={<RequireAuth><EventsPage /></RequireAuth>} />
             <Route path="/dashboard/sentiment" element={<RequireAuth><Sentiment /></RequireAuth>} />
+            <Route path="/dashboard/enquiry" element={<RequireAuth><Enquiry /></RequireAuth>} />
+            <Route path="/dashboard/lot-size" element={<RequireAuth><LotSize /></RequireAuth>} />
+            <Route path="/dashboard/collaborations" element={<RequireAuth><Collaborations /></RequireAuth>} />
             <Route path="/dashboard/:section" element={<RequireAuth><DashboardFeature /></RequireAuth>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

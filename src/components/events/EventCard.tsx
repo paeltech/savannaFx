@@ -47,10 +47,10 @@ const EventCard: React.FC<Props> = ({ event, onView, onViewSessions }) => {
           className="w-full h-52 object-cover"
         />
         <div className="absolute top-2 left-2 flex items-center gap-2">
-          <span className="px-2 py-1 text-xs rounded-full bg-emerald-600 text-white">{event.type}</span>
+          <span className="px-2 py-1 text-xs rounded-full bg-gold text-cursed-black">{event.type}</span>
         </div>
         <div className="absolute top-2 right-2">
-          <span className={cn("px-2 py-1 text-xs rounded-full", event.priceType === "Free" ? "bg-emerald-600 text-white" : "bg-blue-600 text-white")}>
+          <span className={cn("px-2 py-1 text-xs rounded-full bg-gold text-cursed-black")}>
             {event.priceType}
           </span>
         </div>
@@ -58,33 +58,33 @@ const EventCard: React.FC<Props> = ({ event, onView, onViewSessions }) => {
 
       <CardHeader className="pb-2">
         <CardTitle className="text-white text-base uppercase">{event.title}</CardTitle>
-        <div className="text-slate-400 text-xs">By {event.organizer}</div>
+        <div className="text-rainy-grey text-xs">By {event.organizer}</div>
       </CardHeader>
 
       <CardContent className="space-y-3">
-        <p className="text-slate-400 text-sm line-clamp-3">{event.description}</p>
+        <p className="text-rainy-grey text-sm line-clamp-3">{event.description}</p>
 
         {/* Category tag */}
         <div>
-          <Badge variant="secondary" className="bg-pink-600 text-white">{event.category}</Badge>
+          <Badge variant="secondary" className="bg-nero text-white">{event.category}</Badge>
         </div>
 
         {/* Info row */}
-        <div className="grid sm:grid-cols-2 gap-3 text-slate-300 text-sm">
+        <div className="grid sm:grid-cols-2 gap-3 text-rainy-grey text-sm">
           <div className="flex items-center gap-2">
-            <CalendarClock className="h-4 w-4 text-slate-400" />
+            <CalendarClock className="h-4 w-4 text-steel-wool" />
             <span>{event.sessions} session{event.sessions > 1 ? "s" : ""}</span>
           </div>
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-slate-400" />
+            <Users className="h-4 w-4 text-steel-wool" />
             <span>{event.registered}/{event.capacity} attending</span>
           </div>
           <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-slate-400" />
+            <MapPin className="h-4 w-4 text-steel-wool" />
             <span>{event.location}</span>
           </div>
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-slate-400" />
+            <Users className="h-4 w-4 text-steel-wool" />
             <span>Max: {event.capacity}</span>
           </div>
         </div>
@@ -92,12 +92,12 @@ const EventCard: React.FC<Props> = ({ event, onView, onViewSessions }) => {
         {/* Availability + progress */}
         <div>
           <div className="flex items-center justify-between text-xs mb-2">
-            <span className={cn("font-medium", isFull ? "text-red-500" : "text-emerald-500")}>
+            <span className={cn("font-medium", isFull ? "text-gold" : "text-gold")}>
               Availability {isFull ? "• Fully booked" : "• Seats available"}
             </span>
           </div>
-          <Progress value={progressValue} className={cn("h-2 rounded-md", isFull ? "[&>div]:bg-red-600" : "[&>div]:bg-emerald-600")} />
-          <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2">
+          <Progress value={progressValue} className={cn("h-2 rounded-md", isFull ? "[&>div]:bg-gold" : "[&>div]:bg-gold")} />
+          <div className="flex items-center justify-between text-[11px] text-rainy-grey mt-2">
             <span>{event.registered} registered</span>
             <span>{event.capacity} max</span>
           </div>
@@ -106,14 +106,14 @@ const EventCard: React.FC<Props> = ({ event, onView, onViewSessions }) => {
         {/* CTAs */}
         <div className="flex items-center gap-3 pt-2">
           <Button
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black hover:shadow-lg hover:shadow-gold/20 font-semibold"
             onClick={() => onView(event.id)}
           >
             View Event
           </Button>
           <Button
             variant="outline"
-            className="border-slate-700 text-slate-200 hover:bg-slate-800"
+            className="border-steel-wool text-rainy-grey hover:bg-nero/50 hover:border-gold/40"
             onClick={() => onViewSessions(event.id)}
           >
             Sessions

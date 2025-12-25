@@ -37,20 +37,20 @@ const BenefitItem = ({
     transition={{ duration: 0.2 }}
     variants={fadeInUp}
   >
-    <Card className="bg-slate-900/60 border-slate-800 transition-all duration-300 hover:border-[#f4c464]/30">
+    <Card className="bg-nero border-0 transition-all duration-300 hover:border hover:border-gold/40">
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
           <motion.div
             whileHover={{ rotate: 360 }}
             transition={{ duration: 0.5 }}
-            className="w-8 h-8 rounded-md bg-slate-800 flex items-center justify-center"
+            className="w-8 h-8 rounded-md bg-nero flex items-center justify-center"
           >
-            <Icon className="text-[#f4c464]" size={18} />
+            <Icon className="text-gold" size={18} />
           </motion.div>
           <CardTitle className="text-white text-base">{title}</CardTitle>
         </div>
       </CardHeader>
-      <CardContent className="text-slate-400 text-sm">{desc}</CardContent>
+      <CardContent className="text-rainy-grey text-sm">{desc}</CardContent>
     </Card>
   </motion.div>
 );
@@ -80,10 +80,10 @@ const TradeWithSavanna: React.FC = () => {
                   <Handshake className="text-white" size={18} />
                 </motion.div>
                 <h1 className="text-xl md:text-2xl font-semibold text-white">
-                  Trade With Savanna via <span className="text-red-500 italic">EXNESS</span>
+                  Trade With Savanna via <span className="text-gold italic">EXNESS</span>
                 </h1>
               </div>
-              <p className="text-slate-400 mt-2">
+              <p className="text-rainy-grey mt-2">
                 Open a real Exness account with SavannaFX's referral link and get lifetime access to free signals.
               </p>
             </CardContent>
@@ -95,23 +95,23 @@ const TradeWithSavanna: React.FC = () => {
         {/* Left: Info and benefits */}
         <SavannaCard>
           <CardContent className="p-6">
-            <div className="rounded-lg border border-slate-800 bg-slate-900/40 p-5">
+            <div className="rounded-lg border border-steel-wool bg-nero/50 p-5">
               <div className="flex items-center gap-2 mb-3">
-                <Gift className="text-green-500" size={18} />
+                <Gift className="text-gold" size={18} />
                 <h2 className="text-white text-lg font-semibold">
                   Trade with Savanna — Free (Lifetime Access)
                 </h2>
               </div>
-              <div className="bg-slate-800/50 rounded-md p-4">
-                <h3 className="text-slate-200 font-medium mb-1">Who this is for:</h3>
-                <p className="text-slate-400">
+              <div className="bg-nero rounded-md p-4">
+                <h3 className="text-white font-medium mb-1">Who this is for:</h3>
+                <p className="text-rainy-grey">
                   Traders who want to join the SavannaFX ecosystem without paying upfront, and still get access to the full signal
                   experience — simply by funding their own live trading account.
                 </p>
               </div>
 
               <div className="mt-6">
-                <h3 className="text-slate-200 font-medium mb-3">What You Get:</h3>
+                <h3 className="text-white font-medium mb-3">What You Get:</h3>
                 <StaggerChildren className="grid md:grid-cols-2 gap-4">
                   <BenefitItem
                     icon={ShieldCheck}
@@ -160,48 +160,48 @@ const TradeWithSavanna: React.FC = () => {
                     whileInView={{ scale: 1 }}
                     viewport={{ once: true }}
                     transition={{ type: "spring" }}
-                    className="text-green-500 text-2xl font-bold"
+                    className="text-gold text-2xl font-bold"
                   >
                     FREE
                   </motion.div>
-                  <div className="text-slate-300">Lifetime Access</div>
+                  <div className="text-rainy-grey">Lifetime Access</div>
 
-              <div className="mt-6 text-slate-400">Don't have an account?</div>
+              <div className="mt-6 text-rainy-grey">Don't have an account?</div>
               <Button
-                className="mt-3 w-full bg-red-600 hover:bg-red-700 text-white h-11 rounded-md"
+                className="mt-3 w-full bg-gradient-to-r from-gold-dark to-gold text-cursed-black hover:shadow-lg hover:shadow-gold/20 font-semibold h-11 rounded-md"
                 onClick={handleRegister}
               >
                 REGISTER ON EXNESS
               </Button>
 
-              <div className="mt-4 text-slate-400">OR</div>
+              <div className="mt-4 text-rainy-grey">OR</div>
 
-              <div className="mt-3 text-slate-400">Already have an account with our referral link?</div>
+              <div className="mt-3 text-rainy-grey">Already have an account with our referral link?</div>
               <Button
                 variant="outline"
-                className="mt-2 w-full h-11 rounded-md border-slate-700 text-slate-200 hover:bg-slate-800"
+                className="mt-2 w-full h-11 rounded-md border-steel-wool text-rainy-grey hover:bg-nero/50 hover:border-gold/40"
                 onClick={() => setVerifyOpen(true)}
               >
                 SUBMIT EMAIL FOR VERIFICATION
               </Button>
 
-              <p className="text-slate-500 text-xs mt-2">Get instant access to signals</p>
+              <p className="text-rainy-grey text-xs mt-2">Get instant access to signals</p>
 
               <div className="mt-6 text-left">
-                <p className="text-slate-300 font-medium mb-2">Why This Is a Steal:</p>
+                <p className="text-white font-medium mb-2">Why This Is a Steal:</p>
                 <ul className="space-y-2">
-                  <li className="flex items-start gap-2 text-slate-400">
-                    <CheckCircle2 className="text-green-500 mt-0.5" size={16} />
+                  <li className="flex items-start gap-2 text-rainy-grey">
+                    <CheckCircle2 className="text-gold mt-0.5" size={16} />
                     <span>
-                      Zero Cost to Join — just deposit your trading funds — you keep <span className="text-slate-200">100%</span> of your money
+                      Zero Cost to Join — just deposit your trading funds — you keep <span className="text-white">100%</span> of your money
                     </span>
                   </li>
-                  <li className="flex items-start gap-2 text-slate-400">
-                    <Wallet className="text-emerald-500 mt-0.5" size={16} />
+                  <li className="flex items-start gap-2 text-rainy-grey">
+                    <Wallet className="text-gold mt-0.5" size={16} />
                     <span>Stay 100% Liquid — premium access while staying risk-free from SavannaFX's side</span>
                   </li>
-                  <li className="flex items-start gap-2 text-slate-400">
-                    <Gift className="text-[#f4c464] mt-0.5" size={16} />
+                  <li className="flex items-start gap-2 text-rainy-grey">
+                    <Gift className="text-gold mt-0.5" size={16} />
                     <span>Premium Experience — full SavannaFX ecosystem access without subscription fees</span>
                   </li>
                 </ul>

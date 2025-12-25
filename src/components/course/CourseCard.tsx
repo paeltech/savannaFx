@@ -44,9 +44,9 @@ const CourseCard: React.FC<Props> = ({ course, enrolled, onEnroll }) => {
         {/* Top overlay labels */}
         <div className="absolute top-2 left-2">
           {course.premium ? (
-            <span className="px-2 py-1 text-xs rounded-full bg-purple-600 text-white">Premium</span>
+            <span className="px-2 py-1 text-xs rounded-full bg-gold text-cursed-black">Premium</span>
           ) : (
-            <span className="px-2 py-1 text-xs rounded-full bg-emerald-600 text-white">Free</span>
+            <span className="px-2 py-1 text-xs rounded-full bg-gold text-cursed-black">Free</span>
           )}
         </div>
         <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-black/60 text-white px-2 py-1 text-xs">
@@ -59,18 +59,18 @@ const CourseCard: React.FC<Props> = ({ course, enrolled, onEnroll }) => {
         <CardTitle className="text-white text-base leading-tight uppercase">
           {course.title}
         </CardTitle>
-        <div className="text-slate-400 text-xs">By {course.author}</div>
+        <div className="text-rainy-grey text-xs">By {course.author}</div>
       </CardHeader>
 
       <CardContent className="space-y-3">
-        <p className="text-slate-400 text-sm line-clamp-3">{course.description}</p>
+        <p className="text-rainy-grey text-sm line-clamp-3">{course.description}</p>
 
         <div className="flex items-center gap-2">
-          <Badge variant="secondary" className={cn("bg-slate-800 text-slate-200")}>{course.level}</Badge>
-          <Badge variant="secondary" className={cn("bg-slate-800 text-slate-200")}>{course.category}</Badge>
+          <Badge variant="secondary" className={cn("bg-nero text-white")}>{course.level}</Badge>
+          <Badge variant="secondary" className={cn("bg-nero text-white")}>{course.category}</Badge>
         </div>
 
-        <div className="flex items-center justify-between text-slate-400">
+        <div className="flex items-center justify-between text-rainy-grey">
           <div className="flex items-center gap-2">
             <BookOpen className="h-4 w-4" />
             <span className="text-sm">{course.lessonsCount}</span>
@@ -79,7 +79,7 @@ const CourseCard: React.FC<Props> = ({ course, enrolled, onEnroll }) => {
           <div className="flex items-center gap-2">
             {isFree ? (
               <Button
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black hover:shadow-lg hover:shadow-gold/20 font-semibold"
                 onClick={() => onEnroll(course.id)}
               >
                 Enroll Free
@@ -87,7 +87,7 @@ const CourseCard: React.FC<Props> = ({ course, enrolled, onEnroll }) => {
             ) : (
               <>
                 <Button
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black hover:shadow-lg hover:shadow-gold/20 font-semibold"
                   onClick={() => onEnroll(course.id)}
                 >
                   $ {course.price}
@@ -96,7 +96,7 @@ const CourseCard: React.FC<Props> = ({ course, enrolled, onEnroll }) => {
             )}
             <Button
               variant="outline"
-              className="border-slate-700 text-slate-200 hover:bg-slate-800"
+              className="border-steel-wool text-rainy-grey hover:bg-nero/50 hover:border-gold/40"
               onClick={() => setDetailsOpen(true)}
             >
               Details
@@ -105,7 +105,7 @@ const CourseCard: React.FC<Props> = ({ course, enrolled, onEnroll }) => {
         </div>
 
         {!isFree && (
-          <div className="text-center text-xs text-slate-500 pt-2">
+          <div className="text-center text-xs text-steel-wool pt-2">
             Already have an account?
           </div>
         )}
@@ -119,14 +119,14 @@ const CourseCard: React.FC<Props> = ({ course, enrolled, onEnroll }) => {
             <DialogDescription>By {course.author}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 text-sm">
-            <p className="text-slate-600">{course.description}</p>
+            <p className="text-rainy-grey">{course.description}</p>
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary">{course.level}</Badge>
               <Badge variant="secondary">{course.category}</Badge>
-              <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-700">
+              <span className="inline-flex items-center gap-1 rounded-md bg-nero px-2 py-1 text-xs text-rainy-grey">
                 <BookOpen className="h-3 w-3" /> {course.lessonsCount} lessons
               </span>
-              <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-700">
+              <span className="inline-flex items-center gap-1 rounded-md bg-nero px-2 py-1 text-xs text-rainy-grey">
                 <Clock className="h-3 w-3" /> {course.durationMinutes} min
               </span>
             </div>
@@ -134,13 +134,13 @@ const CourseCard: React.FC<Props> = ({ course, enrolled, onEnroll }) => {
           <DialogFooter className="sm:justify-between">
             <Button
               variant="outline"
-              className="border-slate-300"
+              className="border-steel-wool text-rainy-grey hover:bg-nero/50 hover:border-gold/40"
               onClick={() => setDetailsOpen(false)}
             >
               Close
             </Button>
             <Button
-              className={isFree ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"}
+              className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black hover:shadow-lg hover:shadow-gold/20 font-semibold"
               onClick={() => {
                 onEnroll(course.id);
                 setDetailsOpen(false);

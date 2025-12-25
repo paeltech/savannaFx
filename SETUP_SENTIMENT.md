@@ -99,3 +99,4 @@ If you encounter any issues:
 3. Ensure you have the correct permissions in Supabase
 
 
+

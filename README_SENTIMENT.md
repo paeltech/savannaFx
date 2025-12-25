@@ -51,3 +51,4 @@ The component uses Supabase client to:
 - Loading states during refresh
 
 
+

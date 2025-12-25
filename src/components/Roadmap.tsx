@@ -12,7 +12,11 @@ const steps = [
   { number: 5, title: "Trade with Patience", subtitle: "STEP 5" },
 ];
 
-const Roadmap: React.FC = () => {
+type RoadmapProps = {
+  onOpenSignup?: () => void;
+};
+
+const Roadmap: React.FC<RoadmapProps> = ({ onOpenSignup }) => {
   return (
     <section className="py-20">
       <div className="max-w-6xl mx-auto px-4 text-center">
@@ -41,8 +45,11 @@ const Roadmap: React.FC = () => {
         </div>
 
         <div className="mt-12">
-          <Button className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black rounded-full px-8 py-6 font-semibold hover:shadow-lg hover:shadow-gold/20 transition-all duration-300">
-            START YOUR TRAINING
+          <Button 
+            onClick={onOpenSignup}
+            className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black rounded-full px-8 py-6 font-semibold hover:shadow-lg hover:shadow-gold/20 transition-all duration-300"
+          >
+           Join the savannaFX tribe
           </Button>
         </div>
       </div>

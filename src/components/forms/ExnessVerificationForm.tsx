@@ -62,7 +62,7 @@ const ExnessVerificationForm: React.FC<{ onSubmitted?: () => void }> = ({ onSubm
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="you@example.com" className="bg-slate-900/60 border-slate-800 text-slate-200" {...field} />
+                <Input placeholder="you@example.com" className="bg-nero border-steel-wool text-white" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -97,7 +97,7 @@ const ExnessVerificationForm: React.FC<{ onSubmitted?: () => void }> = ({ onSubm
           />
         </div>
         <div className="flex justify-end">
-          <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white">
+          <Button type="submit" className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black hover:shadow-lg hover:shadow-gold/20 font-semibold">
             Submit Verification
           </Button>
         </div>

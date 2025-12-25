@@ -66,8 +66,7 @@ const Topbar: React.FC = () => {
     <div className="flex h-16 items-center justify-between px-6 border-b border-steel-wool bg-black/90 backdrop-blur-md">
       <div className="flex items-center gap-4">
         <Link to="/" className="flex items-center gap-2">
-          <img src="/assets/placeholder.svg" alt="SavannaFX" className="w-8 h-8 rounded-md" />
-          <span className="font-semibold text-gold text-lg">SavannaFX</span>
+          <img src="/assets/logo.png" alt="SavannaFX logo" className="h-8" />
         </Link>
         <span className="text-rainy-grey">Dashboard</span>
       </div>
@@ -75,7 +74,7 @@ const Topbar: React.FC = () => {
       <div className="flex items-center gap-4">
         <Button variant="outline" className="h-9 border-steel-wool text-rainy-grey hover:bg-nero hover:text-gold hover:border-gold/40 transition-all duration-200">
           <span className="mr-2">Forecast</span>
-          <Badge variant="secondary" className="bg-red-600 text-white">NEW</Badge>
+          <Badge variant="secondary" className="bg-gold text-cursed-black">NEW</Badge>
         </Button>
         <Button variant="ghost" size="icon" className="text-rainy-grey hover:text-gold transition-colors duration-200">
           <Settings />
@@ -84,7 +83,7 @@ const Topbar: React.FC = () => {
           <Button variant="ghost" size="icon" className="text-rainy-grey hover:text-gold transition-colors duration-200">
             <Bell />
           </Button>
-          <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] rounded-full px-1.5">2</span>
+          <span className="absolute -top-1 -right-1 bg-gold text-cursed-black text-[10px] rounded-full px-1.5">2</span>
         </div>
         <Button variant="ghost" className="gap-2 text-rainy-grey hover:text-gold transition-colors duration-200">
           <UserRound className="opacity-80" />
@@ -133,7 +132,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
                         </SidebarMenuButton>
                       </Link>
                       {item.badge && (
-                        <SidebarMenuBadge className="bg-red-600 text-white">{item.badge}</SidebarMenuBadge>
+                        <SidebarMenuBadge className="bg-gold text-cursed-black">{item.badge}</SidebarMenuBadge>
                       )}
                     </SidebarMenuItem>
                   );

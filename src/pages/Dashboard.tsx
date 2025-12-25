@@ -52,14 +52,14 @@ const Dashboard: React.FC = () => {
           title="Currency Heatmap"
           description="Live currency strength"
           Icon={ActivitySquare}
-          iconBg="bg-blue-700"
+          iconBg="bg-gold"
         />
         <DashboardTile
           to="/dashboard/lot-size"
           title="Lot Size Calculator"
           description="Position sizing tool"
           Icon={Calculator}
-          iconBg="bg-yellow-700"
+          iconBg="bg-gold"
         />
 
         <DashboardTile
@@ -67,14 +67,14 @@ const Dashboard: React.FC = () => {
           title="Economic Calendar"
           description="Forex news events"
           Icon={CalendarDays}
-          iconBg="bg-indigo-700"
+          iconBg="bg-gold"
         />
         <DashboardTile
           to="/dashboard/affiliates"
           title="Affiliate Programs"
           description="Earn commissions"
           Icon={Megaphone}
-          iconBg="bg-purple-700"
+          iconBg="bg-gold"
         />
         <DashboardTile
           to="/dashboard/sentiment"

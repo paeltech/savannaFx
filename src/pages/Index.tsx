@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "@/components/Sidebar";
 import SiteHeader from "@/components/SiteHeader";
 import Hero from "@/components/Hero";
@@ -10,25 +11,87 @@ import Roadmap from "@/components/Roadmap";
 import BusinessSection from "@/components/BusinessSection";
 import FAQ from "@/components/FAQ";
 import PageFooter from "@/components/PageFooter";
+import LoginForm from "@/components/LoginForm";
+import SignupForm from "@/components/SignupForm";
+import { useSupabaseSession } from "@/components/auth/SupabaseSessionProvider";
 
 const Index: React.FC = () => {
+  const { session, loading } = useSupabaseSession();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [signupOpen, setSignupOpen] = useState(false);
+
+  useEffect(() => {
+    if (!loading && session) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [session, loading, navigate]);
+
+  const handleSwitchToSignup = () => {
+    setLoginOpen(false);
+    setSignupOpen(true);
+  };
+
+  const handleSwitchToLogin = () => {
+    setSignupOpen(false);
+    setLoginOpen(true);
+  };
+
+  // Show loading state or nothing while checking auth
+  if (loading) {
+    return null;
+  }
+
+  // If authenticated, don't render (redirect will happen)
+  if (session) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-black">
-      <SiteHeader onOpenMenu={() => setMenuOpen(true)} />
-      <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <SiteHeader 
+        onOpenMenu={() => setMenuOpen(true)}
+        onOpenSignup={() => setSignupOpen(true)}
+        onOpenLogin={() => setLoginOpen(true)}
+      />
+      <Sidebar 
+        open={menuOpen} 
+        onClose={() => setMenuOpen(false)}
+        onOpenLogin={() => {
+          setMenuOpen(false);
+          setLoginOpen(true);
+        }}
+        onOpenSignup={() => {
+          setMenuOpen(false);
+          setSignupOpen(true);
+        }}
+      />
 
       <main className="pt-16">
-        <Hero onOpenMenu={() => setMenuOpen(true)} />
+        <Hero 
+          onOpenMenu={() => setMenuOpen(true)}
+          onOpenSignup={() => setSignupOpen(true)}
+        />
         <FeatureSystem />
-        <ChoiceSection />
-        <Roadmap />
+        <ChoiceSection onOpenSignup={() => setSignupOpen(true)} />
+        <Roadmap onOpenSignup={() => setSignupOpen(true)} />
         <BusinessSection />
         <FAQ />
       </main>
 
       <PageFooter />
+      
+      <LoginForm
+        open={loginOpen}
+        onOpenChange={setLoginOpen}
+        onSwitchToSignup={handleSwitchToSignup}
+      />
+      <SignupForm
+        open={signupOpen}
+        onOpenChange={setSignupOpen}
+        onSwitchToLogin={handleSwitchToLogin}
+      />
     </div>
   );
 };

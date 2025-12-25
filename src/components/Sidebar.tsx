@@ -19,6 +19,8 @@ import {
 type SidebarProps = {
   open: boolean;
   onClose: () => void;
+  onOpenLogin?: () => void;
+  onOpenSignup?: () => void;
 };
 
 const navItems = [
@@ -33,7 +35,7 @@ const navItems = [
   { label: "Dashboard", icon: ChartColumn, to: "/dashboard" },
 ];
 
-const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
+const Sidebar: React.FC<SidebarProps> = ({ open, onClose, onOpenLogin, onOpenSignup }) => {
   return (
     <>
       <div
@@ -46,12 +48,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
       >
         <div className="flex items-center justify-between p-6 border-b border-steel-wool flex-shrink-0">
           <Link className="flex items-center space-x-3 group" to="/">
-            <div className="w-10 h-10 rounded-lg overflow-hidden shadow-lg ring-2 ring-gold/30">
-              <img src="/assets/placeholder.svg" alt="placeholder" className="w-full h-full object-cover" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-gold-dark to-gold bg-clip-text text-transparent group-hover:from-gold-dark/90 group-hover:to-gold/90 transition-all duration-300">
-              SavannaFX
-            </span>
+            <img src="/assets/logo.png" alt="SavannaFX logo" className="h-8" />
           </Link>
           <button
             aria-label="Close sidebar"
@@ -83,19 +80,23 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
 
           <div className="flex-shrink-0 p-6 border-t border-steel-wool">
             <div className="space-y-3">
-              <Link to="/login">
+              {onOpenLogin && (
                 <Button
+                  onClick={onOpenLogin}
                   variant="outline"
                   className="w-full border-2 border-steel-wool text-rainy-grey hover:bg-nero/50 hover:border-gold/40 hover:text-gold transition-all duration-200 font-medium"
                 >
                   Login
                 </Button>
-              </Link>
-              <Link to="/dashboard">
-                <Button className="w-full bg-gradient-to-r from-gold-dark to-gold text-cursed-black font-semibold transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-gold/20">
+              )}
+              {onOpenSignup && (
+                <Button 
+                  onClick={onOpenSignup}
+                  className="w-full bg-gradient-to-r from-gold-dark to-gold text-cursed-black font-semibold transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-gold/20"
+                >
                   GET STARTED
                 </Button>
-              </Link>
+              )}
             </div>
           </div>
         </div>

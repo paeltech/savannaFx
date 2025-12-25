@@ -8,7 +8,7 @@ import { fadeInUp, slideInLeft, slideInRight, defaultTransition } from "@/lib/an
 import TypewriterText from "./TypewriterText";
 import Galaxy from "./Galaxy";
 
-const Hero: React.FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
+const Hero: React.FC<{ onOpenMenu: () => void; onOpenSignup?: () => void }> = ({ onOpenMenu, onOpenSignup }) => {
   return (
     <section className="relative min-h-screen flex items-start justify-start bg-black overflow-hidden">
       <Galaxy 
@@ -69,13 +69,14 @@ const Hero: React.FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
               transition={{ ...defaultTransition, delay: 0.6 }}
               className="flex gap-4 pt-4"
             >
-              <Button className="group bg-gradient-to-r from-gold-dark to-gold text-cursed-black font-bold px-12 py-6 text-xl rounded-full transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-gold/20 flex items-center justify-center gap-3">
-                <span>Begin Your Training</span>
+              <Button 
+                onClick={onOpenSignup}
+                className="group bg-gradient-to-r from-gold-dark to-gold text-cursed-black font-bold px-12 py-6 text-xl rounded-full transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-gold/20 flex items-center justify-center gap-3"
+              >
+                <span>Get started with SavannaFX</span>
                 <ArrowRight className="transition-transform group-hover:translate-x-1" />
               </Button>
-              <Button variant="outline" className="rounded-full border-steel-wool text-gold hover:bg-nero/50 hover:border-gold" onClick={onOpenMenu}>
-                Menu
-              </Button>
+              
             </motion.div>
           </motion.div>
         </div>
@@ -111,8 +112,11 @@ const Hero: React.FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
             SavannaFX helps you build discipline, timing, and awareness to survive and thrive in the markets.
           </p>
           <div className="flex justify-center pt-6">
-            <Button className="group bg-gradient-to-r from-gold-dark to-gold text-cursed-black font-bold px-8 py-4 text-lg sm:text-xl rounded-full transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-gold/20 flex items-center justify-center gap-3">
-              <span>Begin Your Training</span>
+            <Button 
+              onClick={onOpenSignup}
+              className="group bg-gradient-to-r from-gold-dark to-gold text-cursed-black font-bold px-8 py-4 text-lg sm:text-xl rounded-full transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-gold/20 flex items-center justify-center gap-3"
+            >
+              <span>Get started with SavannaFX</span>
               <ArrowRight className="transition-transform group-hover:translate-x-1" />
             </Button>
           </div>

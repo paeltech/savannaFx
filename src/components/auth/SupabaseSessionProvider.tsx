@@ -10,7 +10,10 @@ type SessionContextValue = {
   loading: boolean;
 };
 
-const SessionContext = React.createContext<SessionContextValue | undefined>(undefined);
+const SessionContext = React.createContext<SessionContextValue>({
+  session: null,
+  loading: true,
+});
 
 const SupabaseSessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = React.useState<Session | null>(null);
@@ -22,18 +25,26 @@ const SupabaseSessionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setLoading(false);
-      // If already signed in and on /login, go home
-      if (data.session && location.pathname === "/login") {
-        navigate("/", { replace: true });
+      // If already signed in and on landing page, redirect to dashboard
+      if (data.session && location.pathname === "/") {
+        navigate("/dashboard", { replace: true });
       }
     });
 
     const { data } = supabase.auth.onAuthStateChange((event, currentSession) => {
       setSession(currentSession || null);
       if (event === "SIGNED_IN") {
-        navigate("/", { replace: true });
+        // Check if there's a redirect path stored
+        const redirectPath = sessionStorage.getItem("redirectAfterLogin");
+        if (redirectPath) {
+          sessionStorage.removeItem("redirectAfterLogin");
+          navigate(redirectPath, { replace: true });
+        } else if (location.pathname === "/") {
+          navigate("/dashboard", { replace: true });
+        }
       } else if (event === "SIGNED_OUT") {
-        navigate("/login", { replace: true });
+        // Redirect to landing page when signed out
+        navigate("/", { replace: true });
       }
     });
 
@@ -51,9 +62,6 @@ const SupabaseSessionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
 export const useSupabaseSession = () => {
   const ctx = React.useContext(SessionContext);
-  if (!ctx) {
-    throw new Error("useSupabaseSession must be used within SupabaseSessionProvider");
-  }
   return ctx;
 };
 
