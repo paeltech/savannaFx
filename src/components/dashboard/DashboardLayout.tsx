@@ -63,34 +63,34 @@ const navItems: NavItem[] = [
 
 const Topbar: React.FC = () => {
   return (
-    <div className="flex h-16 items-center justify-between px-6 border-b border-steel-wool bg-black/90 backdrop-blur-md">
-      <div className="flex items-center gap-4">
+    <div className="flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6 border-b border-steel-wool bg-black/90 backdrop-blur-md">
+      <div className="flex items-center gap-2 sm:gap-4">
         <Link to="/" className="flex items-center gap-2">
-          <img src="/assets/logo.png" alt="SavannaFX logo" className="h-8" />
+          <img src="/assets/logo.png" alt="SavannaFX logo" className="h-6 sm:h-8" />
         </Link>
-        <span className="text-rainy-grey">Dashboard</span>
+        <span className="text-rainy-grey text-sm sm:text-base hidden sm:inline">Dashboard</span>
       </div>
 
-      <div className="flex items-center gap-4">
-        <Button variant="outline" className="h-9 border-steel-wool text-rainy-grey hover:bg-nero hover:text-gold hover:border-gold/40 transition-all duration-200">
+      <div className="flex items-center gap-2 sm:gap-4">
+        <Button variant="outline" className="h-9 border-steel-wool text-rainy-grey hover:bg-nero hover:text-gold hover:border-gold/40 transition-all duration-200 text-xs sm:text-sm hidden sm:inline-flex">
           <span className="mr-2">Forecast</span>
-          <Badge variant="secondary" className="bg-gold text-cursed-black">NEW</Badge>
+          <Badge variant="secondary" className="bg-gold text-cursed-black text-[10px]">NEW</Badge>
         </Button>
-        <Button variant="ghost" size="icon" className="text-rainy-grey hover:text-gold transition-colors duration-200">
-          <Settings />
+        <Button variant="ghost" size="icon" className="text-rainy-grey hover:text-gold transition-colors duration-200 min-w-[44px] min-h-[44px]">
+          <Settings size={18} />
         </Button>
         <div className="relative">
-          <Button variant="ghost" size="icon" className="text-rainy-grey hover:text-gold transition-colors duration-200">
-            <Bell />
+          <Button variant="ghost" size="icon" className="text-rainy-grey hover:text-gold transition-colors duration-200 min-w-[44px] min-h-[44px]">
+            <Bell size={18} />
           </Button>
-          <span className="absolute -top-1 -right-1 bg-gold text-cursed-black text-[10px] rounded-full px-1.5">2</span>
+          <span className="absolute -top-1 -right-1 bg-gold text-cursed-black text-[10px] rounded-full px-1.5 min-w-[18px] text-center">2</span>
         </div>
-        <Button variant="ghost" className="gap-2 text-rainy-grey hover:text-gold transition-colors duration-200">
-          <UserRound className="opacity-80" />
-          <span className="hidden sm:inline">Trader</span>
+        <Button variant="ghost" className="gap-2 text-rainy-grey hover:text-gold transition-colors duration-200 min-h-[44px] hidden md:inline-flex">
+          <UserRound className="opacity-80" size={18} />
+          <span className="hidden lg:inline">Trader</span>
         </Button>
         <button
-          className="p-2 rounded-lg hover:bg-nero/50 text-rainy-grey hover:text-gold transition-colors duration-200"
+          className="p-2 rounded-lg hover:bg-nero/50 text-rainy-grey hover:text-gold transition-colors duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center"
           onClick={async () => {
             await supabase.auth.signOut();
             showSuccess("Signed out");
@@ -145,7 +145,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
       <SidebarInset className="bg-black">
         <Topbar />
-        <div className="px-6 py-8">
+        <div className="px-4 sm:px-6 py-4 sm:py-6 md:py-8">
           {children}
         </div>
       </SidebarInset>

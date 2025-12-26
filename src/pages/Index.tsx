@@ -68,7 +68,7 @@ const Index: React.FC = () => {
         }}
       />
 
-      <main className="pt-16">
+      <main className="pt-14 sm:pt-16">
         <Hero 
           onOpenMenu={() => setMenuOpen(true)}
           onOpenSignup={() => setSignupOpen(true)}

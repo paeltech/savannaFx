@@ -16,33 +16,33 @@ const FAQ: React.FC = () => {
   ];
 
   return (
-    <section className="py-20">
-      <div className="max-w-4xl mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center">
+    <section className="py-12 sm:py-16 md:py-20">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white text-center leading-tight px-4">
           Still Wondering If Trading Is{" "}
           <span className="text-transparent bg-clip-text font-heading bg-gradient-to-r from-gold-dark to-gold">For You?</span>
         </h2>
-        <p className="text-center text-gold mt-6 text-lg leading-relaxed">
+        <p className="text-center text-gold mt-4 sm:mt-6 text-base sm:text-lg leading-relaxed px-4">
           Find answers to common questions about surviving and thriving in the markets
         </p>
 
-        <div className="mt-12">
+        <div className="mt-8 sm:mt-12">
           <Accordion type="single" collapsible className="w-full space-y-2">
             {items.map((it, idx) => (
-              <AccordionItem key={idx} value={`item-${idx}`} className="border-0 bg-nero rounded-lg px-4 mb-2 hover:border hover:border-steel-wool transition-all duration-300">
-                <AccordionTrigger className="text-white hover:text-gold transition-colors duration-200">{it.q}</AccordionTrigger>
-                <AccordionContent className="text-rainy-grey leading-relaxed">{it.a}</AccordionContent>
+              <AccordionItem key={idx} value={`item-${idx}`} className="border-0 bg-nero rounded-lg px-3 sm:px-4 mb-2 hover:border hover:border-steel-wool transition-all duration-300">
+                <AccordionTrigger className="text-white hover:text-gold transition-colors duration-200 text-left text-sm sm:text-base py-3 sm:py-4">{it.q}</AccordionTrigger>
+                <AccordionContent className="text-rainy-grey leading-relaxed text-sm sm:text-base pb-3 sm:pb-4">{it.a}</AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
         </div>
 
-        <Card className="bg-nero mt-12 hover:border-gold/40 hover:shadow-lg hover:shadow-gold/10">
-          <CardContent className="p-8 text-center">
-            <p className="text-rainy-grey mb-6 leading-relaxed text-lg">
+        <Card className="bg-nero mt-8 sm:mt-12 hover:border-gold/40 hover:shadow-lg hover:shadow-gold/10">
+          <CardContent className="p-6 sm:p-8 text-center">
+            <p className="text-rainy-grey mb-4 sm:mb-6 leading-relaxed text-base sm:text-lg">
               Can't find the answer you're looking for? Our support team is here to help.
             </p>
-            <Button className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black hover:shadow-lg hover:shadow-gold/20 transition-all duration-300 font-semibold">Contact Support</Button>
+            <Button className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black hover:shadow-lg hover:shadow-gold/20 transition-all duration-300 font-semibold min-h-[56px] text-sm sm:text-base px-6 sm:px-8 py-5 sm:py-6">Contact Support</Button>
           </CardContent>
         </Card>
       </div>

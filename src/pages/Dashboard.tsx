@@ -23,16 +23,16 @@ import SavannaCard from "@/components/dashboard/SavannaCard";
 const Dashboard: React.FC = () => {
   return (
     <DashboardLayout>
-      <SavannaCard className="mb-8">
-        <CardContent className="p-8">
-          <h2 className="text-2xl md:text-3xl font-semibold text-white">Welcome back, Trader 👋</h2>
-          <p className="text-rainy-grey mt-4 leading-relaxed">
+      <SavannaCard className="mb-6 sm:mb-8">
+        <CardContent className="p-4 sm:p-6 md:p-8">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-white">Welcome back, Trader 👋</h2>
+          <p className="text-rainy-grey mt-3 sm:mt-4 leading-relaxed text-sm sm:text-base">
             Here's your complete navigation hub. Click any card to access that section.
           </p>
         </CardContent>
       </SavannaCard>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <DashboardTile
           to="/dashboard/trade-with-savanna"
           title="Trade With Savanna"

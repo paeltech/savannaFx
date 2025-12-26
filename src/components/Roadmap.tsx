@@ -18,24 +18,24 @@ type RoadmapProps = {
 
 const Roadmap: React.FC<RoadmapProps> = ({ onOpenSignup }) => {
   return (
-    <section className="py-20">
-      <div className="max-w-6xl mx-auto px-4 text-center">
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading text-white">
+    <section className="py-12 sm:py-16 md:py-20">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-heading text-white leading-tight">
           Your Roadmap to{" "}
           <span className="text-transparent font-heading bg-clip-text bg-gradient-to-r from-gold-dark to-gold">
             Survival
           </span>
         </h2>
-        <p className="text-gold mt-6 text-lg leading-relaxed">
+        <p className="text-gold mt-4 sm:mt-6 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto px-4">
           Follow a disciplined, step-by-step path to survive and thrive in the markets.
         </p>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-6 mt-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 mt-10 sm:mt-12 md:mt-16">
           {steps.map((s) => (
-            <Card key={s.number} className="bg-nero hover:border-gold/40 hover:shadow-lg hover:shadow-gold/10">
-              <CardHeader className="pb-4">
-                <div className="text-4xl font-extrabold text-gold mb-2 font-heading">{s.number}</div>
-                <CardTitle className="text-white text-lg">{s.title}</CardTitle>
+            <Card key={s.number} className="bg-nero hover:border-gold/40 hover:shadow-lg hover:shadow-gold/10 transition-all duration-300">
+              <CardHeader className="pb-3 sm:pb-4">
+                <div className="text-3xl sm:text-4xl font-extrabold text-gold mb-2 font-heading">{s.number}</div>
+                <CardTitle className="text-white text-base sm:text-lg">{s.title}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-xs tracking-widest text-rainy-grey opacity-80">{s.subtitle}</div>
@@ -44,10 +44,10 @@ const Roadmap: React.FC<RoadmapProps> = ({ onOpenSignup }) => {
           ))}
         </div>
 
-        <div className="mt-12">
+        <div className="mt-8 sm:mt-12">
           <Button 
             onClick={onOpenSignup}
-            className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black rounded-full px-8 py-6 font-semibold hover:shadow-lg hover:shadow-gold/20 transition-all duration-300"
+            className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black rounded-full px-6 sm:px-8 py-5 sm:py-6 font-semibold hover:shadow-lg hover:shadow-gold/20 transition-all duration-300 min-h-[56px] text-sm sm:text-base"
           >
            Join the savannaFX tribe
           </Button>

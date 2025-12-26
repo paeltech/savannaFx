@@ -322,32 +322,32 @@ const SignupForm: React.FC<SignupFormProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-nero border-steel-wool text-white p-0 sm:rounded-lg [&>button]:text-rainy-grey [&>button]:hover:text-gold">
-        <div className="p-6 sm:p-8">
-          <DialogHeader className="text-left mb-6">
-            <DialogTitle className="text-2xl font-bold text-white mb-1 font-heading">
+      <DialogContent className="max-w-md bg-nero border-steel-wool text-white p-0 sm:rounded-lg [&>button]:text-rainy-grey [&>button]:hover:text-gold mx-4 sm:mx-auto max-h-[90vh] overflow-y-auto">
+        <div className="p-5 sm:p-6 md:p-8">
+          <DialogHeader className="text-left mb-5 sm:mb-6">
+            <DialogTitle className="text-xl sm:text-2xl font-bold text-white mb-1 font-heading">
               Get Started
             </DialogTitle>
-            <DialogDescription className="text-sm text-rainy-grey">
+            <DialogDescription className="text-xs sm:text-sm text-rainy-grey">
               Create your SavannaFX account
             </DialogDescription>
           </DialogHeader>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <FormField
                   control={form.control}
                   name="firstName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-white">
+                      <FormLabel className="text-xs sm:text-sm font-medium text-white">
                         First Name
                       </FormLabel>
                       <FormControl>
                         <Input
                           placeholder="First name"
-                          className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold"
+                          className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold h-11 sm:h-12 text-sm sm:text-base"
                           {...field}
                         />
                       </FormControl>
@@ -360,13 +360,13 @@ const SignupForm: React.FC<SignupFormProps> = ({
                   name="lastName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-white">
+                      <FormLabel className="text-xs sm:text-sm font-medium text-white">
                         Last Name
                       </FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Last name"
-                          className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold"
+                          className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold h-11 sm:h-12 text-sm sm:text-base"
                           {...field}
                         />
                       </FormControl>
@@ -381,14 +381,14 @@ const SignupForm: React.FC<SignupFormProps> = ({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-white">
+                    <FormLabel className="text-xs sm:text-sm font-medium text-white">
                       Email Address
                     </FormLabel>
                     <FormControl>
                       <Input
                         type="email"
                         placeholder="Enter your email"
-                        className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold"
+                        className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold h-11 sm:h-12 text-sm sm:text-base"
                         {...field}
                       />
                     </FormControl>
@@ -398,7 +398,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
               />
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-white">
+                <Label className="text-xs sm:text-sm font-medium text-white">
                   WhatsApp Number
                 </Label>
                 <div className="flex gap-2">
@@ -412,7 +412,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
                             value={field.value}
                             onValueChange={field.onChange}
                           >
-                            <SelectTrigger className="w-[140px] bg-black border-steel-wool text-white focus:ring-gold focus:border-gold">
+                            <SelectTrigger className="w-[120px] sm:w-[140px] bg-black border-steel-wool text-white focus:ring-gold focus:border-gold h-11 sm:h-12 text-sm sm:text-base">
                               <SelectValue placeholder="Code" />
                             </SelectTrigger>
                             <SelectContent className="bg-nero border-steel-wool">
@@ -443,7 +443,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
                         <FormControl>
                           <Input
                             placeholder="Enter phone number only"
-                            className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold"
+                            className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold h-11 sm:h-12 text-sm sm:text-base"
                             {...field}
                           />
                         </FormControl>
@@ -452,7 +452,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
                     )}
                   />
                 </div>
-                <p className="text-xs text-rainy-grey mt-1">
+                <p className="text-xs text-rainy-grey mt-1 leading-relaxed">
                   Select your country code first, then enter your phone number
                   without the country code or leading zeros. Numbers only
                   (0-9). Complete number must not exceed 15 digits.
@@ -464,7 +464,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-white">
+                    <FormLabel className="text-xs sm:text-sm font-medium text-white">
                       Password
                     </FormLabel>
                     <FormControl>
@@ -472,18 +472,19 @@ const SignupForm: React.FC<SignupFormProps> = ({
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="Create a password"
-                          className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold pr-10"
+                          className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold pr-12 h-11 sm:h-12 text-sm sm:text-base"
                           {...field}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-rainy-grey hover:text-gold transition-colors"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-rainy-grey hover:text-gold transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                          aria-label={showPassword ? "Hide password" : "Show password"}
                         >
                           {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
+                            <EyeOff className="h-5 w-5" />
                           ) : (
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-5 w-5" />
                           )}
                         </button>
                       </div>
@@ -506,7 +507,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel className="text-sm text-rainy-grey font-normal cursor-pointer">
+                      <FormLabel className="text-xs sm:text-sm text-rainy-grey font-normal cursor-pointer">
                         I agree to the{" "}
                         <a
                           href="/terms"
@@ -542,22 +543,22 @@ const SignupForm: React.FC<SignupFormProps> = ({
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-gold-dark to-gold text-cursed-black h-11 rounded-md font-semibold hover:shadow-lg hover:shadow-gold/20 transition-all duration-300"
+                className="w-full bg-gradient-to-r from-gold-dark to-gold text-cursed-black h-12 sm:h-14 rounded-md font-semibold hover:shadow-lg hover:shadow-gold/20 transition-all duration-300 text-sm sm:text-base"
               >
                 Create Account
               </Button>
             </form>
           </Form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-rainy-grey">
+          <div className="mt-5 sm:mt-6 text-center">
+            <p className="text-xs sm:text-sm text-rainy-grey">
               Already have an account?{" "}
               <button
                 onClick={() => {
                   onOpenChange(false);
                   onSwitchToLogin?.();
                 }}
-                className="text-gold hover:underline font-medium transition-colors"
+                className="text-gold hover:underline font-medium transition-colors min-h-[32px] inline-flex items-center"
               >
                 Sign in
               </button>

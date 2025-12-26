@@ -87,32 +87,32 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-nero border-steel-wool text-white p-0 sm:rounded-lg [&>button]:text-rainy-grey [&>button]:hover:text-gold">
-        <div className="p-6 sm:p-8">
-          <DialogHeader className="text-left mb-6">
-            <DialogTitle className="text-2xl font-bold text-white mb-1 font-heading">
+      <DialogContent className="max-w-md bg-nero border-steel-wool text-white p-0 sm:rounded-lg [&>button]:text-rainy-grey [&>button]:hover:text-gold mx-4 sm:mx-auto">
+        <div className="p-5 sm:p-6 md:p-8">
+          <DialogHeader className="text-left mb-5 sm:mb-6">
+            <DialogTitle className="text-xl sm:text-2xl font-bold text-white mb-1 font-heading">
               Sign in
             </DialogTitle>
-            <DialogDescription className="text-sm text-rainy-grey">
+            <DialogDescription className="text-xs sm:text-sm text-rainy-grey">
               Sign in to your SavannaFX account
             </DialogDescription>
           </DialogHeader>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-white">
+                    <FormLabel className="text-xs sm:text-sm font-medium text-white">
                       Email Address
                     </FormLabel>
                     <FormControl>
                       <Input
                         type="email"
                         placeholder="Enter your email"
-                        className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold"
+                        className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold h-11 sm:h-12 text-sm sm:text-base"
                         {...field}
                       />
                     </FormControl>
@@ -126,7 +126,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-white">
+                    <FormLabel className="text-xs sm:text-sm font-medium text-white">
                       Password
                     </FormLabel>
                     <FormControl>
@@ -134,18 +134,19 @@ const LoginForm: React.FC<LoginFormProps> = ({
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="Enter your password"
-                          className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold pr-10"
+                          className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold pr-12 h-11 sm:h-12 text-sm sm:text-base"
                           {...field}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-rainy-grey hover:text-gold transition-colors"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-rainy-grey hover:text-gold transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                          aria-label={showPassword ? "Hide password" : "Show password"}
                         >
                           {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
+                            <EyeOff className="h-5 w-5" />
                           ) : (
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-5 w-5" />
                           )}
                         </button>
                       </div>
@@ -158,7 +159,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
               <div className="flex items-center justify-end">
                 <button
                   type="button"
-                  className="text-sm text-gold hover:underline transition-colors"
+                  className="text-xs sm:text-sm text-gold hover:underline transition-colors min-h-[32px] flex items-center"
                   onClick={(e) => {
                     e.preventDefault();
                     // TODO: Implement forgot password
@@ -171,22 +172,22 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-gold-dark to-gold text-cursed-black h-11 rounded-md font-semibold hover:shadow-lg hover:shadow-gold/20 transition-all duration-300"
+                className="w-full bg-gradient-to-r from-gold-dark to-gold text-cursed-black h-12 sm:h-14 rounded-md font-semibold hover:shadow-lg hover:shadow-gold/20 transition-all duration-300 text-sm sm:text-base"
               >
                 Sign in
               </Button>
             </form>
           </Form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-rainy-grey">
+          <div className="mt-5 sm:mt-6 text-center">
+            <p className="text-xs sm:text-sm text-rainy-grey">
               Don't have an account?{" "}
               <button
                 onClick={() => {
                   onOpenChange(false);
                   onSwitchToSignup?.();
                 }}
-                className="text-gold hover:underline font-medium transition-colors"
+                className="text-gold hover:underline font-medium transition-colors min-h-[32px] inline-flex items-center"
               >
                 Get Started
               </button>
