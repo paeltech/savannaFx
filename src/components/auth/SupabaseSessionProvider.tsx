@@ -42,6 +42,12 @@ const SupabaseSessionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         } else if (location.pathname === "/") {
           navigate("/dashboard", { replace: true });
         }
+      } else if (event === "PASSWORD_RECOVERY") {
+        // Handle password recovery - user clicked reset link
+        // The ResetPassword page will handle the token from the URL
+        if (location.pathname !== "/reset-password") {
+          navigate("/reset-password", { replace: true });
+        }
       } else if (event === "SIGNED_OUT") {
         // Redirect to landing page when signed out
         navigate("/", { replace: true });

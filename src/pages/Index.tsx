@@ -13,6 +13,7 @@ import FAQ from "@/components/FAQ";
 import PageFooter from "@/components/PageFooter";
 import LoginForm from "@/components/LoginForm";
 import SignupForm from "@/components/SignupForm";
+import ForgotPasswordForm from "@/components/ForgotPasswordForm";
 import { useSupabaseSession } from "@/components/auth/SupabaseSessionProvider";
 
 const Index: React.FC = () => {
@@ -21,6 +22,7 @@ const Index: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && session) {
@@ -35,7 +37,13 @@ const Index: React.FC = () => {
 
   const handleSwitchToLogin = () => {
     setSignupOpen(false);
+    setForgotPasswordOpen(false);
     setLoginOpen(true);
+  };
+
+  const handleSwitchToForgotPassword = () => {
+    setLoginOpen(false);
+    setForgotPasswordOpen(true);
   };
 
   // Show loading state or nothing while checking auth
@@ -86,10 +94,16 @@ const Index: React.FC = () => {
         open={loginOpen}
         onOpenChange={setLoginOpen}
         onSwitchToSignup={handleSwitchToSignup}
+        onSwitchToForgotPassword={handleSwitchToForgotPassword}
       />
       <SignupForm
         open={signupOpen}
         onOpenChange={setSignupOpen}
+        onSwitchToLogin={handleSwitchToLogin}
+      />
+      <ForgotPasswordForm
+        open={forgotPasswordOpen}
+        onOpenChange={setForgotPasswordOpen}
         onSwitchToLogin={handleSwitchToLogin}
       />
     </div>

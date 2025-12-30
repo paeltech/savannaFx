@@ -37,12 +37,14 @@ interface LoginFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSwitchToSignup?: () => void;
+  onSwitchToForgotPassword?: () => void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({
   open,
   onOpenChange,
   onSwitchToSignup,
+  onSwitchToForgotPassword,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -162,8 +164,8 @@ const LoginForm: React.FC<LoginFormProps> = ({
                   className="text-xs sm:text-sm text-gold hover:underline transition-colors min-h-[32px] flex items-center"
                   onClick={(e) => {
                     e.preventDefault();
-                    // TODO: Implement forgot password
-                    showError("Forgot password functionality coming soon");
+                    onOpenChange(false);
+                    onSwitchToForgotPassword?.();
                   }}
                 >
                   Forgot password?

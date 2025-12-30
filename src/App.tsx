@@ -16,6 +16,7 @@ import Sentiment from "./pages/Sentiment";
 import Enquiry from "./pages/Enquiry";
 import LotSize from "./pages/LotSize";
 import Collaborations from "./pages/Collaborations";
+import ResetPassword from "./pages/ResetPassword";
 import SupabaseSessionProvider from "@/components/auth/SupabaseSessionProvider";
 import RequireAuth from "@/components/auth/RequireAuth";
 
@@ -30,6 +31,7 @@ const App = () => (
         <SupabaseSessionProvider>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
             <Route path="/dashboard/trade-with-savanna" element={<RequireAuth><TradeWithSavanna /></RequireAuth>} />
