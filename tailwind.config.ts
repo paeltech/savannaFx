@@ -102,9 +102,18 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       fontFamily: {
-        heading: ["Legquinne", "serif"],
+        heading: [
+          "Plus Jakarta Sans",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          '"Segoe UI"',
+          "Roboto",
+          '"Helvetica Neue"',
+          "Arial",
+          "sans-serif",
+        ],
         sans: [
-          "Axiforma",
+          "Plus Jakarta Sans",
           "-apple-system",
           "BlinkMacSystemFont",
           '"Segoe UI"',

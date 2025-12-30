@@ -70,7 +70,7 @@ const SiteHeader: React.FC<SiteHeaderProps> = ({ onOpenMenu, onOpenSignup, onOpe
             onOpenSignup && (
               <Button 
                 onClick={onOpenSignup}
-                className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black rounded-full px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold hover:shadow-lg hover:shadow-gold/20 transition-all duration-300 min-h-[44px]"
+                className="bg-gradient-to-r from-gold via-gold-light to-gold text-cursed-black rounded-full px-5 sm:px-7 py-3 sm:py-3.5 text-sm sm:text-base font-extrabold hover:shadow-[0_0_30px_rgba(244,196,100,0.6)] hover:shadow-gold/50 transition-all duration-300 min-h-[48px] border-2 border-gold/30"
               >
                 <span className="hidden xs:inline">GET STARTED</span>
                 <span className="xs:hidden">START</span>

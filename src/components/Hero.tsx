@@ -2,15 +2,15 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
-import { fadeInUp, slideInLeft, slideInRight, defaultTransition } from "@/lib/animations";
+import { fadeInUp, slideInLeft, defaultTransition } from "@/lib/animations";
 import TypewriterText from "./TypewriterText";
 import Galaxy from "./Galaxy";
 
 const Hero: React.FC<{ onOpenMenu: () => void; onOpenSignup?: () => void }> = ({ onOpenMenu, onOpenSignup }) => {
   return (
-    <section className="relative min-h-screen flex items-start justify-start bg-black overflow-hidden">
+    <section className="relative min-h-screen flex items-center bg-black overflow-hidden">
       <Galaxy 
         mouseRepulsion={true}
         mouseInteraction={true}
@@ -21,70 +21,135 @@ const Hero: React.FC<{ onOpenMenu: () => void; onOpenSignup?: () => void }> = ({
         hueShift={240}
         transparent={true}
       />
-      {/* Desktop layout */}
-      <div className="hidden lg:block relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 xl:pt-40">
-        <div className="max-w-4xl mt-24 xl:mt-32">
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={slideInLeft}
-            transition={defaultTransition}
-            className="space-y-8 xl:space-y-12"
-          >
-            <motion.h1
-              initial="hidden"
-              animate="visible"
-              variants={fadeInUp}
-              transition={{ ...defaultTransition, delay: 0.2 }}
-              className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight tracking-tight font-heading"
-            >
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-dark to-gold font-heading">
-                Train like a predator.
-              </span>
-            
-              <br />
-              <TypewriterText
-                texts={["Survive the markets.", "Profit consistently.", "Win the game."]}
-                typingSpeed={100}
-                deletingSpeed={50}
-                pauseDuration={2000}
-                className="text-white font-heading text-5xl lg:text-6xl xl:text-7xl"
-              />
-            </motion.h1>
-            <motion.p
-              initial="hidden"
-              animate="visible"
-              variants={fadeInUp}
-              transition={{ ...defaultTransition, delay: 0.4 }}
-              className="text-lg lg:text-xl xl:text-2xl text-rainy-grey max-w-xl leading-relaxed"
-            >
-              The savanna is vast, harsh, and unforgiving—only the disciplined, adaptive, and patient thrive.
-             
-              SavannaFX empowers you to survive and thrive in the savanna we call market.
-            </motion.p>
+      
+      {/* Desktop layout - Left aligned with image on right */}
+      <div className="hidden lg:block relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 xl:gap-10 items-center">
+          {/* Left side - Text content */}
+          <div className="max-w-4xl">
             <motion.div
               initial="hidden"
               animate="visible"
-              variants={fadeInUp}
-              transition={{ ...defaultTransition, delay: 0.6 }}
-              className="flex gap-4 pt-4"
+              variants={slideInLeft}
+              transition={defaultTransition}
+              className="space-y-3 lg:space-y-4"
             >
-              <Button 
-                onClick={onOpenSignup}
-                className="group bg-gradient-to-r from-gold-dark to-gold text-cursed-black font-bold px-8 lg:px-12 py-5 lg:py-6 text-lg lg:text-xl rounded-full transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-gold/20 flex items-center justify-center gap-3 min-h-[56px]"
+              {/* Decorative element */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ ...defaultTransition, delay: 0.1 }}
+                className="flex items-center gap-2 mb-1"
               >
-                <span>Get started with SavannaFX</span>
-                <ArrowRight className="transition-transform group-hover:translate-x-1" size={20} />
-              </Button>
-              
+                <motion.div
+                  animate={{ 
+                    rotate: [0, 360],
+                    scale: [1, 1.1, 1]
+                  }}
+                  transition={{ 
+                    duration: 3, 
+                    repeat: Infinity,
+                    ease: "linear"
+                  }}
+                >
+                  <Sparkles className="w-4 h-4 text-gold" />
+                </motion.div>
+                <span className="text-gold/80 text-xs font-medium tracking-wider uppercase">Welcome to the Savanna</span>
+              </motion.div>
+
+              <motion.h1
+                initial="hidden"
+                animate="visible"
+                variants={fadeInUp}
+                transition={{ ...defaultTransition, delay: 0.2 }}
+                className="text-4xl lg:text-5xl xl:text-6xl font-extrabold text-white leading-[1.1] tracking-tight font-heading"
+              >
+                <span className="block mb-0">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold via-gold-light to-gold font-heading drop-shadow-[0_0_30px_rgba(244,196,100,0.5)]">
+                    Train like a predator.
+                  </span>
+                </span>
+                <span className="block -mt-1">
+                  <TypewriterText
+                    texts={["Survive the markets.", "Profit consistently.", "Win the game."]}
+                    typingSpeed={100}
+                    deletingSpeed={50}
+                    pauseDuration={2000}
+                    className="text-white font-heading text-4xl lg:text-5xl xl:text-6xl drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                  />
+                </span>
+              </motion.h1>
+
+              <motion.p
+                initial="hidden"
+                animate="visible"
+                variants={fadeInUp}
+                transition={{ ...defaultTransition, delay: 0.4 }}
+                className="text-lg lg:text-xl font-semibold text-white/60 max-w-2xl leading-relaxed mt-3"
+              >
+                The savanna is vast, harsh, and unforgiving — only the disciplined, adaptive, and patient thrive. SavannaFX empowers you to survive and thrive in the savanna we call market.
+              </motion.p>
+
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={fadeInUp}
+                transition={{ ...defaultTransition, delay: 0.6 }}
+                className="flex items-center gap-4 pt-2"
+              >
+                <Button 
+                  onClick={onOpenSignup}
+                  className="group bg-gradient-to-r from-gold via-gold-light to-gold text-cursed-black font-extrabold px-8 lg:px-12 py-5 lg:py-6 text-base lg:text-lg rounded-full transition-all duration-300 shadow-2xl hover:shadow-[0_0_40px_rgba(244,196,100,0.6)] hover:shadow-gold/50 flex items-center justify-center gap-3 min-h-[56px] lg:min-h-[64px] relative overflow-hidden border-2 border-gold/30"
+                  asChild
+                >
+                  <motion.button
+                    whileHover={{ scale: 1.08, y: -2 }}
+                    whileTap={{ scale: 0.96 }}
+                  >
+                    <span className="relative z-10 flex items-center gap-3">
+                      Get started with SavannaFX
+                      <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-2" />
+                    </span>
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-gold-light via-gold to-gold-light"
+                      initial={{ x: "-100%" }}
+                      whileHover={{ x: 0 }}
+                      transition={{ duration: 0.4 }}
+                    />
+                  </motion.button>
+                </Button>
+              </motion.div>
+            </motion.div>
+          </div>
+
+          {/* Right side - Hero image */}
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ ...defaultTransition, delay: 0.3 }}
+            className="relative w-full flex items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ ...defaultTransition, delay: 0.5 }}
+              className="relative w-full max-h-[75vh] rounded-2xl overflow-hidden shadow-2xl"
+            >
+              <img 
+                src="/assets/pexels-anna-nekrashevich-6801633.jpg" 
+                alt="savanna visual" 
+                className="w-full h-auto max-h-[75vh] object-contain rounded-2xl"
+              />
+              {/* Overlay gradient for better text contrast if needed */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none rounded-2xl" />
             </motion.div>
           </motion.div>
         </div>
       </div>
 
-      {/* Mobile layout */}
-      <div className="lg:hidden relative z-10 w-full h-full min-h-screen flex items-center justify-center px-4 sm:px-6 py-20 sm:py-24">
-        <div className="absolute inset-0 w-full h-full opacity-15">
+      {/* Mobile layout - Centered */}
+      <div className="lg:hidden relative z-10 w-full min-h-screen flex items-center justify-center px-4 sm:px-6 py-16 sm:py-20">
+        <div className="absolute inset-0 w-full h-full opacity-10">
           <img src="/assets/pexels-anna-nekrashevich-6801633.jpg" alt="savanna visual" className="w-full h-full object-cover" />
         </div>
         <motion.div
@@ -92,45 +157,100 @@ const Hero: React.FC<{ onOpenMenu: () => void; onOpenSignup?: () => void }> = ({
           animate="visible"
           variants={fadeInUp}
           transition={defaultTransition}
-          className="relative z-10 text-center space-y-6 sm:space-y-7 max-w-3xl mx-auto"
+          className="relative z-10 text-center space-y-5 sm:space-y-6 max-w-2xl mx-auto w-full"
         >
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-white leading-tight tracking-tight font-heading px-2">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-dark to-gold font-heading block mb-2">
-              Train like a predator.
+          {/* Decorative element for mobile */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ ...defaultTransition, delay: 0.1 }}
+            className="flex items-center justify-center gap-2 mb-2"
+          >
+            <motion.div
+              animate={{ 
+                rotate: [0, 360],
+                scale: [1, 1.1, 1]
+              }}
+              transition={{ 
+                duration: 3, 
+                repeat: Infinity,
+                ease: "linear"
+              }}
+            >
+              <Sparkles className="w-4 h-4 text-gold" />
+            </motion.div>
+            <span className="text-gold/80 text-xs font-medium tracking-wider uppercase">Welcome to the Savanna</span>
+          </motion.div>
+
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white leading-tight tracking-tight font-heading px-2">
+            <span className="block">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold via-gold-light to-gold font-heading drop-shadow-[0_0_20px_rgba(244,196,100,0.4)] leading-none">
+                Train like a predator.
+              </span>
             </span>
-            <span className="text-white font-heading block mb-2">Trade with patience. </span>
+            <span className="block -mt-1 text-white font-heading drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] leading-none">Trade with patience.</span>
             <TypewriterText
-              texts={["Survive the markets.", "Profit consistently.", "Win the game."]}
+              texts={["Survive the markets", "Profit consistently.", "Win the game."]}
               typingSpeed={100}
               deletingSpeed={50}
               pauseDuration={2000}
-              className="text-white font-heading text-3xl sm:text-5xl md:text-6xl"
+              className="text-white font-heading text-4xl sm:text-5xl md:text-6xl drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] -mt-2 leading-none"
             />
           </h1>
-          <p className="text-base sm:text-lg md:text-xl text-gold leading-relaxed px-4">
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="text-base sm:text-lg md:text-xl font-semibold text-gold/90 leading-relaxed px-4"
+          >
             SavannaFX helps you build discipline, timing, and awareness to survive and thrive in the markets.
-          </p>
-          <div className="flex justify-center pt-4 sm:pt-6">
+          </motion.p>
+          
+          <div className="flex justify-center pt-3 sm:pt-4">
             <Button 
               onClick={onOpenSignup}
-              className="group bg-gradient-to-r from-gold-dark to-gold text-cursed-black font-bold px-6 sm:px-8 py-4 sm:py-5 text-base sm:text-lg md:text-xl rounded-full transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-gold/20 flex items-center justify-center gap-2 sm:gap-3 min-h-[56px] w-full max-w-sm mx-auto"
+              className="group bg-gradient-to-r from-gold via-gold-light to-gold text-cursed-black font-extrabold px-8 sm:px-10 py-2 sm:py-2 text-base sm:text-lg rounded-full transition-all duration-300 shadow-2xl hover:shadow-[0_0_35px_rgba(244,196,100,0.6)] hover:shadow-gold/50 flex items-center justify-center gap-2 min-h-[56px] sm:min-h-[64px] w-full max-w-sm mx-auto relative overflow-hidden border-2 border-gold/30"
+              asChild
             >
-              <span className="text-sm sm:text-base md:text-lg">Get started with SavannaFX</span>
-              <ArrowRight className="transition-transform group-hover:translate-x-1" size={18} />
+              <motion.button
+                whileHover={{ scale: 1.08, y: -2 }}
+                whileTap={{ scale: 0.96 }}
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  <span>Get started with SavannaFX</span>
+                  <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-2" />
+                </span>
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-gold-light via-gold to-gold-light"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: 0 }}
+                  transition={{ duration: 0.4 }}
+                />
+              </motion.button>
             </Button>
           </div>
         </motion.div>
       </div>
 
+      {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ ...defaultTransition, delay: 1, repeat: Infinity, repeatType: "reverse", duration: 2 }}
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20"
+        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 hidden lg:block"
       >
-        <div className="w-6 h-10 border-2 border-rainy-grey/30 rounded-full flex justify-center">
-          <div className="w-1 h-3 bg-gold/50 rounded-full mt-2"></div>
-        </div>
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          className="w-6 h-10 border-2 border-gold/40 rounded-full flex justify-center backdrop-blur-sm bg-black/20"
+        >
+          <motion.div
+            animate={{ y: [0, 12, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            className="w-1.5 h-3 bg-gold rounded-full mt-2"
+          />
+        </motion.div>
       </motion.div>
     </section>
   );

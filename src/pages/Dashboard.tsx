@@ -19,13 +19,19 @@ import {
 } from "lucide-react";
 import { CardContent } from "@/components/ui/card";
 import SavannaCard from "@/components/dashboard/SavannaCard";
+import { useSupabaseSession } from "@/components/auth/SupabaseSessionProvider";
 
 const Dashboard: React.FC = () => {
+  const { session } = useSupabaseSession();
+  const firstName = session?.user?.user_metadata?.first_name || "Trader";
+
   return (
     <DashboardLayout>
       <SavannaCard className="mb-6 sm:mb-8">
         <CardContent className="p-4 sm:p-6 md:p-8">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-white">Welcome back, Trader 👋</h2>
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-white">
+            Welcome back, {firstName} 👋
+          </h2>
           <p className="text-rainy-grey mt-3 sm:mt-4 leading-relaxed text-sm sm:text-base">
             Here's your complete navigation hub. Click any card to access that section.
           </p>

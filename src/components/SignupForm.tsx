@@ -52,9 +52,13 @@ const signupSchema = z.object({
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
       "Password must contain at least one uppercase letter, one lowercase letter, and one number"
     ),
+  verifyPassword: z.string().min(1, "Please confirm your password"),
   agreeToTerms: z.boolean().refine((val) => val === true, {
     message: "You must agree to the terms and conditions",
   }),
+}).refine((data) => data.password === data.verifyPassword, {
+  message: "Passwords do not match",
+  path: ["verifyPassword"],
 });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
@@ -279,6 +283,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
       countryCode: "+255",
       phoneNumber: "",
       password: "",
+      verifyPassword: "",
       agreeToTerms: false,
     },
   });
@@ -298,7 +303,27 @@ const SignupForm: React.FC<SignupFormProps> = ({
       });
 
       if (error) {
-        showError(error.message);
+        // Check for duplicate email errors
+        const errorMessage = error.message.toLowerCase();
+        if (
+          errorMessage.includes("already registered") ||
+          errorMessage.includes("email already exists") ||
+          errorMessage.includes("user already exists") ||
+          errorMessage.includes("already been registered") ||
+          error.code === "email_already_exists" ||
+          error.status === 422
+        ) {
+          showError(
+            "This email is already registered. Please sign in instead or use a different email address."
+          );
+          // Optionally switch to login form
+          setTimeout(() => {
+            onOpenChange(false);
+            onSwitchToLogin?.();
+          }, 2000);
+        } else {
+          showError(error.message);
+        }
         return;
       }
 
@@ -472,6 +497,41 @@ const SignupForm: React.FC<SignupFormProps> = ({
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="Create a password"
+                          className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold pr-12 h-11 sm:h-12 text-sm sm:text-base"
+                          {...field}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-rainy-grey hover:text-gold transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-5 w-5" />
+                          ) : (
+                            <Eye className="h-5 w-5" />
+                          )}
+                        </button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="verifyPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs sm:text-sm font-medium text-white">
+                      Verify Password
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Confirm your password"
                           className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold pr-12 h-11 sm:h-12 text-sm sm:text-base"
                           {...field}
                         />
