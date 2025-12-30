@@ -24,9 +24,9 @@ const Hero: React.FC<{ onOpenMenu: () => void; onOpenSignup?: () => void }> = ({
       
       {/* Desktop layout - Left aligned with image on right */}
       <div className="hidden lg:block relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 xl:gap-10 items-center">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 xl:gap-10 items-center">
           {/* Left side - Text content */}
-          <div className="max-w-4xl">
+          <div className="w-full lg:w-2/3">
             <motion.div
               initial="hidden"
               animate="visible"
@@ -65,17 +65,17 @@ const Hero: React.FC<{ onOpenMenu: () => void; onOpenSignup?: () => void }> = ({
                 className="text-4xl lg:text-5xl xl:text-6xl font-extrabold text-white leading-[1.1] tracking-tight font-heading"
               >
                 <span className="block mb-0">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold via-gold-light to-gold font-heading drop-shadow-[0_0_30px_rgba(244,196,100,0.5)]">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold via-gold-light to-gold font-heading drop-shadow-[0_0_30px_rgba(244,196,100,0.5)] leading-none">
                     Train like a predator.
                   </span>
                 </span>
                 <span className="block -mt-1">
                   <TypewriterText
-                    texts={["Survive the markets.", "Profit consistently.", "Win the game."]}
+                    texts={["Survive the markets", "Profit consistently.", "Win the game."]}
                     typingSpeed={100}
                     deletingSpeed={50}
                     pauseDuration={2000}
-                    className="text-white font-heading text-4xl lg:text-5xl xl:text-6xl drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                    className="text-white font-heading text-4xl lg:text-5xl xl:text-6xl drop-shadow-[0_0_20px_rgba(255,255,255,0.3)] leading-none"
                   />
                 </span>
               </motion.h1>
@@ -99,7 +99,7 @@ const Hero: React.FC<{ onOpenMenu: () => void; onOpenSignup?: () => void }> = ({
               >
                 <Button 
                   onClick={onOpenSignup}
-                  className="group bg-gradient-to-r from-gold via-gold-light to-gold text-cursed-black font-extrabold px-8 lg:px-12 py-5 lg:py-6 text-base lg:text-lg rounded-full transition-all duration-300 shadow-2xl hover:shadow-[0_0_40px_rgba(244,196,100,0.6)] hover:shadow-gold/50 flex items-center justify-center gap-3 min-h-[56px] lg:min-h-[64px] relative overflow-hidden border-2 border-gold/30"
+                  className="group bg-gradient-to-r from-gold via-gold-light to-gold text-cursed-black font-extrabold px-8 lg:px-12 py-4 lg:py-4 text-base lg:text-lg rounded-full transition-all duration-300 shadow-2xl hover:shadow-[0_0_40px_rgba(244,196,100,0.6)] hover:shadow-gold/50 flex items-center justify-center gap-3 min-h-[56px] lg:min-h-[64px] relative overflow-hidden border-2 border-gold/30"
                   asChild
                 >
                   <motion.button
@@ -127,18 +127,20 @@ const Hero: React.FC<{ onOpenMenu: () => void; onOpenSignup?: () => void }> = ({
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ ...defaultTransition, delay: 0.3 }}
-            className="relative w-full flex items-center justify-center"
+            className="relative w-full lg:w-1/3 flex items-center justify-center"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ ...defaultTransition, delay: 0.5 }}
-              className="relative w-full max-h-[75vh] rounded-2xl overflow-hidden shadow-2xl"
+              className="relative w-full rounded-2xl overflow-hidden shadow-2xl"
+              style={{ maxHeight: '75vh' }}
             >
               <img 
                 src="/assets/pexels-anna-nekrashevich-6801633.jpg" 
                 alt="savanna visual" 
-                className="w-full h-auto max-h-[75vh] object-contain rounded-2xl"
+                className="w-full h-auto object-contain rounded-2xl"
+                style={{ maxHeight: '75vh', display: 'block', borderRadius: '1rem' }}
               />
               {/* Overlay gradient for better text contrast if needed */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none rounded-2xl" />
