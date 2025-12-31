@@ -137,7 +137,7 @@ const Hero: React.FC<{ onOpenMenu: () => void; onOpenSignup?: () => void }> = ({
               style={{ maxHeight: '75vh' }}
             >
               <img 
-                src="/assets/pexels-anna-nekrashevich-6801633.jpg" 
+                src="/assets/heroimage.jpeg" 
                 alt="savanna visual" 
                 className="w-full h-auto object-contain rounded-2xl"
                 style={{ maxHeight: '75vh', display: 'block', borderRadius: '1rem' }}
