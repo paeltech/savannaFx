@@ -74,12 +74,13 @@ const ChoiceSection: React.FC<ChoiceSectionProps> = ({ onOpenSignup }) => {
           </div>
         </ScrollReveal>
 
-        <StaggerChildren className="grid sm:grid-cols-2 gap-6 sm:gap-8">
+        <StaggerChildren className="flex flex-col sm:grid sm:grid-cols-2 gap-6 sm:gap-8">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.5 }}
+            className={selected === "forex" ? "order-2 sm:order-1" : "order-1 sm:order-1"}
           >
             <Card
               className={`bg-nero transition-all duration-300 border relative overflow-hidden group ${
@@ -126,6 +127,7 @@ const ChoiceSection: React.FC<ChoiceSectionProps> = ({ onOpenSignup }) => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.5 }}
+            className={selected === "forex" ? "order-1 sm:order-2" : "order-2 sm:order-2"}
           >
             <Card
               className={`bg-nero transition-all duration-300 border relative overflow-hidden group ${

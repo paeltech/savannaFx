@@ -13,6 +13,7 @@ import {
   Building,
   Calendar,
   ChartColumn,
+  FileText,
   X,
 } from "lucide-react";
 
@@ -26,6 +27,7 @@ type SidebarProps = {
 const navItems = [
   { label: "Home", icon: House, to: "/" },
   { label: "Signals", icon: TrendingUp, to: "/dashboard/signals" },
+  { label: "Analysis", icon: FileText, to: "/dashboard/trade-analysis" },
   { label: "Course", icon: GraduationCap, to: "/dashboard/course" },
   { label: "Mentorship", icon: Users, to: "/dashboard/one-on-one" },
   { label: "Trade With Savanna", icon: Handshake, to: "/dashboard/trade-with-savanna" },

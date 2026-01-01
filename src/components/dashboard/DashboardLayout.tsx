@@ -34,6 +34,7 @@ import {
   Settings,
   UserRound,
   LogOut,
+  FileText,
 } from "lucide-react";
 import supabase from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
@@ -49,6 +50,7 @@ const navItems: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" },
   { label: "Trade With Savanna", icon: Handshake, to: "/dashboard/trade-with-savanna" },
   { label: "Signals", icon: SignalHigh, to: "/dashboard/signals" },
+  { label: "Trade Analysis", icon: FileText, to: "/dashboard/trade-analysis" },
   { label: "Market Analysis", icon: LineChart, to: "/dashboard/market-analysis" },
   { label: "Online Course", icon: GraduationCap, to: "/dashboard/course" },
   { label: "One on One", icon: UserSquare2, to: "/dashboard/one-on-one" },

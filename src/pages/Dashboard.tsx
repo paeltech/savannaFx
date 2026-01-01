@@ -16,6 +16,7 @@ import {
   School,
   CalendarClock,
   CircleHelp,
+  FileText,
 } from "lucide-react";
 import { CardContent } from "@/components/ui/card";
 import SavannaCard from "@/components/dashboard/SavannaCard";
@@ -51,6 +52,13 @@ const Dashboard: React.FC = () => {
           title="Signals"
           description="Premium trading signals"
           Icon={SignalHigh}
+          iconBg="bg-gold"
+        />
+        <DashboardTile
+          to="/dashboard/trade-analysis"
+          title="Trade Analysis"
+          description="Daily pair analysis"
+          Icon={FileText}
           iconBg="bg-gold"
         />
         <DashboardTile

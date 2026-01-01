@@ -17,6 +17,7 @@ import Enquiry from "./pages/Enquiry";
 import LotSize from "./pages/LotSize";
 import Collaborations from "./pages/Collaborations";
 import ResetPassword from "./pages/ResetPassword";
+import TradeAnalysis from "./pages/TradeAnalysis";
 import SupabaseSessionProvider from "@/components/auth/SupabaseSessionProvider";
 import RequireAuth from "@/components/auth/RequireAuth";
 
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/dashboard/enquiry" element={<RequireAuth><Enquiry /></RequireAuth>} />
             <Route path="/dashboard/lot-size" element={<RequireAuth><LotSize /></RequireAuth>} />
             <Route path="/dashboard/collaborations" element={<RequireAuth><Collaborations /></RequireAuth>} />
+            <Route path="/dashboard/trade-analysis" element={<RequireAuth><TradeAnalysis /></RequireAuth>} />
             <Route path="/dashboard/:section" element={<RequireAuth><DashboardFeature /></RequireAuth>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

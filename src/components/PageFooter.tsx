@@ -42,19 +42,29 @@ const PageFooter: React.FC = () => {
           <div>
             <h4 className="text-white font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Contact</h4>
             <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-rainy-grey leading-relaxed mb-4 sm:mb-6">
-              <li>Email: support@savannafx.com</li>
+              <li>Email: support@savannafx.co</li>
               <li>Location: Dar es salaam, Tanzania</li>
             </ul>
             <Button className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black hover:shadow-lg hover:shadow-gold/20 transition-all duration-300 min-h-[44px] text-xs sm:text-sm w-full sm:w-auto">Subscribe Now</Button>
           </div>
         </div>
 
-        <div className="border-t border-nero mt-8 sm:mt-12 pt-6 sm:pt-8 text-xs sm:text-sm text-rainy-grey leading-relaxed">
-          <p>© {new Date().getFullYear()} SavannaFX — All rights reserved.</p>
-          <div className="mt-3 flex flex-wrap gap-3 sm:gap-4">
-            <span className="hover:text-gold transition-colors duration-200 cursor-pointer min-h-[32px] flex items-center">Privacy Policy</span>
-            <span className="text-steel-wool hidden sm:inline">•</span>
-            <span className="hover:text-gold transition-colors duration-200 cursor-pointer min-h-[32px] flex items-center">Terms</span>
+        <div className="border-t border-nero mt-8 sm:mt-12 pt-6 sm:pt-8">
+          {/* Disclaimer Section */}
+          <div className="mb-6 pb-6 border-b border-nero/50">
+            <p className="text-xs text-rainy-grey leading-relaxed text-center max-w-4xl mx-auto">
+              <strong className="text-white">Risk Disclaimer:</strong> Trading in financial markets involves substantial risk of loss and is not suitable for all investors. Past performance is not indicative of future results. The information provided on this website is for educational purposes only and should not be considered as financial advice. Always conduct your own research and consult with a qualified financial advisor before making any trading decisions. SavannaFX does not guarantee any specific results or profits from trading activities.
+            </p>
+          </div>
+          
+          {/* Copyright Section */}
+          <div className="text-xs sm:text-sm text-rainy-grey leading-relaxed">
+            <p>© {new Date().getFullYear()} SavannaFX — All rights reserved.</p>
+            <div className="mt-3 flex flex-wrap gap-3 sm:gap-4">
+              <span className="hover:text-gold transition-colors duration-200 cursor-pointer min-h-[32px] flex items-center">Privacy Policy</span>
+              <span className="text-steel-wool hidden sm:inline">•</span>
+              <span className="hover:text-gold transition-colors duration-200 cursor-pointer min-h-[32px] flex items-center">Terms</span>
+            </div>
           </div>
         </div>
       </div>
