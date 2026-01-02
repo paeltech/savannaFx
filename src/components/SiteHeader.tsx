@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSupabaseSession } from "@/components/auth/SupabaseSessionProvider";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type SiteHeaderProps = {
   onOpenMenu: () => void;
@@ -15,15 +16,22 @@ type SiteHeaderProps = {
 const SiteHeader: React.FC<SiteHeaderProps> = ({ onOpenMenu, onOpenSignup, onOpenLogin }) => {
   const { session } = useSupabaseSession();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const handleProtectedNav = (path: string, e: React.MouseEvent) => {
     e.preventDefault();
     if (session) {
       navigate(path);
     } else {
-      // Store the intended destination and open login modal
+      // Store the intended destination
       sessionStorage.setItem("redirectAfterLogin", path);
-      onOpenLogin?.();
+      
+      // On mobile, redirect to login page; on desktop, open login modal
+      if (isMobile) {
+        navigate("/login");
+      } else {
+        onOpenLogin?.();
+      }
     }
   };
 

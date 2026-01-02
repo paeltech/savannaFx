@@ -1,13 +1,16 @@
 "use client";
 
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useSupabaseSession } from "./SupabaseSessionProvider";
 import supabase from "@/integrations/supabase/client";
 import { ShieldAlert } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const RequireAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { session, loading } = useSupabaseSession();
+  const location = useLocation();
+  const isMobile = useIsMobile();
   const [isAdmin, setIsAdmin] = React.useState<boolean | null>(null);
   const [checking, setChecking] = React.useState(true);
 
@@ -66,6 +69,15 @@ const RequireAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   }
 
   if (!session) {
+    // Store the intended destination for redirect after login
+    if (location.pathname !== "/login" && location.pathname !== "/") {
+      sessionStorage.setItem("redirectAfterLogin", location.pathname);
+    }
+    
+    // Redirect to login page on mobile, home page on desktop
+    if (isMobile) {
+      return <Navigate to="/login" replace />;
+    }
     return <Navigate to="/" replace />;
   }
 

@@ -18,6 +18,7 @@ import LotSize from "./pages/LotSize";
 import Collaborations from "./pages/Collaborations";
 import ResetPassword from "./pages/ResetPassword";
 import TradeAnalysis from "./pages/TradeAnalysis";
+import Login from "./pages/Login";
 import SupabaseSessionProvider from "@/components/auth/SupabaseSessionProvider";
 import RequireAuth from "@/components/auth/RequireAuth";
 import RequireAdmin from "@/components/auth/RequireAdmin";
@@ -41,6 +42,7 @@ const App = () => (
         <SupabaseSessionProvider>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />

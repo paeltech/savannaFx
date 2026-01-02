@@ -29,17 +29,12 @@ import { showSuccess, showError } from "@/utils/toast";
 import { format } from "date-fns";
 import { PageTransition } from "@/lib/animations";
 
-interface UserRole {
-  id: string;
+interface UserWithRole {
   user_id: string;
-  role: "admin" | "moderator" | "user";
+  email: string;
   created_at: string;
-  updated_at: string;
-}
-
-interface UserWithRole extends UserRole {
-  email?: string;
-  created_at_user?: string;
+  role: "admin" | "moderator" | "user";
+  role_created_at: string | null;
 }
 
 const AdminUsers: React.FC = () => {
@@ -47,23 +42,43 @@ const AdminUsers: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
 
-  const { data: userRoles, isLoading } = useQuery<UserWithRole[]>({
-    queryKey: ["admin-user-roles", roleFilter],
+  const { data: users, isLoading } = useQuery<UserWithRole[]>({
+    queryKey: ["admin-all-users", roleFilter],
     queryFn: async () => {
-      // First get all user roles
-      let query = supabase.from("user_roles").select("*").order("created_at", { ascending: false });
+      // Call the database function to get all users with their roles
+      const { data, error } = await supabase.rpc("get_all_users_with_roles");
 
-      if (roleFilter !== "all") {
-        query = query.eq("role", roleFilter);
+      if (error) {
+        // If function doesn't exist, fall back to querying user_roles
+        console.warn("get_all_users_with_roles function not found, falling back to user_roles table:", error);
+        
+        // Fallback: Get users from user_roles table
+        let query = supabase.from("user_roles").select("*").order("created_at", { ascending: false });
+
+        if (roleFilter !== "all") {
+          query = query.eq("role", roleFilter);
+        }
+
+        const { data: roles, error: rolesError } = await query;
+        if (rolesError) throw rolesError;
+
+        // Map to UserWithRole format
+        return (roles || []).map((role: any) => ({
+          user_id: role.user_id,
+          email: "", // Email not available in fallback
+          created_at: role.created_at,
+          role: role.role,
+          role_created_at: role.created_at,
+        }));
       }
 
-      const { data: roles, error: rolesError } = await query;
+      // Filter by role if needed
+      let filteredData = data || [];
+      if (roleFilter !== "all") {
+        filteredData = filteredData.filter((user: UserWithRole) => user.role === roleFilter);
+      }
 
-      if (rolesError) throw rolesError;
-
-      // For each role, try to get user email from auth.users (this might require admin access)
-      // For now, we'll just return the roles
-      return (roles || []) as UserWithRole[];
+      return filteredData as UserWithRole[];
     },
   });
 
@@ -101,7 +116,7 @@ const AdminUsers: React.FC = () => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-all-users"] });
       showSuccess("User role updated successfully");
     },
     onError: (error: any) => {
@@ -109,10 +124,14 @@ const AdminUsers: React.FC = () => {
     },
   });
 
-  const filteredUsers = userRoles?.filter((user) => {
+  const filteredUsers = users?.filter((user) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
-    return user.user_id.toLowerCase().includes(query) || user.email?.toLowerCase().includes(query);
+    return (
+      user.user_id.toLowerCase().includes(query) ||
+      user.email?.toLowerCase().includes(query) ||
+      (user.email && user.email.toLowerCase().includes(query))
+    );
   });
 
   const getRoleBadge = (role: string) => {
@@ -186,11 +205,11 @@ const AdminUsers: React.FC = () => {
                   </TableHeader>
                   <TableBody>
                     {filteredUsers?.map((user) => (
-                      <TableRow key={user.id} className="border-steel-wool hover:bg-nero/50">
+                      <TableRow key={user.user_id} className="border-steel-wool hover:bg-nero/50">
                         <TableCell className="text-rainy-grey font-mono text-xs">
                           {user.user_id.substring(0, 8)}...
                         </TableCell>
-                        <TableCell className="text-rainy-grey">
+                        <TableCell className="text-white">
                           {user.email || "N/A"}
                         </TableCell>
                         <TableCell>{getRoleBadge(user.role)}</TableCell>
