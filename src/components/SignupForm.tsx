@@ -272,7 +272,55 @@ const SignupForm: React.FC<SignupFormProps> = ({
   onSwitchToLogin,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [checkingEmail, setCheckingEmail] = useState(false);
+  const [emailExists, setEmailExists] = useState(false);
   const navigate = useNavigate();
+
+  // Function to check if email already exists
+  // Note: Supabase doesn't provide a direct "check email exists" API for security reasons
+  // We'll use a workaround by attempting sign-in with a dummy password
+  const checkEmailExists = async (email: string): Promise<boolean> => {
+    if (!email || !z.string().email().safeParse(email).success) {
+      return false;
+    }
+
+    try {
+      setCheckingEmail(true);
+      // Attempt to sign in with a dummy password
+      // If we get "Invalid login credentials", the email exists
+      // If we get "User not found" or similar, the email doesn't exist
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password: "dummy_check_password_12345!@#$%^&*()",
+      });
+
+      if (error) {
+        const errorMessage = error.message.toLowerCase();
+        // These errors indicate the user exists but password is wrong
+        if (
+          errorMessage.includes("invalid login credentials") ||
+          errorMessage.includes("invalid password") ||
+          errorMessage.includes("incorrect password") ||
+          errorMessage.includes("email not confirmed") ||
+          error.status === 400
+        ) {
+          // Email exists
+          return true;
+        }
+        // "User not found" or similar means email doesn't exist
+        return false;
+      }
+
+      // If no error (unlikely with dummy password), user exists
+      return true;
+    } catch (error) {
+      // On error, assume email doesn't exist to allow signup attempt
+      // The actual signup will catch the real error
+      return false;
+    } finally {
+      setCheckingEmail(false);
+    }
+  };
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -289,6 +337,25 @@ const SignupForm: React.FC<SignupFormProps> = ({
   });
 
   const onSubmit = async (values: SignupFormValues) => {
+    // Check if email exists before submitting
+    const emailAlreadyExists = await checkEmailExists(values.email);
+    if (emailAlreadyExists) {
+      form.setError("email", {
+        type: "manual",
+        message: "This email is already registered. Please sign in instead or use a different email address.",
+      });
+      setEmailExists(true);
+      showError("This email is already registered. Please sign in instead or use a different email address.");
+      // Optionally switch to login form after a delay
+      setTimeout(() => {
+        onOpenChange(false);
+        onSwitchToLogin?.();
+      }, 2000);
+      return;
+    }
+
+    setEmailExists(false);
+
     try {
       const { error } = await supabase.auth.signUp({
         email: values.email,
@@ -313,6 +380,11 @@ const SignupForm: React.FC<SignupFormProps> = ({
           error.code === "email_already_exists" ||
           error.status === 422
         ) {
+          form.setError("email", {
+            type: "manual",
+            message: "This email is already registered. Please sign in instead or use a different email address.",
+          });
+          setEmailExists(true);
           showError(
             "This email is already registered. Please sign in instead or use a different email address."
           );
@@ -410,12 +482,52 @@ const SignupForm: React.FC<SignupFormProps> = ({
                       Email Address
                     </FormLabel>
                     <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="Enter your email"
-                        className="bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold h-11 sm:h-12 text-sm sm:text-base"
-                        {...field}
-                      />
+                      <div className="relative">
+                        <Input
+                          type="email"
+                          placeholder="Enter your email"
+                          className={`bg-black border-steel-wool text-white placeholder:text-rainy-grey focus-visible:ring-gold focus-visible:border-gold h-11 sm:h-12 text-sm sm:text-base pr-10 ${
+                            emailExists ? "border-red-500 focus-visible:border-red-500" : ""
+                          }`}
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            // Clear error when user starts typing
+                            if (emailExists) {
+                              setEmailExists(false);
+                              form.clearErrors("email");
+                            }
+                          }}
+                          onBlur={async (e) => {
+                            field.onBlur();
+                            const email = e.target.value.trim();
+                            if (email && z.string().email().safeParse(email).success) {
+                              const exists = await checkEmailExists(email);
+                              if (exists) {
+                                form.setError("email", {
+                                  type: "manual",
+                                  message: "This email is already registered. Please sign in instead or use a different email address.",
+                                });
+                                setEmailExists(true);
+                              } else {
+                                form.clearErrors("email");
+                                setEmailExists(false);
+                              }
+                            }
+                          }}
+                          disabled={checkingEmail}
+                        />
+                        {checkingEmail && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            <div className="w-4 h-4 border-2 border-gold border-t-transparent rounded-full animate-spin"></div>
+                          </div>
+                        )}
+                        {checkingEmail && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            <div className="w-4 h-4 border-2 border-gold border-t-transparent rounded-full animate-spin"></div>
+                          </div>
+                        )}
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -603,9 +715,10 @@ const SignupForm: React.FC<SignupFormProps> = ({
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-gold-dark to-gold text-cursed-black h-12 sm:h-14 rounded-md font-semibold hover:shadow-lg hover:shadow-gold/20 transition-all duration-300 text-sm sm:text-base"
+                disabled={checkingEmail || emailExists}
+                className="w-full bg-gradient-to-r from-gold-dark to-gold text-cursed-black h-12 sm:h-14 rounded-md font-semibold hover:shadow-lg hover:shadow-gold/20 transition-all duration-300 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Create Account
+                {checkingEmail ? "Checking email..." : emailExists ? "Email already registered" : "Create Account"}
               </Button>
             </form>
           </Form>

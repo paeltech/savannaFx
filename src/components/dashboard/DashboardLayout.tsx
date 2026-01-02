@@ -35,9 +35,11 @@ import {
   UserRound,
   LogOut,
   FileText,
+  Shield,
 } from "lucide-react";
 import supabase from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
+import { useAdmin } from "@/hooks/use-admin";
 
 type NavItem = {
   label: string;
@@ -108,6 +110,7 @@ const Topbar: React.FC = () => {
 
 const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
+  const { isAdmin } = useAdmin();
 
   return (
     <SidebarProvider className="min-h-screen bg-black text-foreground">
@@ -139,6 +142,21 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
                     </SidebarMenuItem>
                   );
                 })}
+                {isAdmin && (
+                  <SidebarMenuItem>
+                    <Link to="/admin">
+                      <SidebarMenuButton 
+                        isActive={location.pathname.startsWith("/admin")} 
+                        className={`text-rainy-grey hover:text-gold transition-colors duration-200 ${
+                          location.pathname.startsWith("/admin") ? "text-gold bg-nero" : ""
+                        }`}
+                      >
+                        <Shield />
+                        <span>Admin Dashboard</span>
+                      </SidebarMenuButton>
+                    </Link>
+                  </SidebarMenuItem>
+                )}
               </SidebarMenu>
             </SidebarContent>
           </SidebarGroup>

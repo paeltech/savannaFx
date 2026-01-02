@@ -67,7 +67,7 @@ const ChoiceSection: React.FC<ChoiceSectionProps> = ({ onOpenSignup }) => {
                 }`}
                 onClick={() => setSelected("forex")}
               >
-                <span className="hidden sm:inline">SavannaFX Trading Path</span>
+                <span className="hidden sm:inline">The SavannaFX Path</span>
                 <span className="sm:hidden">SavannaFX</span>
               </button>
             </div>
@@ -147,7 +147,7 @@ const ChoiceSection: React.FC<ChoiceSectionProps> = ({ onOpenSignup }) => {
                   >
                     <Rocket className="text-gold flex-shrink-0" size={18} />
                   </motion.div>
-                  <span>SavannaFX Trading Path</span>
+                  <span>The SavannaFX Path</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 sm:space-y-3 relative z-10">

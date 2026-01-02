@@ -20,6 +20,15 @@ import ResetPassword from "./pages/ResetPassword";
 import TradeAnalysis from "./pages/TradeAnalysis";
 import SupabaseSessionProvider from "@/components/auth/SupabaseSessionProvider";
 import RequireAuth from "@/components/auth/RequireAuth";
+import RequireAdmin from "@/components/auth/RequireAdmin";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminEnquiries from "./pages/admin/AdminEnquiries";
+import AdminCollaborations from "./pages/admin/AdminCollaborations";
+import AdminTradeAnalyses from "./pages/admin/AdminTradeAnalyses";
+import AdminPurchases from "./pages/admin/AdminPurchases";
+import AdminSentiment from "./pages/admin/AdminSentiment";
+import AdminUsers from "./pages/admin/AdminUsers";
+import DebugAdmin from "./pages/DebugAdmin";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +55,15 @@ const App = () => (
             <Route path="/dashboard/collaborations" element={<RequireAuth><Collaborations /></RequireAuth>} />
             <Route path="/dashboard/trade-analysis" element={<RequireAuth><TradeAnalysis /></RequireAuth>} />
             <Route path="/dashboard/:section" element={<RequireAuth><DashboardFeature /></RequireAuth>} />
+            {/* Admin Routes */}
+            <Route path="/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
+            <Route path="/admin/enquiries" element={<RequireAdmin><AdminEnquiries /></RequireAdmin>} />
+            <Route path="/admin/collaborations" element={<RequireAdmin><AdminCollaborations /></RequireAdmin>} />
+            <Route path="/admin/trade-analyses" element={<RequireAdmin><AdminTradeAnalyses /></RequireAdmin>} />
+            <Route path="/admin/purchases" element={<RequireAdmin><AdminPurchases /></RequireAdmin>} />
+            <Route path="/admin/sentiment" element={<RequireAdmin><AdminSentiment /></RequireAdmin>} />
+            <Route path="/admin/users" element={<RequireAdmin><AdminUsers /></RequireAdmin>} />
+            <Route path="/debug-admin" element={<RequireAuth><DebugAdmin /></RequireAuth>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </SupabaseSessionProvider>

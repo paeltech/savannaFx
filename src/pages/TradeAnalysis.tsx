@@ -34,6 +34,7 @@ interface TradeAnalysis {
   exit_levels: any;
   risk_level: "low" | "medium" | "high" | null;
   price: number;
+  chart_image_url: string | null;
   created_at: string;
 }
 
@@ -403,6 +404,12 @@ const TradeAnalysis: React.FC = () => {
                                           <DollarSign size={14} />
                                           <span>${analysis.price.toFixed(2)}</span>
                                         </div>
+                                        {analysis.chart_image_url && (
+                                          <div className="flex items-center gap-1 text-green-500">
+                                            <LineChart size={14} />
+                                            <span>Chart included</span>
+                                          </div>
+                                        )}
                                       </div>
                                     </div>
                                     <Button
@@ -487,6 +494,21 @@ const TradeAnalysis: React.FC = () => {
                                 {/* Analysis Content */}
                                 {selectedAnalysis?.id === analysis.id && (
                                   <div className="mt-4 pt-4 border-t border-slate-800 space-y-4">
+                                  {analysis.chart_image_url && (
+                                    <div className="mb-4">
+                                      <h4 className="text-white font-medium mb-2">Chart</h4>
+                                      <div className="bg-slate-900/60 p-4 rounded-lg">
+                                        <img
+                                          src={analysis.chart_image_url}
+                                          alt={`${analysis.trading_pair} chart`}
+                                          className="w-full h-auto rounded-lg"
+                                          onError={(e) => {
+                                            (e.target as HTMLImageElement).style.display = 'none';
+                                          }}
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
                                   {analysis.summary && (
                                     <div className="mb-4">
                                       <h4 className="text-white font-medium mb-2">Summary</h4>
