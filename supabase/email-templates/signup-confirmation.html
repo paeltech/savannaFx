@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Welcome to SavannaFX</title>
+    <!--[if mso]>
+    <style type="text/css">
+        body, table, td {font-family: Arial, sans-serif !important;}
+    </style>
+    <![endif]-->
+</head>
+<body style="margin: 0; padding: 0; background-color: #000000; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+    <!-- Wrapper Table -->
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #000000;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <!-- Main Container -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; background-color: #262625; border-radius: 12px; overflow: hidden; border: 1px solid #777674;">
+                    <!-- Header with Logo -->
+                    <tr>
+                        <td align="center" style="padding: 40px 30px 30px; background: linear-gradient(135deg, #000000 0%, #262625 100%);">
+                            <img src="{{ .SiteURL }}/assets/logo.png" alt="SavannaFX Logo" width="120" height="auto" style="display: block; margin: 0 auto; border-radius: 8px;" />
+                        </td>
+                    </tr>
+                    
+                    <!-- Gold Accent Bar -->
+                    <tr>
+                        <td style="height: 4px; background: linear-gradient(90deg, #D4A854 0%, #F4C464 50%, #F5D085 100%);"></td>
+                    </tr>
+                    
+                    <!-- Main Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <!-- Welcome Heading -->
+                            <h1 style="margin: 0 0 20px 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 28px; font-weight: 800; line-height: 1.2; color: #FFFFFF; letter-spacing: -0.03em;">
+                                Welcome to SavannaFX! 🎉
+                            </h1>
+                            
+                            <!-- Greeting -->
+                            <p style="margin: 0 0 24px 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; line-height: 1.75; color: #A4A4A4; font-weight: 500;">
+                                Hi there,
+                            </p>
+                            
+                            <!-- Main Message -->
+                            <p style="margin: 0 0 24px 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; line-height: 1.75; color: #FFFFFF; font-weight: 500;">
+                                Thank you for joining <strong style="color: #F4C464;">SavannaFX</strong>! We're excited to have you on board and help you on your trading journey.
+                            </p>
+                            
+                            <p style="margin: 0 0 32px 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; line-height: 1.75; color: #A4A4A4; font-weight: 500;">
+                                To get started, please verify your email address by clicking the button below. This helps us keep your account secure.
+                            </p>
+                            
+                            <!-- CTA Button -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                <tr>
+                                    <td align="center" style="padding: 0 0 32px 0;">
+                                        <a href="{{ .ConfirmationURL }}" style="display: inline-block; padding: 16px 32px; background: linear-gradient(135deg, #D4A854 0%, #F4C464 100%); color: #000000; text-decoration: none; border-radius: 8px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.01em; box-shadow: 0 4px 12px rgba(244, 196, 100, 0.3);">
+                                            Verify Email Address
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Alternative Link -->
+                            <p style="margin: 0 0 32px 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #777674; font-weight: 500; text-align: center;">
+                                Or copy and paste this link into your browser:<br/>
+                                <a href="{{ .ConfirmationURL }}" style="color: #F4C464; text-decoration: underline; word-break: break-all;">{{ .ConfirmationURL }}</a>
+                            </p>
+                            
+                            <!-- Info Box -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #000000; border-left: 3px solid #F4C464; border-radius: 4px;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <p style="margin: 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #A4A4A4; font-weight: 500;">
+                                            <strong style="color: #F4C464;">💡 What's Next?</strong><br/>
+                                            Once verified, you'll have full access to our trading resources, signals, courses, and mentorship programs designed to help you thrive in the markets.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 30px; background-color: #000000; border-top: 1px solid #777674;">
+                            <p style="margin: 0 0 16px 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #A4A4A4; font-weight: 500; text-align: center;">
+                                This verification link will expire in 24 hours. If you didn't create an account, you can safely ignore this email.
+                            </p>
+                            
+                            <p style="margin: 0 0 20px 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 12px; line-height: 1.6; color: #777674; font-weight: 500; text-align: center;">
+                                Need help? Contact us at <a href="mailto:support@savannafx.co" style="color: #F4C464; text-decoration: none;">support@savannafx.co</a>
+                            </p>
+                            
+                            <!-- Social Links (Optional) -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                <tr>
+                                    <td align="center" style="padding: 20px 0 0 0;">
+                                        <p style="margin: 0 0 12px 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 12px; line-height: 1.6; color: #777674; font-weight: 500;">
+                                            Follow us for trading insights and updates
+                                        </p>
+                                        <!-- Add social media links here if needed -->
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Divider -->
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                <tr>
+                                    <td style="padding: 20px 0 0 0; border-top: 1px solid #777674;">
+                                        <p style="margin: 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 11px; line-height: 1.6; color: #777674; font-weight: 500; text-align: center;">
+                                            © 2024 SavannaFX. All rights reserved.<br/>
+                                            Empowering traders to survive and thrive in the markets.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                
+                <!-- Spacer -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                    <tr>
+                        <td style="padding: 20px 0;">
+                            <p style="margin: 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 11px; line-height: 1.6; color: #777674; font-weight: 500; text-align: center;">
+                                You received this email because you signed up for a SavannaFX account.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
