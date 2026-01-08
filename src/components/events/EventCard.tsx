@@ -18,7 +18,7 @@ export type EventItem = {
   organizer: string;
   description: string;
   category: "Networking" | "Workshop" | "Webinar" | string;
-  type: "Physical" | "Virtual";
+  type: "Physical" | "Virtual" | "Hybrid";
   priceType: "Free" | "Paid";
   sessions: number;
   location: string;

@@ -10,45 +10,101 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { showSuccess } from "@/utils/toast";
 import { Search } from "lucide-react";
 import FilterSaveBar from "@/components/forms/FilterSaveBar.tsx";
-import { PageTransition, ScrollReveal, StaggerChildren, fadeInUp } from "@/lib/animations";
+import { PageTransition, ScrollReveal, StaggerChildren } from "@/lib/animations";
+import { useQuery } from "@tanstack/react-query";
+import supabase from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
-const initialEvents: EventItem[] = [
-  {
-    id: "pips-and-chills",
-    title: "PIPS & CHILLS",
-    organizer: "SavannaFX",
-    description:
-      "Kojoforex's meet and greet dubbed Pips and Chills is happening this saturday 18th October 2025 at Vida e Cafe, Abelemkpe in Accra. Come meet and greet Ghana's top trader Kojoforex in person.",
-    category: "Networking",
-    type: "Physical",
-    priceType: "Free",
-    sessions: 1,
-    location: "Accra, Tanzania",
-    capacity: 1000,
-    registered: 1033,
-    coverUrl: "/assets/placeholder.svg",
-  },
-];
+interface Event {
+  id: string;
+  title: string;
+  organizer: string;
+  description: string;
+  category: string;
+  type: "Physical" | "Virtual" | "Hybrid";
+  price_type: "Free" | "Paid";
+  price: number;
+  location: string | null;
+  capacity: number;
+  cover_image_url: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  status: string;
+  registration_count?: number;
+}
 
 const EventsPage: React.FC = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = React.useState("");
-  const [typeFilter, setTypeFilter] = React.useState<"all" | "Physical" | "Virtual">("all");
+  const [typeFilter, setTypeFilter] = React.useState<"all" | "Physical" | "Virtual" | "Hybrid">("all");
   const [pricingFilter, setPricingFilter] = React.useState<"all" | "Free" | "Paid">("all");
-  const [categoryFilter, setCategoryFilter] = React.useState<"all" | "Networking" | "Workshop" | "Webinar">("all");
+  const [categoryFilter, setCategoryFilter] = React.useState<"all" | "Networking" | "Workshop" | "Webinar" | "Conference" | "Seminar" | "Other">("all");
 
-  const filtered = initialEvents.filter((e) => {
-    const matchesSearch =
-      e.title.toLowerCase().includes(search.toLowerCase()) ||
-      e.description.toLowerCase().includes(search.toLowerCase());
-    const matchesType = typeFilter === "all" ? true : e.type === typeFilter;
-    const matchesPricing = pricingFilter === "all" ? true : e.priceType === pricingFilter;
-    const matchesCategory = categoryFilter === "all" ? true : e.category === categoryFilter;
-    return matchesSearch && matchesType && matchesPricing && matchesCategory;
+  const { data: events, isLoading } = useQuery<Event[]>({
+    queryKey: ["events"],
+    queryFn: async () => {
+      const { data: eventsData, error: eventsError } = await supabase
+        .from("events")
+        .select("*")
+        .eq("status", "published")
+        .order("start_date", { ascending: true, nullsFirst: false });
+
+      if (eventsError) throw eventsError;
+
+      // Get registration counts for each event
+      const eventsWithCounts = await Promise.all(
+        (eventsData || []).map(async (event) => {
+          const { count } = await supabase
+            .from("event_registrations")
+            .select("*", { count: "exact", head: true })
+            .eq("event_id", event.id)
+            .in("registration_status", ["pending", "confirmed"]);
+
+          return {
+            ...event,
+            registration_count: count || 0,
+          };
+        })
+      );
+
+      return eventsWithCounts;
+    },
   });
 
+  const filtered = React.useMemo(() => {
+    if (!events) return [];
+
+    return events.filter((e) => {
+      const matchesSearch =
+        e.title.toLowerCase().includes(search.toLowerCase()) ||
+        e.description.toLowerCase().includes(search.toLowerCase()) ||
+        e.organizer.toLowerCase().includes(search.toLowerCase());
+      const matchesType = typeFilter === "all" ? true : e.type === typeFilter;
+      const matchesPricing = pricingFilter === "all" ? true : e.price_type === pricingFilter;
+      const matchesCategory = categoryFilter === "all" ? true : e.category === categoryFilter;
+      return matchesSearch && matchesType && matchesPricing && matchesCategory;
+    });
+  }, [events, search, typeFilter, pricingFilter, categoryFilter]);
+
+  const convertToEventItem = (event: Event): EventItem => {
+    return {
+      id: event.id,
+      title: event.title,
+      organizer: event.organizer,
+      description: event.description,
+      category: event.category,
+      type: event.type,
+      priceType: event.price_type,
+      sessions: 1, // Default, can be extended later
+      location: event.location || "TBA",
+      capacity: event.capacity,
+      registered: event.registration_count || 0,
+      coverUrl: event.cover_image_url || "/assets/placeholder.svg",
+    };
+  };
+
   const handleView = (eventId: string) => {
-    showSuccess("Opening event details…");
-    // Replace with real event details route if available
+    navigate(`/dashboard/events/${eventId}`);
   };
 
   const handleViewSessions = (eventId: string) => {
@@ -66,7 +122,9 @@ const EventsPage: React.FC = () => {
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
                   <h1 className="text-white text-xl md:text-2xl font-semibold">Events</h1>
-                  <p className="text-slate-400 text-sm">{filtered.length} event{filtered.length !== 1 ? "s" : ""} available</p>
+                  <p className="text-slate-400 text-sm">
+                    {isLoading ? "Loading..." : `${filtered.length} event${filtered.length !== 1 ? "s" : ""} available`}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -93,6 +151,7 @@ const EventsPage: React.FC = () => {
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="Physical">Physical</SelectItem>
                 <SelectItem value="Virtual">Virtual</SelectItem>
+                <SelectItem value="Hybrid">Hybrid</SelectItem>
               </SelectContent>
             </Select>
             <Select value={pricingFilter} onValueChange={(v) => setPricingFilter(v as typeof pricingFilter)}>
@@ -114,6 +173,9 @@ const EventsPage: React.FC = () => {
                 <SelectItem value="Networking">Networking</SelectItem>
                 <SelectItem value="Workshop">Workshop</SelectItem>
                 <SelectItem value="Webinar">Webinar</SelectItem>
+                <SelectItem value="Conference">Conference</SelectItem>
+                <SelectItem value="Seminar">Seminar</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -127,18 +189,29 @@ const EventsPage: React.FC = () => {
         </div>
 
         {/* Event list */}
-        <StaggerChildren className="grid grid-cols-1 gap-6">
-          {filtered.map((ev) => (
-            <EventCard key={ev.id} event={ev} onView={handleView} onViewSessions={handleViewSessions} />
-          ))}
-          {filtered.length === 0 && (
-            <SavannaCard>
-               <CardContent className="p-6 text-center text-slate-400">
-                 No events match your filters.
-               </CardContent>
-            </SavannaCard>
-          )}
-        </StaggerChildren>
+        {isLoading ? (
+          <SavannaCard>
+            <CardContent className="p-6 text-center text-slate-400">
+              <div className="w-12 h-12 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              Loading events...
+            </CardContent>
+          </SavannaCard>
+        ) : (
+          <StaggerChildren className="grid grid-cols-1 gap-6">
+            {filtered.map((ev) => (
+              <EventCard key={ev.id} event={convertToEventItem(ev)} onView={handleView} onViewSessions={handleViewSessions} />
+            ))}
+            {filtered.length === 0 && (
+              <SavannaCard>
+                <CardContent className="p-6 text-center text-slate-400">
+                  {events && events.length === 0
+                    ? "No events available at the moment. Check back soon!"
+                    : "No events match your filters."}
+                </CardContent>
+              </SavannaCard>
+            )}
+          </StaggerChildren>
+        )}
       </DashboardLayout>
     </PageTransition>
   );

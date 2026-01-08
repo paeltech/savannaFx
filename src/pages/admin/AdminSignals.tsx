@@ -1,0 +1,459 @@
+"use client";
+
+import React, { useState } from "react";
+import DashboardLayout from "../../components/dashboard/DashboardLayout.tsx";
+import { CardContent } from "@/components/ui/card";
+import SavannaCard from "@/components/dashboard/SavannaCard";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { SignalHigh, Edit, DollarSign, Users, TrendingUp } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import supabase from "@/integrations/supabase/client";
+import { showSuccess, showError } from "@/utils/toast";
+import { format } from "date-fns";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Form, FormField, FormItem, FormLabel, FormMessage, FormControl } from "@/components/ui/form";
+import { PageTransition } from "@/lib/animations";
+import { Switch } from "@/components/ui/switch";
+
+interface SignalPricing {
+  id: string;
+  pricing_type: "monthly" | "per_pip";
+  price: number;
+  currency: string;
+  description: string | null;
+  features: string[] | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface SignalSubscription {
+  id: string;
+  user_id: string;
+  pricing_id: string;
+  subscription_type: "monthly" | "per_pip";
+  status: "active" | "cancelled" | "expired" | "pending";
+  payment_status: "pending" | "completed" | "failed" | "refunded";
+  amount_paid: number;
+  start_date: string;
+  end_date: string | null;
+  pips_purchased: number;
+  pips_used: number;
+  created_at: string;
+}
+
+const pricingSchema = z.object({
+  price: z.number().min(0, "Price must be positive"),
+  description: z.string().optional(),
+  is_active: z.boolean(),
+});
+
+type PricingFormValues = z.infer<typeof pricingSchema>;
+
+const AdminSignals: React.FC = () => {
+  const [selectedPricing, setSelectedPricing] = useState<SignalPricing | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  const form = useForm<PricingFormValues>({
+    resolver: zodResolver(pricingSchema),
+    defaultValues: {
+      price: 0,
+      description: "",
+      is_active: true,
+    },
+  });
+
+  // Fetch pricing data
+  const { data: pricingData, isLoading: pricingLoading } = useQuery<SignalPricing[]>({
+    queryKey: ["signal-pricing"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("signal_pricing")
+        .select("*")
+        .order("pricing_type");
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Fetch subscriptions data
+  const { data: subscriptions, isLoading: subscriptionsLoading } = useQuery<SignalSubscription[]>({
+    queryKey: ["signal-subscriptions"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("signal_subscriptions")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const updatePricingMutation = useMutation({
+    mutationFn: async ({ id, values }: { id: string; values: PricingFormValues }) => {
+      const { error } = await supabase
+        .from("signal_pricing")
+        .update({
+          price: values.price,
+          description: values.description || null,
+          is_active: values.is_active,
+        })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["signal-pricing"] });
+      showSuccess("Pricing updated successfully");
+      setIsDialogOpen(false);
+      setSelectedPricing(null);
+      form.reset();
+    },
+    onError: (error: any) => {
+      showError(error.message || "Failed to update pricing");
+    },
+  });
+
+  const handleEdit = (pricing: SignalPricing) => {
+    setSelectedPricing(pricing);
+    form.reset({
+      price: pricing.price,
+      description: pricing.description || "",
+      is_active: pricing.is_active,
+    });
+    setIsDialogOpen(true);
+  };
+
+  const onSubmit = (values: PricingFormValues) => {
+    if (selectedPricing) {
+      updatePricingMutation.mutate({ id: selectedPricing.id, values });
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const variants: Record<string, { label: string; className: string }> = {
+      active: { label: "Active", className: "bg-green-600 text-white" },
+      cancelled: { label: "Cancelled", className: "bg-red-600 text-white" },
+      expired: { label: "Expired", className: "bg-gray-600 text-white" },
+      pending: { label: "Pending", className: "bg-yellow-600 text-white" },
+    };
+    const variant = variants[status] || variants.pending;
+    return <Badge className={variant.className}>{variant.label}</Badge>;
+  };
+
+  const getPaymentStatusBadge = (status: string) => {
+    const variants: Record<string, { label: string; className: string }> = {
+      completed: { label: "Completed", className: "bg-green-600 text-white" },
+      pending: { label: "Pending", className: "bg-yellow-600 text-white" },
+      failed: { label: "Failed", className: "bg-red-600 text-white" },
+      refunded: { label: "Refunded", className: "bg-blue-600 text-white" },
+    };
+    const variant = variants[status] || variants.pending;
+    return <Badge className={variant.className}>{variant.label}</Badge>;
+  };
+
+  // Calculate statistics
+  const stats = {
+    totalSubscriptions: subscriptions?.length || 0,
+    activeSubscriptions: subscriptions?.filter(s => s.status === "active").length || 0,
+    totalRevenue: subscriptions?.reduce((sum, s) => sum + Number(s.amount_paid), 0) || 0,
+    monthlySubscribers: subscriptions?.filter(s => s.subscription_type === "monthly" && s.status === "active").length || 0,
+    perPipSubscribers: subscriptions?.filter(s => s.subscription_type === "per_pip" && s.status === "active").length || 0,
+  };
+
+  return (
+    <PageTransition>
+      <DashboardLayout>
+        {/* Header with Stats */}
+        <SavannaCard className="mb-6">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <SignalHigh className="text-gold" size={24} />
+              <div>
+                <h1 className="text-2xl font-semibold text-white">Signal Pricing & Subscriptions</h1>
+                <p className="text-rainy-grey text-sm mt-1">
+                  Manage signal pricing and view subscription statistics
+                </p>
+              </div>
+            </div>
+
+            {/* Statistics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="bg-nero border border-steel-wool rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="text-gold" size={18} />
+                  <span className="text-rainy-grey text-sm">Total Subscriptions</span>
+                </div>
+                <div className="text-2xl font-bold text-white">{stats.totalSubscriptions}</div>
+              </div>
+              <div className="bg-nero border border-steel-wool rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="text-green-500" size={18} />
+                  <span className="text-rainy-grey text-sm">Active</span>
+                </div>
+                <div className="text-2xl font-bold text-white">{stats.activeSubscriptions}</div>
+              </div>
+              <div className="bg-nero border border-steel-wool rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <DollarSign className="text-gold" size={18} />
+                  <span className="text-rainy-grey text-sm">Total Revenue</span>
+                </div>
+                <div className="text-2xl font-bold text-white">${stats.totalRevenue.toFixed(2)}</div>
+              </div>
+              <div className="bg-nero border border-steel-wool rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <SignalHigh className="text-blue-500" size={18} />
+                  <span className="text-rainy-grey text-sm">Monthly Plans</span>
+                </div>
+                <div className="text-2xl font-bold text-white">{stats.monthlySubscribers}</div>
+              </div>
+              <div className="bg-nero border border-steel-wool rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <SignalHigh className="text-purple-500" size={18} />
+                  <span className="text-rainy-grey text-sm">Per-Pip Plans</span>
+                </div>
+                <div className="text-2xl font-bold text-white">{stats.perPipSubscribers}</div>
+              </div>
+            </div>
+          </CardContent>
+        </SavannaCard>
+
+        {/* Pricing Configuration */}
+        <SavannaCard className="mb-6">
+          <CardContent className="p-6">
+            <h2 className="text-xl font-semibold text-white mb-4">Pricing Configuration</h2>
+            {pricingLoading ? (
+              <div className="text-center text-rainy-grey py-8">Loading pricing...</div>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-4">
+                {pricingData?.map((pricing) => (
+                  <div
+                    key={pricing.id}
+                    className="bg-nero border border-steel-wool rounded-lg p-6 space-y-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-semibold text-white capitalize">
+                          {pricing.pricing_type === "monthly" ? "Monthly Subscription" : "Per-Pip Payment"}
+                        </h3>
+                        <p className="text-rainy-grey text-sm mt-1">{pricing.description}</p>
+                      </div>
+                      <Badge className={pricing.is_active ? "bg-green-600" : "bg-gray-600"}>
+                        {pricing.is_active ? "Active" : "Inactive"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-bold text-gold">
+                        ${pricing.price.toFixed(2)}
+                      </span>
+                      <span className="text-rainy-grey">
+                        {pricing.pricing_type === "monthly" ? "/month" : "/pip"}
+                      </span>
+                    </div>
+                    {pricing.features && Array.isArray(pricing.features) && (
+                      <ul className="space-y-2">
+                        {pricing.features.map((feature, idx) => (
+                          <li key={idx} className="text-sm text-rainy-grey flex items-start gap-2">
+                            <span className="text-gold mt-1">•</span>
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <Button
+                      onClick={() => handleEdit(pricing)}
+                      className="w-full bg-gold text-cursed-black hover:bg-gold-dark"
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit Pricing
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </SavannaCard>
+
+        {/* Subscriptions Table */}
+        <SavannaCard>
+          <CardContent className="p-6">
+            <h2 className="text-xl font-semibold text-white mb-4">Recent Subscriptions</h2>
+            {subscriptionsLoading ? (
+              <div className="text-center text-rainy-grey py-8">Loading subscriptions...</div>
+            ) : subscriptions?.length === 0 ? (
+              <div className="text-center text-rainy-grey py-8">No subscriptions yet</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-steel-wool hover:bg-nero/50">
+                      <TableHead className="text-white">User ID</TableHead>
+                      <TableHead className="text-white">Type</TableHead>
+                      <TableHead className="text-white">Status</TableHead>
+                      <TableHead className="text-white">Payment</TableHead>
+                      <TableHead className="text-white">Amount</TableHead>
+                      <TableHead className="text-white">Pips</TableHead>
+                      <TableHead className="text-white">Start Date</TableHead>
+                      <TableHead className="text-white">End Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {subscriptions?.map((subscription) => (
+                      <TableRow key={subscription.id} className="border-steel-wool hover:bg-nero/50">
+                        <TableCell className="text-rainy-grey font-mono text-xs">
+                          {subscription.user_id.substring(0, 8)}...
+                        </TableCell>
+                        <TableCell className="text-white capitalize">
+                          {subscription.subscription_type === "monthly" ? "Monthly" : "Per-Pip"}
+                        </TableCell>
+                        <TableCell>{getStatusBadge(subscription.status)}</TableCell>
+                        <TableCell>{getPaymentStatusBadge(subscription.payment_status)}</TableCell>
+                        <TableCell className="text-white">${subscription.amount_paid.toFixed(2)}</TableCell>
+                        <TableCell className="text-white">
+                          {subscription.subscription_type === "per_pip" 
+                            ? `${subscription.pips_used}/${subscription.pips_purchased}`
+                            : "N/A"}
+                        </TableCell>
+                        <TableCell className="text-rainy-grey">
+                          {format(new Date(subscription.start_date), "MMM dd, yyyy")}
+                        </TableCell>
+                        <TableCell className="text-rainy-grey">
+                          {subscription.end_date 
+                            ? format(new Date(subscription.end_date), "MMM dd, yyyy")
+                            : "N/A"}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </SavannaCard>
+
+        {/* Edit Pricing Dialog */}
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="bg-black border-steel-wool text-white max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-white">
+                Edit {selectedPricing?.pricing_type === "monthly" ? "Monthly" : "Per-Pip"} Pricing
+              </DialogTitle>
+              <DialogDescription className="text-rainy-grey">
+                Update the pricing configuration for this plan
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">
+                        Price (${selectedPricing?.pricing_type === "monthly" ? "per month" : "per pip"})
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          className="bg-nero border-steel-wool text-white"
+                          {...field}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Brief description of this pricing plan"
+                          className="bg-nero border-steel-wool text-white placeholder:text-rainy-grey"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="is_active"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-between rounded-lg border border-steel-wool p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-white">Active Status</FormLabel>
+                        <div className="text-sm text-rainy-grey">
+                          Enable or disable this pricing option
+                        </div>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsDialogOpen(false);
+                      setSelectedPricing(null);
+                      form.reset();
+                    }}
+                    className="border-steel-wool text-rainy-grey"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-gold text-cursed-black hover:bg-gold-dark"
+                    disabled={updatePricingMutation.isPending}
+                  >
+                    Update Pricing
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+      </DashboardLayout>
+    </PageTransition>
+  );
+};
+
+export default AdminSignals;

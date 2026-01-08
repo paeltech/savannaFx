@@ -170,6 +170,7 @@ const TradeWithSavanna: React.FC = () => {
               <Button
                 className="mt-3 w-full bg-gradient-to-r from-gold-dark to-gold text-cursed-black hover:shadow-lg hover:shadow-gold/20 font-semibold h-11 rounded-md"
                 onClick={handleRegister}
+                disabled
               >
                 REGISTER ON EXNESS
               </Button>

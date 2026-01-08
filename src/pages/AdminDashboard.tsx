@@ -16,6 +16,8 @@ import {
   Users,
   TrendingUp,
   Clock,
+  Calendar,
+  SignalHigh,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { PageTransition } from "@/lib/animations";
@@ -45,6 +47,12 @@ interface DashboardStats {
   sentimentVotes: {
     total: number;
     today: number;
+  };
+  signalSubscriptions: {
+    total: number;
+    active: number;
+    monthly: number;
+    perPip: number;
   };
 }
 
@@ -118,12 +126,25 @@ const AdminDashboard: React.FC = () => {
         today: votesData?.filter((v) => new Date(v.created_at) >= today).length || 0,
       };
 
+      // Fetch signal subscriptions stats
+      const { data: subscriptionsData } = await supabase
+        .from("signal_subscriptions")
+        .select("status, subscription_type");
+
+      const signalSubscriptions = {
+        total: subscriptionsData?.length || 0,
+        active: subscriptionsData?.filter((s) => s.status === "active").length || 0,
+        monthly: subscriptionsData?.filter((s) => s.subscription_type === "monthly" && s.status === "active").length || 0,
+        perPip: subscriptionsData?.filter((s) => s.subscription_type === "per_pip" && s.status === "active").length || 0,
+      };
+
       return {
         enquiries,
         collaborations,
         tradeAnalyses,
         purchases,
         sentimentVotes,
+        signalSubscriptions,
       };
     },
     refetchInterval: 30000, // Refetch every 30 seconds
@@ -268,6 +289,20 @@ const AdminDashboard: React.FC = () => {
             description="Manage user roles and permissions"
             Icon={Users}
             iconBg="bg-orange-700"
+          />
+          <DashboardTile
+            to="/admin/events"
+            title="Event Management"
+            description="Create and manage platform events"
+            Icon={Calendar}
+            iconBg="bg-indigo-700"
+          />
+          <DashboardTile
+            to="/admin/signals"
+            title="Signal Management"
+            description="Configure pricing and subscriptions"
+            Icon={SignalHigh}
+            iconBg="bg-blue-600"
           />
         </div>
       </DashboardLayout>

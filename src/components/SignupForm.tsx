@@ -293,10 +293,14 @@ const SignupForm: React.FC<SignupFormProps> = ({
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      // Get the current origin for the redirect URL after email confirmation
+      const redirectUrl = `${window.location.origin}/dashboard`;
+      
+      const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
         options: {
+          emailRedirectTo: redirectUrl,
           data: {
             first_name: values.firstName,
             last_name: values.lastName,
@@ -306,6 +310,14 @@ const SignupForm: React.FC<SignupFormProps> = ({
       });
 
       if (error) {
+        // Log full error details for debugging
+        console.error("Signup error details:", {
+          message: error.message,
+          code: error.code,
+          status: error.status,
+          name: error.name,
+        });
+
         // Check for duplicate email errors - Supabase returns specific error codes/messages
         const errorMessage = error.message.toLowerCase();
         const errorCode = error.code?.toLowerCase() || "";
@@ -333,11 +345,28 @@ const SignupForm: React.FC<SignupFormProps> = ({
             onOpenChange(false);
             onSwitchToLogin?.();
           }, 2000);
+        } else if (
+          // Check for email sending errors
+          errorMessage.includes("email") && 
+          (errorMessage.includes("send") || errorMessage.includes("deliver") || errorMessage.includes("smtp"))
+        ) {
+          // Email sending specific error
+          showError(
+            "Unable to send confirmation email. Please check your email address and try again. If the problem persists, contact support@savannafx.co"
+          );
+          console.error("Email sending error:", error);
         } else {
           // Show the actual error message for other errors
           showError(error.message || "An error occurred during signup. Please try again.");
         }
         return;
+      }
+
+      // Check if email confirmation is required
+      // In some Supabase configurations, the user might be created but email not sent
+      if (data?.user && !data?.session) {
+        // User created but needs email confirmation
+        console.log("User created, confirmation email should be sent");
       }
 
       showSuccess("Account created successfully! Please check your email to verify your account.");

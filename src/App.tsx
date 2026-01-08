@@ -12,6 +12,7 @@ import Signals from "./pages/Signals";
 import CoursePage from "./pages/Course";
 import OneOnOne from "./pages/OneOnOne";
 import EventsPage from "./pages/Events";
+import EventDetails from "./pages/EventDetails";
 import Sentiment from "./pages/Sentiment";
 import Enquiry from "./pages/Enquiry";
 import LotSize from "./pages/LotSize";
@@ -29,6 +30,8 @@ import AdminTradeAnalyses from "./pages/admin/AdminTradeAnalyses";
 import AdminPurchases from "./pages/admin/AdminPurchases";
 import AdminSentiment from "./pages/admin/AdminSentiment";
 import AdminUsers from "./pages/admin/AdminUsers";
+import AdminEvents from "./pages/admin/AdminEvents";
+import AdminSignals from "./pages/admin/AdminSignals";
 import DebugAdmin from "./pages/DebugAdmin";
 
 const queryClient = new QueryClient();
@@ -51,6 +54,7 @@ const App = () => (
             <Route path="/dashboard/course" element={<RequireAuth><CoursePage /></RequireAuth>} />
             <Route path="/dashboard/one-on-one" element={<RequireAuth><OneOnOne /></RequireAuth>} />
             <Route path="/dashboard/events" element={<RequireAuth><EventsPage /></RequireAuth>} />
+            <Route path="/dashboard/events/:eventId" element={<RequireAuth><EventDetails /></RequireAuth>} />
             <Route path="/dashboard/sentiment" element={<RequireAuth><Sentiment /></RequireAuth>} />
             <Route path="/dashboard/enquiry" element={<RequireAuth><Enquiry /></RequireAuth>} />
             <Route path="/dashboard/lot-size" element={<RequireAuth><LotSize /></RequireAuth>} />
@@ -65,6 +69,8 @@ const App = () => (
             <Route path="/admin/purchases" element={<RequireAdmin><AdminPurchases /></RequireAdmin>} />
             <Route path="/admin/sentiment" element={<RequireAdmin><AdminSentiment /></RequireAdmin>} />
             <Route path="/admin/users" element={<RequireAdmin><AdminUsers /></RequireAdmin>} />
+            <Route path="/admin/events" element={<RequireAdmin><AdminEvents /></RequireAdmin>} />
+            <Route path="/admin/signals" element={<RequireAdmin><AdminSignals /></RequireAdmin>} />
             <Route path="/debug-admin" element={<RequireAuth><DebugAdmin /></RequireAuth>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
