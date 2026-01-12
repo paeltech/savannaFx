@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Users, Search, Shield, UserCheck, UserX } from "lucide-react";
+import { Users, Search, Shield, UserCheck, Mail, Phone, Calendar, Clock } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import supabase from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -35,6 +35,7 @@ interface UserWithRole {
   created_at: string;
   role: "admin" | "moderator" | "user";
   role_created_at: string | null;
+  phone_number?: string | null;
 }
 
 const AdminUsers: React.FC = () => {
@@ -49,10 +50,10 @@ const AdminUsers: React.FC = () => {
       const { data, error } = await supabase.rpc("get_all_users_with_roles");
 
       if (error) {
-        // If function doesn't exist, fall back to querying user_roles
-        console.warn("get_all_users_with_roles function not found, falling back to user_roles table:", error);
+        // If function doesn't exist, fall back to manual query
+        console.warn("get_all_users_with_roles function not found, using fallback query:", error);
         
-        // Fallback: Get users from user_roles table
+        // Fallback: Get all users from user_roles (which should now have all users after migration)
         let query = supabase.from("user_roles").select("*").order("created_at", { ascending: false });
 
         if (roleFilter !== "all") {
@@ -62,20 +63,57 @@ const AdminUsers: React.FC = () => {
         const { data: roles, error: rolesError } = await query;
         if (rolesError) throw rolesError;
 
-        // Map to UserWithRole format
-        return (roles || []).map((role: any) => ({
+        // Get user emails from auth.users (we'll need to use a service role or admin function for this)
+        // For now, return users with roles and mark emails as unavailable
+        const usersWithRoles = (roles || []).map((role: any) => ({
           user_id: role.user_id,
-          email: "", // Email not available in fallback
+          email: "", // Email not available in fallback without service role
           created_at: role.created_at,
           role: role.role,
           role_created_at: role.created_at,
+          phone_number: null,
         }));
+
+        // Fetch phone numbers from user_profiles
+        const userIds = usersWithRoles.map((u: UserWithRole) => u.user_id);
+        if (userIds.length > 0) {
+          const { data: profiles, error: profilesError } = await supabase
+            .from("user_profiles")
+            .select("id, phone_number")
+            .in("id", userIds);
+
+          if (!profilesError && profiles) {
+            return usersWithRoles.map((user: UserWithRole) => ({
+              ...user,
+              phone_number: profiles.find((p) => p.id === user.user_id)?.phone_number || null,
+            }));
+          }
+        }
+
+        return usersWithRoles;
       }
 
       // Filter by role if needed
       let filteredData = data || [];
       if (roleFilter !== "all") {
         filteredData = filteredData.filter((user: UserWithRole) => user.role === roleFilter);
+      }
+
+      // Fetch phone numbers from user_profiles
+      const userIds = filteredData.map((user: UserWithRole) => user.user_id);
+      if (userIds.length > 0) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from("user_profiles")
+          .select("id, phone_number")
+          .in("id", userIds);
+
+        if (!profilesError && profiles) {
+          // Merge phone numbers into users
+          filteredData = filteredData.map((user: UserWithRole) => ({
+            ...user,
+            phone_number: profiles.find((p) => p.id === user.user_id)?.phone_number || null,
+          }));
+        }
       }
 
       return filteredData as UserWithRole[];
@@ -130,18 +168,44 @@ const AdminUsers: React.FC = () => {
     return (
       user.user_id.toLowerCase().includes(query) ||
       user.email?.toLowerCase().includes(query) ||
-      (user.email && user.email.toLowerCase().includes(query))
+      user.phone_number?.toLowerCase().includes(query) ||
+      user.role.toLowerCase().includes(query)
     );
   });
 
+  // Calculate statistics
+  const stats = {
+    total: users?.length || 0,
+    admins: users?.filter((u) => u.role === "admin").length || 0,
+    moderators: users?.filter((u) => u.role === "moderator").length || 0,
+    regularUsers: users?.filter((u) => u.role === "user").length || 0,
+  };
+
   const getRoleBadge = (role: string) => {
-    const variants: Record<string, { label: string; className: string }> = {
-      admin: { label: "Admin", className: "bg-red-600 text-white" },
-      moderator: { label: "Moderator", className: "bg-blue-600 text-white" },
-      user: { label: "User", className: "bg-gray-600 text-white" },
+    const variants: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
+      admin: { 
+        label: "Admin", 
+        className: "bg-red-600/90 hover:bg-red-600 text-white border-red-500/50 shadow-sm",
+        icon: <Shield className="h-3 w-3 mr-1" />
+      },
+      moderator: { 
+        label: "Moderator", 
+        className: "bg-blue-600/90 hover:bg-blue-600 text-white border-blue-500/50 shadow-sm",
+        icon: <UserCheck className="h-3 w-3 mr-1" />
+      },
+      user: { 
+        label: "User", 
+        className: "bg-gray-600/90 hover:bg-gray-600 text-white border-gray-500/50 shadow-sm",
+        icon: <Users className="h-3 w-3 mr-1" />
+      },
     };
     const variant = variants[role] || variants.user;
-    return <Badge className={variant.className}>{variant.label}</Badge>;
+    return (
+      <Badge className={`${variant.className} font-semibold px-2.5 py-1 border flex items-center w-fit`}>
+        {variant.icon}
+        {variant.label}
+      </Badge>
+    );
   };
 
   return (
@@ -149,21 +213,64 @@ const AdminUsers: React.FC = () => {
       <DashboardLayout>
         <SavannaCard className="mb-6">
           <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Users className="text-gold" size={24} />
-              <div>
-                <h1 className="text-2xl font-semibold text-white">User Management</h1>
-                <p className="text-rainy-grey text-sm mt-1">
-                  Manage user roles and permissions
-                </p>
+            <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+              <div className="flex items-center gap-3">
+                <Users className="text-gold" size={24} />
+                <div>
+                  <h1 className="text-2xl font-semibold text-white">User Management</h1>
+                  <p className="text-rainy-grey text-sm mt-1">
+                    Manage user roles and permissions
+                  </p>
+                </div>
               </div>
+              {users && users.length > 0 && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-gold/10 rounded-lg border border-gold/20">
+                  <Users className="h-4 w-4 text-gold" />
+                  <span className="text-white font-semibold">{stats.total}</span>
+                  <span className="text-rainy-grey text-sm">Total Users</span>
+                </div>
+              )}
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 mt-6">
+            {/* Statistics Grid */}
+            {users && users.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-nero border border-steel-wool rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users className="text-gold" size={18} />
+                    <span className="text-rainy-grey text-sm">Total Users</span>
+                  </div>
+                  <div className="text-2xl font-bold text-white">{stats.total}</div>
+                </div>
+                <div className="bg-nero border border-steel-wool rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Shield className="text-red-500" size={18} />
+                    <span className="text-rainy-grey text-sm">Admins</span>
+                  </div>
+                  <div className="text-2xl font-bold text-white">{stats.admins}</div>
+                </div>
+                <div className="bg-nero border border-steel-wool rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <UserCheck className="text-blue-500" size={18} />
+                    <span className="text-rainy-grey text-sm">Moderators</span>
+                  </div>
+                  <div className="text-2xl font-bold text-white">{stats.moderators}</div>
+                </div>
+                <div className="bg-nero border border-steel-wool rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users className="text-gray-400" size={18} />
+                    <span className="text-rainy-grey text-sm">Regular Users</span>
+                  </div>
+                  <div className="text-2xl font-bold text-white">{stats.regularUsers}</div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-rainy-grey" size={18} />
                 <Input
-                  placeholder="Search by user ID or email..."
+                  placeholder="Search by user ID, email, or phone..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 bg-nero border-steel-wool text-white placeholder:text-rainy-grey"
@@ -188,58 +295,123 @@ const AdminUsers: React.FC = () => {
         <SavannaCard>
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="p-8 text-center text-rainy-grey">Loading...</div>
+              <div className="p-8 text-center text-rainy-grey">Loading users...</div>
             ) : filteredUsers?.length === 0 ? (
-              <div className="p-8 text-center text-rainy-grey">No users found</div>
+              <div className="p-8 text-center text-rainy-grey">
+                <Users className="mx-auto mb-4 text-rainy-grey" size={48} />
+                <p className="text-lg font-medium text-white mb-2">No users found</p>
+                <p className="text-sm">
+                  {searchQuery ? "Try adjusting your search criteria" : "No users in the system yet"}
+                </p>
+              </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-steel-wool hover:bg-nero/50">
-                      <TableHead className="text-white">User ID</TableHead>
-                      <TableHead className="text-white">Email</TableHead>
-                      <TableHead className="text-white">Current Role</TableHead>
-                      <TableHead className="text-white">Created</TableHead>
-                      <TableHead className="text-white">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredUsers?.map((user) => (
-                      <TableRow key={user.user_id} className="border-steel-wool hover:bg-nero/50">
-                        <TableCell className="text-rainy-grey font-mono text-xs">
-                          {user.user_id.substring(0, 8)}...
-                        </TableCell>
-                        <TableCell className="text-white">
-                          {user.email || "N/A"}
-                        </TableCell>
-                        <TableCell>{getRoleBadge(user.role)}</TableCell>
-                        <TableCell className="text-rainy-grey">
-                          {format(new Date(user.created_at), "MMM dd, yyyy")}
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={user.role}
-                            onValueChange={(value) =>
-                              updateRoleMutation.mutate({
-                                userId: user.user_id,
-                                role: value as "admin" | "moderator" | "user",
-                              })
-                            }
-                          >
-                            <SelectTrigger className="w-[140px] bg-nero border-steel-wool text-white text-xs h-8">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="user">User</SelectItem>
-                              <SelectItem value="moderator">Moderator</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
+              <div className="overflow-x-auto rounded-lg border border-steel-wool/50 bg-nero/30 backdrop-blur-sm">
+                <div className="min-w-full">
+                  <Table className="w-full">
+                    <TableHeader>
+                      <TableRow className="border-steel-wool bg-nero/90 backdrop-blur-sm hover:bg-nero/95 sticky top-0 z-10 shadow-lg">
+                        <TableHead className="text-white font-semibold py-4 px-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4 text-gold" />
+                            <span>User ID</span>
+                          </div>
+                        </TableHead>
+                        <TableHead className="text-white font-semibold py-4 px-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-gold" />
+                            <span>Email</span>
+                          </div>
+                        </TableHead>
+                        <TableHead className="text-white font-semibold py-4 px-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-gold" />
+                            <span>Phone</span>
+                          </div>
+                        </TableHead>
+                        <TableHead className="text-white font-semibold py-4 px-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <Shield className="h-4 w-4 text-gold" />
+                            <span>Role</span>
+                          </div>
+                        </TableHead>
+                        <TableHead className="text-white font-semibold py-4 px-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-gold" />
+                            <span>Created</span>
+                          </div>
+                        </TableHead>
+                        <TableHead className="text-white font-semibold py-4 px-4 whitespace-nowrap text-right">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredUsers?.map((user) => (
+                        <TableRow 
+                          key={user.user_id} 
+                          className="border-steel-wool/50 hover:bg-nero/60 transition-all duration-200 group"
+                        >
+                          <TableCell className="text-white py-4 px-4">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full bg-gold opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                              <span className="font-mono text-sm font-medium">
+                                {user.user_id.substring(0, 8)}...
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-white py-4 px-4">
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-4 w-4 text-rainy-grey" />
+                              <span className={user.email ? "" : "text-rainy-grey italic"}>
+                                {user.email || "N/A"}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-white py-4 px-4">
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4 text-rainy-grey" />
+                              <span className={user.phone_number ? "" : "text-rainy-grey italic"}>
+                                {user.phone_number || "N/A"}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4 px-4">{getRoleBadge(user.role)}</TableCell>
+                          <TableCell className="text-rainy-grey py-4 px-4">
+                            <div className="space-y-1">
+                              <div className="text-sm font-medium text-white/90">
+                                {format(new Date(user.created_at), "MMM dd, yyyy")}
+                              </div>
+                              <div className="text-xs flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {format(new Date(user.created_at), "HH:mm:ss")}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-4 px-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Select
+                                value={user.role}
+                                onValueChange={(value) =>
+                                  updateRoleMutation.mutate({
+                                    userId: user.user_id,
+                                    role: value as "admin" | "moderator" | "user",
+                                  })
+                                }
+                              >
+                                <SelectTrigger className="w-[140px] bg-nero border-steel-wool text-white text-xs h-8 hover:border-gold/50">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="user">User</SelectItem>
+                                  <SelectItem value="moderator">Moderator</SelectItem>
+                                  <SelectItem value="admin">Admin</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             )}
           </CardContent>

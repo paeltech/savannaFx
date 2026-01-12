@@ -390,6 +390,58 @@ const SignupForm: React.FC<SignupFormProps> = ({
           console.error("Error creating/updating user profile:", profileError);
           showError("Account created but failed to save phone number. Please update it in your profile settings.");
         }
+
+        // Auto-subscribe to monthly signals
+        // Note: A database trigger should handle this automatically, but we do it here as a backup
+        try {
+          // Get monthly pricing
+          const { data: monthlyPricing, error: pricingError } = await supabase
+            .from("signal_pricing")
+            .select("id")
+            .eq("pricing_type", "monthly")
+            .eq("is_active", true)
+            .single();
+
+          if (!pricingError && monthlyPricing) {
+            // Check if subscription already exists (trigger may have created it)
+            const { data: existingSub } = await supabase
+              .from("signal_subscriptions")
+              .select("id")
+              .eq("user_id", data.user.id)
+              .eq("status", "active")
+              .maybeSingle();
+
+            // Only create if it doesn't exist
+            if (!existingSub) {
+              const endDate = new Date();
+              endDate.setMonth(endDate.getMonth() + 1);
+
+              const { error: subscriptionError } = await supabase
+                .from("signal_subscriptions")
+                .insert({
+                  user_id: data.user.id,
+                  pricing_id: monthlyPricing.id,
+                  subscription_type: "monthly",
+                  status: "active",
+                  payment_status: "completed",
+                  amount_paid: 0.00,
+                  whatsapp_notifications: true,
+                  email_notifications: true,
+                  telegram_notifications: false,
+                  start_date: new Date().toISOString(),
+                  end_date: endDate.toISOString(),
+                });
+
+              if (subscriptionError) {
+                console.error("Error creating subscription:", subscriptionError);
+                // Don't show error to user - trigger should handle it or admin can fix
+              }
+            }
+          }
+        } catch (subscriptionErr) {
+          console.error("Error in subscription creation:", subscriptionErr);
+          // Don't show error to user - trigger should handle it or admin can fix
+        }
       }
 
       showSuccess("Account created successfully! Please check your email to verify your account.");

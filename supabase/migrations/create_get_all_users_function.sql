@@ -28,7 +28,7 @@ BEGIN
     u.email,
     u.created_at,
     COALESCE(ur.role, 'user') as role,
-    ur.created_at as role_created_at
+    COALESCE(ur.created_at, u.created_at) as role_created_at
   FROM auth.users u
   LEFT JOIN user_roles ur ON u.id = ur.user_id
   ORDER BY u.created_at DESC;

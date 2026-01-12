@@ -10,6 +10,12 @@ const corsHeaders = {
 const WASENDER_API_KEY = Deno.env.get("WASENDER_API_KEY");
 const WASENDER_SESSION_ID = Deno.env.get("WASENDER_SESSION_ID");
 
+// Rate limiting configuration
+const BATCH_SIZE = 15; // Messages per batch (adjust based on your Wasender plan)
+const BATCH_DELAY_MS = 1500; // Delay between batches in milliseconds
+const MAX_RETRIES = 3; // Maximum retry attempts for failed messages
+const RETRY_DELAYS = [1000, 2000, 4000]; // Exponential backoff delays in ms
+
 // Twilio credentials (commented out for future use)
 // const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
 // const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
@@ -63,33 +69,122 @@ function formatSignalMessage(signal: SignalData): string {
     }
 
     message += `\n Login to the dashboard to view the full signal details with SL and bonus TPs`;
-    message += `\n🔗 Click here to view: https://savannaFX.com/dashboard/signals\n\n`;
+    message += `\n\n🔗 Click here to view: https://savannaFX.co/dashboard/signals\n\n`;
     message += `_Trade responsibly. Manage your risk._`;
 
     return message;
 }
 
-// WaSender API implementation
-async function sendWhatsAppMessage(phoneNumber: string, message: string): Promise<any> {
+// Check if WhatsApp session is connected
+async function checkSessionStatus(): Promise<boolean> {
+    try {
+        const url = `https://api.wasenderapi.com/api/status`;
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${WASENDER_API_KEY}`,
+                "Content-Type": "application/json",
+            },
+        });
+
+        if (!response.ok) {
+            console.warn(`Session status check returned ${response.status}`);
+            return true; // Assume connected if check fails to avoid blocking sends
+        }
+
+        const data = await response.json();
+        // Check various possible response formats
+        const isConnected = 
+            data?.connected === true || 
+            data?.status === 'connected' || 
+            data?.state === 'connected' ||
+            (data?.session && data?.session?.status === 'connected');
+        
+        return isConnected;
+    } catch (error) {
+        console.error("Error checking session status:", error);
+        return true; // Assume connected if check fails to avoid blocking sends
+    }
+}
+
+// Check if a phone number is on WhatsApp (optional optimization)
+async function isOnWhatsApp(phoneNumber: string): Promise<boolean> {
+    try {
+        const cleanPhoneNumber = phoneNumber.replace('+', '').replace(/\s/g, '');
+        const url = `https://api.wasenderapi.com/api/on-whatsapp/${cleanPhoneNumber}`;
+        
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${WASENDER_API_KEY}`,
+                "Content-Type": "application/json",
+            },
+        });
+
+        const data = await response.json();
+        return response.ok && data?.onWhatsApp === true;
+    } catch (error) {
+        console.error(`Error checking if ${phoneNumber} is on WhatsApp:`, error);
+        return true; // Assume on WhatsApp if check fails to avoid blocking sends
+    }
+}
+
+// WaSender API implementation with retry logic
+async function sendWhatsAppMessage(
+    phoneNumber: string, 
+    message: string, 
+    retryCount: number = 0
+): Promise<any> {
     const url = `https://api.wasenderapi.com/api/send-message`;
 
     // Remove + from phone number if present (WaSender expects format without +)
-    const cleanPhoneNumber = phoneNumber.replace('+', '');
+    const cleanPhoneNumber = phoneNumber.replace('+', '').replace(/\s/g, '');
 
-    const response = await fetch(url, {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${WASENDER_API_KEY}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            session: WASENDER_SESSION_ID,
-            to: cleanPhoneNumber,
-            text: message,
-        }),
-    });
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${WASENDER_API_KEY}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                session: WASENDER_SESSION_ID,
+                to: cleanPhoneNumber,
+                text: message,
+            }),
+        });
 
-    return await response.json();
+        const data = await response.json();
+
+        // Handle rate limiting (429) with retry
+        if (response.status === 429 && retryCount < MAX_RETRIES) {
+            const delay = RETRY_DELAYS[retryCount] || RETRY_DELAYS[RETRY_DELAYS.length - 1];
+            console.log(`Rate limited. Retrying in ${delay}ms (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return sendWhatsAppMessage(phoneNumber, message, retryCount + 1);
+        }
+
+        // Handle server errors (5xx) with retry
+        if (response.status >= 500 && retryCount < MAX_RETRIES) {
+            const delay = RETRY_DELAYS[retryCount] || RETRY_DELAYS[RETRY_DELAYS.length - 1];
+            console.log(`Server error. Retrying in ${delay}ms (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return sendWhatsAppMessage(phoneNumber, message, retryCount + 1);
+        }
+
+        return data;
+    } catch (error) {
+        // Network errors - retry if attempts remaining
+        if (retryCount < MAX_RETRIES) {
+            const delay = RETRY_DELAYS[retryCount] || RETRY_DELAYS[RETRY_DELAYS.length - 1];
+            console.log(`Network error. Retrying in ${delay}ms (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return sendWhatsAppMessage(phoneNumber, message, retryCount + 1);
+        }
+        
+        // Max retries reached or non-retryable error
+        throw error;
+    }
 }
 
 // Twilio implementation (commented out for future use)
@@ -215,57 +310,115 @@ serve(async (req) => {
             );
         }
 
+        // Check if WhatsApp session is connected
+        console.log("Checking WhatsApp session status...");
+        const isConnected = await checkSessionStatus();
+        if (!isConnected) {
+            console.warn("WhatsApp session is not connected. Messages may fail.");
+            // Continue anyway - let individual sends handle the error
+        } else {
+            console.log("WhatsApp session is connected ✓");
+        }
+
         // Format the message
         const message = formatSignalMessage(signal);
 
-        // Send WhatsApp messages to all eligible subscribers
-        const results = await Promise.allSettled(
-            profiles.map(async (profile) => {
-                try {
-                    const result = await sendWhatsAppMessage(profile.phone_number!, message);
+        console.log(`Preparing to send WhatsApp messages to ${profiles.length} subscribers`);
 
-                    // Log the notification
-                    await supabaseClient.from("notification_logs").insert({
-                        user_id: profile.id,
-                        signal_id: signalId,
-                        notification_type: "whatsapp",
-                        phone_number: profile.phone_number,
-                        message_content: message,
-                        status: result.error_code ? "failed" : "sent",
-                        error_message: result.error_message || null,
-                        provider_message_id: result.sid || null,
-                        sent_at: new Date().toISOString(),
-                    });
+        // Process messages in batches to respect rate limits
+        const batches: typeof profiles[] = [];
+        for (let i = 0; i < profiles.length; i += BATCH_SIZE) {
+            batches.push(profiles.slice(i, i + BATCH_SIZE));
+        }
 
-                    return {
-                        userId: profile.id,
-                        phoneNumber: profile.phone_number,
-                        success: !result.error_code,
-                        messageId: result.sid,
-                        error: result.error_message,
-                    };
-                } catch (error) {
-                    // Log failed notification
-                    await supabaseClient.from("notification_logs").insert({
-                        user_id: profile.id,
-                        signal_id: signalId,
-                        notification_type: "whatsapp",
-                        phone_number: profile.phone_number,
-                        message_content: message,
-                        status: "failed",
-                        error_message: error.message,
-                        sent_at: new Date().toISOString(),
-                    });
+        console.log(`Processing ${batches.length} batches of up to ${BATCH_SIZE} messages each`);
 
-                    return {
-                        userId: profile.id,
-                        phoneNumber: profile.phone_number,
-                        success: false,
-                        error: error.message,
-                    };
-                }
-            })
-        );
+        const allResults: any[] = [];
+
+        // Process batches sequentially with delay between batches
+        for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+            const batch = batches[batchIndex];
+            console.log(`Processing batch ${batchIndex + 1}/${batches.length} (${batch.length} messages)`);
+
+            // Send messages in current batch in parallel
+            const batchPromises = batch.map(async (profile) => {
+            try {
+                console.log(`Sending WhatsApp message to ${profile.phone_number} (user: ${profile.id})`);
+                
+                // Send message with retry logic
+                const result = await sendWhatsAppMessage(profile.phone_number!, message);
+
+                // Log the notification (non-blocking, happens after message is sent)
+                const logPromise = supabaseClient.from("notification_logs").insert({
+                    user_id: profile.id,
+                    signal_id: signalId,
+                    notification_type: "whatsapp",
+                    phone_number: profile.phone_number,
+                    message_content: message,
+                    status: result.error_code ? "failed" : "sent",
+                    error_message: result.error_message || null,
+                    provider_message_id: result.sid || null,
+                    sent_at: new Date().toISOString(),
+                }).then(() => {
+                    console.log(`Logged notification for ${profile.phone_number}`);
+                }).catch(err => {
+                    console.error(`Failed to log notification for ${profile.phone_number}:`, err);
+                });
+
+                // Don't await the log - let it happen in background
+                // This ensures message sending isn't blocked by logging
+                logPromise.catch(() => {});
+
+                return {
+                    userId: profile.id,
+                    phoneNumber: profile.phone_number,
+                    success: !result.error_code,
+                    messageId: result.sid,
+                    error: result.error_message,
+                };
+            } catch (error) {
+                console.error(`Error sending to ${profile.phone_number}:`, error);
+                
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                
+                // Log failed notification (non-blocking)
+                const logPromise = supabaseClient.from("notification_logs").insert({
+                    user_id: profile.id,
+                    signal_id: signalId,
+                    notification_type: "whatsapp",
+                    phone_number: profile.phone_number,
+                    message_content: message,
+                    status: "failed",
+                    error_message: errorMessage,
+                    sent_at: new Date().toISOString(),
+                }).catch(err => {
+                    console.error(`Failed to log error for ${profile.phone_number}:`, err);
+                });
+
+                logPromise.catch(() => {});
+
+                return {
+                    userId: profile.id,
+                    phoneNumber: profile.phone_number,
+                    success: false,
+                    error: errorMessage,
+                };
+            }
+            });
+
+            // Wait for current batch to complete
+            const batchResults = await Promise.allSettled(batchPromises);
+            allResults.push(...batchResults);
+
+            // Add delay between batches (except for the last batch)
+            if (batchIndex < batches.length - 1) {
+                console.log(`Waiting ${BATCH_DELAY_MS}ms before next batch...`);
+                await new Promise(resolve => setTimeout(resolve, BATCH_DELAY_MS));
+            }
+        }
+
+        console.log(`All batches processed. Total: ${allResults.length} messages`);
+        const results = allResults;
 
         const successCount = results.filter(r => r.status === "fulfilled" && r.value.success).length;
         const failureCount = results.length - successCount;
@@ -282,10 +435,11 @@ serve(async (req) => {
         );
     } catch (error) {
         console.error("Error in send-whatsapp-notification:", error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
         return new Response(
             JSON.stringify({
                 success: false,
-                error: error.message
+                error: errorMessage
             }),
             {
                 status: 500,
