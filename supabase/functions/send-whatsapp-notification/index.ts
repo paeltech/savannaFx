@@ -6,10 +6,14 @@ const corsHeaders = {
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Twilio credentials from environment variables
-const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
-const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
-const TWILIO_WHATSAPP_NUMBER = Deno.env.get("TWILIO_WHATSAPP_NUMBER");
+// WaSender API credentials from environment variables
+const WASENDER_API_KEY = Deno.env.get("WASENDER_API_KEY");
+const WASENDER_SESSION_ID = Deno.env.get("WASENDER_SESSION_ID");
+
+// Twilio credentials (commented out for future use)
+// const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
+// const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
+// const TWILIO_WHATSAPP_NUMBER = Deno.env.get("TWILIO_WHATSAPP_NUMBER");
 
 interface SignalData {
     id: string;
@@ -33,7 +37,7 @@ function formatSignalMessage(signal: SignalData): string {
     message += `📊 *Pair*: ${signal.trading_pair}\n`;
     message += `${emoji} *Type*: ${signal.signal_type.toUpperCase()}\n\n`;
     message += `💰 *Entry*: ${signal.entry_price}\n`;
-    message += `🛑 *Stop Loss*: ${signal.stop_loss}\n`;
+    // message += `🛑 *Stop Loss*: ${signal.stop_loss}\n`;
 
     if (signal.take_profit_1) {
         message += `🎯 *TP1*: ${signal.take_profit_1}\n`;
@@ -58,13 +62,39 @@ function formatSignalMessage(signal: SignalData): string {
         message += `\n📝 *Analysis*: ${signal.analysis.substring(0, 200)}${signal.analysis.length > 200 ? '...' : ''}\n`;
     }
 
-    message += `\n🔗 View full details: https://savannaFX.com/dashboard/signals\n\n`;
+    message += `\n Login to the dashboard to view the full signal details with SL and bonus TPs`;
+    message += `\n🔗 Click here to view: https://savannaFX.com/dashboard/signals\n\n`;
     message += `_Trade responsibly. Manage your risk._`;
 
     return message;
 }
 
+// WaSender API implementation
 async function sendWhatsAppMessage(phoneNumber: string, message: string): Promise<any> {
+    const url = `https://api.wasenderapi.com/api/send-message`;
+
+    // Remove + from phone number if present (WaSender expects format without +)
+    const cleanPhoneNumber = phoneNumber.replace('+', '');
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${WASENDER_API_KEY}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            session: WASENDER_SESSION_ID,
+            to: cleanPhoneNumber,
+            text: message,
+        }),
+    });
+
+    return await response.json();
+}
+
+// Twilio implementation (commented out for future use)
+/*
+async function sendWhatsAppMessageTwilio(phoneNumber: string, message: string): Promise<any> {
     const url = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
 
     const response = await fetch(url, {
@@ -82,6 +112,7 @@ async function sendWhatsAppMessage(phoneNumber: string, message: string): Promis
 
     return await response.json();
 }
+*/
 
 serve(async (req) => {
     // Handle CORS preflight requests
@@ -96,10 +127,15 @@ serve(async (req) => {
             throw new Error("signalId is required");
         }
 
-        // Validate Twilio credentials
-        if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_WHATSAPP_NUMBER) {
-            throw new Error("Twilio credentials not configured");
+        // Validate WaSender credentials
+        if (!WASENDER_API_KEY || !WASENDER_SESSION_ID) {
+            throw new Error("WaSender API credentials not configured");
         }
+
+        // Twilio validation (commented out)
+        // if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_WHATSAPP_NUMBER) {
+        //     throw new Error("Twilio credentials not configured");
+        // }
 
         // Initialize Supabase client with service role
         const supabaseClient = createClient(

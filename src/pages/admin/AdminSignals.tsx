@@ -64,6 +64,23 @@ interface SignalSubscription {
   created_at: string;
 }
 
+interface Signal {
+  id: string;
+  trading_pair: string;
+  signal_type: "buy" | "sell";
+  entry_price: number;
+  stop_loss: number;
+  take_profit_1: number | null;
+  take_profit_2: number | null;
+  take_profit_3: number | null;
+  title: string;
+  analysis: string | null;
+  confidence_level: "low" | "medium" | "high" | null;
+  status: "active" | "closed" | "cancelled";
+  created_at: string;
+  updated_at: string;
+}
+
 const pricingSchema = z.object({
   price: z.number().min(0, "Price must be positive"),
   description: z.string().optional(),
@@ -91,6 +108,7 @@ const AdminSignals: React.FC = () => {
   const [selectedPricing, setSelectedPricing] = useState<SignalPricing | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSignalDialogOpen, setIsSignalDialogOpen] = useState(false);
+  const [selectedSignal, setSelectedSignal] = useState<Signal | null>(null);
   const queryClient = useQueryClient();
 
   const form = useForm<PricingFormValues>({
@@ -138,6 +156,20 @@ const AdminSignals: React.FC = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("signal_subscriptions")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Fetch signals data
+  const { data: signals, isLoading: signalsLoading } = useQuery<Signal[]>({
+    queryKey: ["signals"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("signals")
         .select("*")
         .order("created_at", { ascending: false });
 
@@ -281,7 +313,86 @@ const AdminSignals: React.FC = () => {
   });
 
   const onSignalSubmit = (values: SignalFormValues) => {
-    createSignalMutation.mutate(values);
+    if (selectedSignal) {
+      updateSignalMutation.mutate({ id: selectedSignal.id, values });
+    } else {
+      createSignalMutation.mutate(values);
+    }
+  };
+
+  // Delete signal mutation
+  const deleteSignalMutation = useMutation({
+    mutationFn: async (signalId: string) => {
+      const { error } = await supabase
+        .from("signals")
+        .delete()
+        .eq("id", signalId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["signals"] });
+      showSuccess("Signal deleted successfully");
+    },
+    onError: (error: any) => {
+      showError(error.message || "Failed to delete signal");
+    },
+  });
+
+  // Update signal mutation
+  const updateSignalMutation = useMutation({
+    mutationFn: async ({ id, values }: { id: string; values: SignalFormValues }) => {
+      const { error } = await supabase
+        .from("signals")
+        .update({
+          trading_pair: values.trading_pair,
+          signal_type: values.signal_type,
+          entry_price: values.entry_price,
+          stop_loss: values.stop_loss,
+          take_profit_1: values.take_profit_1 || null,
+          take_profit_2: values.take_profit_2 || null,
+          take_profit_3: values.take_profit_3 || null,
+          title: values.title,
+          analysis: values.analysis || null,
+          confidence_level: values.confidence_level || null,
+        })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["signals"] });
+      showSuccess("Signal updated successfully");
+      setIsSignalDialogOpen(false);
+      setSelectedSignal(null);
+      signalForm.reset();
+    },
+    onError: (error: any) => {
+      showError(error.message || "Failed to update signal");
+    },
+  });
+
+  const handleEditSignal = (signal: Signal) => {
+    setSelectedSignal(signal);
+    signalForm.reset({
+      trading_pair: signal.trading_pair,
+      signal_type: signal.signal_type,
+      entry_price: signal.entry_price,
+      stop_loss: signal.stop_loss,
+      take_profit_1: signal.take_profit_1 || undefined,
+      take_profit_2: signal.take_profit_2 || undefined,
+      take_profit_3: signal.take_profit_3 || undefined,
+      title: signal.title,
+      analysis: signal.analysis || "",
+      confidence_level: signal.confidence_level || "medium",
+    });
+    setIsSignalDialogOpen(true);
+  };
+
+  const handleDeleteSignal = (signalId: string) => {
+    if (confirm("Are you sure you want to delete this signal?")) {
+      deleteSignalMutation.mutate(signalId);
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -436,6 +547,89 @@ const AdminSignals: React.FC = () => {
             )}
           </CardContent>
         </SavannaCard>
+
+        {/* Signals Table */}
+        <ScrollReveal>
+          <SavannaCard className="mb-6">
+            <CardContent className="p-6">
+              <h2 className="text-slate-200 font-medium mb-4">All Signals</h2>
+              {signalsLoading ? (
+                <div className="text-center py-8 text-rainy-grey">Loading signals...</div>
+              ) : !signals || signals.length === 0 ? (
+                <div className="text-center py-8 text-rainy-grey">No signals created yet</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-steel-wool">
+                        <TableHead className="text-rainy-grey">Pair</TableHead>
+                        <TableHead className="text-rainy-grey">Type</TableHead>
+                        <TableHead className="text-rainy-grey">Entry</TableHead>
+                        <TableHead className="text-rainy-grey">SL</TableHead>
+                        <TableHead className="text-rainy-grey">TP1</TableHead>
+                        <TableHead className="text-rainy-grey">Confidence</TableHead>
+                        <TableHead className="text-rainy-grey">Status</TableHead>
+                        <TableHead className="text-rainy-grey">Created</TableHead>
+                        <TableHead className="text-rainy-grey text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {signals.map((signal) => (
+                        <TableRow key={signal.id} className="border-steel-wool">
+                          <TableCell className="text-white font-medium">{signal.trading_pair}</TableCell>
+                          <TableCell>
+                            <Badge className={signal.signal_type === 'buy' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}>
+                              {signal.signal_type.toUpperCase()}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-white">{signal.entry_price}</TableCell>
+                          <TableCell className="text-white">{signal.stop_loss}</TableCell>
+                          <TableCell className="text-white">{signal.take_profit_1 || '-'}</TableCell>
+                          <TableCell>
+                            {signal.confidence_level && (
+                              <Badge className={
+                                signal.confidence_level === 'high' ? 'bg-green-600 text-white' :
+                                  signal.confidence_level === 'medium' ? 'bg-yellow-600 text-white' :
+                                    'bg-gray-600 text-white'
+                              }>
+                                {signal.confidence_level.toUpperCase()}
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>{getStatusBadge(signal.status)}</TableCell>
+                          <TableCell className="text-rainy-grey">
+                            {format(new Date(signal.created_at), "MMM dd, yyyy")}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex gap-2 justify-end">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditSignal(signal)}
+                                className="border-steel-wool text-gold hover:bg-steel-wool"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteSignal(signal.id)}
+                                className="border-steel-wool text-red-500 hover:bg-steel-wool"
+                                disabled={deleteSignalMutation.isPending}
+                              >
+                                <SignalHigh className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </SavannaCard>
+        </ScrollReveal>
 
         {/* Subscriptions Table */}
         <SavannaCard>
