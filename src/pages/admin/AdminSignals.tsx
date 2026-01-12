@@ -63,6 +63,9 @@ interface SignalSubscription {
   pips_purchased: number;
   pips_used: number;
   created_at: string;
+  user_profiles?: {
+    phone_number: string | null;
+  };
 }
 
 interface Signal {
@@ -152,13 +155,16 @@ const AdminSignals: React.FC = () => {
     },
   });
 
-  // Fetch subscriptions data
+  // Fetch subscriptions data with user phone numbers
   const { data: subscriptions, isLoading: subscriptionsLoading } = useQuery<SignalSubscription[]>({
     queryKey: ["signal-subscriptions"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("signal_subscriptions")
-        .select("*")
+        .select(`
+          *,
+          user_profiles(phone_number)
+        `)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -671,7 +677,7 @@ const AdminSignals: React.FC = () => {
                     <Table>
                       <TableHeader>
                         <TableRow className="border-steel-wool hover:bg-nero/50">
-                          <TableHead className="text-white">User ID</TableHead>
+                          <TableHead className="text-white">Phone Number</TableHead>
                           <TableHead className="text-white">Type</TableHead>
                           <TableHead className="text-white">Status</TableHead>
                           <TableHead className="text-white">Payment</TableHead>
@@ -684,8 +690,8 @@ const AdminSignals: React.FC = () => {
                       <TableBody>
                         {subscriptions?.map((subscription) => (
                           <TableRow key={subscription.id} className="border-steel-wool hover:bg-nero/50">
-                            <TableCell className="text-rainy-grey font-mono text-xs">
-                              {subscription.user_id.substring(0, 8)}...
+                            <TableCell className="text-white">
+                              {subscription.user_profiles?.phone_number || "N/A"}
                             </TableCell>
                             <TableCell className="text-white capitalize">
                               {subscription.subscription_type === "monthly" ? "Monthly" : "Per-Pip"}

@@ -379,7 +379,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
           .upsert({
             id: data.user.id,
             phone_number: fullPhoneNumber,
-            phone_verified: false,
+            phone_verified: true,
             whatsapp_notifications_enabled: true,
             email_notifications_enabled: true,
           }, {
