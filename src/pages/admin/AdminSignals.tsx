@@ -514,62 +514,6 @@ const AdminSignals: React.FC = () => {
           {/* Signals Tab */}
           <TabsContent value="signals" className="space-y-6">
 
-            {/* Pricing Configuration */}
-            <SavannaCard className="mb-6">
-              <CardContent className="p-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Pricing Configuration</h2>
-                {pricingLoading ? (
-                  <div className="text-center text-rainy-grey py-8">Loading pricing...</div>
-                ) : (
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {pricingData?.map((pricing) => (
-                      <div
-                        key={pricing.id}
-                        className="bg-nero border border-steel-wool rounded-lg p-6 space-y-4"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="text-lg font-semibold text-white capitalize">
-                              {pricing.pricing_type === "monthly" ? "Monthly Subscription" : "Per-Pip Payment"}
-                            </h3>
-                            <p className="text-rainy-grey text-sm mt-1">{pricing.description}</p>
-                          </div>
-                          <Badge className={pricing.is_active ? "bg-green-600" : "bg-gray-600"}>
-                            {pricing.is_active ? "Active" : "Inactive"}
-                          </Badge>
-                        </div>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-3xl font-bold text-gold">
-                            ${pricing.price.toFixed(2)}
-                          </span>
-                          <span className="text-rainy-grey">
-                            {pricing.pricing_type === "monthly" ? "/month" : "/pip"}
-                          </span>
-                        </div>
-                        {pricing.features && Array.isArray(pricing.features) && (
-                          <ul className="space-y-2">
-                            {pricing.features.map((feature, idx) => (
-                              <li key={idx} className="text-sm text-rainy-grey flex items-start gap-2">
-                                <span className="text-gold mt-1">•</span>
-                                <span>{feature}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                        <Button
-                          onClick={() => handleEdit(pricing)}
-                          className="w-full bg-gold text-cursed-black hover:bg-gold-dark"
-                        >
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit Pricing
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </SavannaCard>
-
             {/* Signals Table */}
             <ScrollReveal>
               <SavannaCard className="mb-6">
@@ -657,6 +601,62 @@ const AdminSignals: React.FC = () => {
 
           {/* Subscriptions Tab */}
           <TabsContent value="subscriptions" className="space-y-6">
+
+            {/* Pricing Configuration */}
+            <SavannaCard className="mb-6">
+              <CardContent className="p-6">
+                <h2 className="text-xl font-semibold text-white mb-4">Pricing Configuration</h2>
+                {pricingLoading ? (
+                  <div className="text-center text-rainy-grey py-8">Loading pricing...</div>
+                ) : (
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {pricingData?.map((pricing) => (
+                      <div
+                        key={pricing.id}
+                        className="bg-nero border border-steel-wool rounded-lg p-6 space-y-4"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="text-lg font-semibold text-white capitalize">
+                              {pricing.pricing_type === "monthly" ? "Monthly Subscription" : "Per-Pip Payment"}
+                            </h3>
+                            <p className="text-rainy-grey text-sm mt-1">{pricing.description}</p>
+                          </div>
+                          <Badge className={pricing.is_active ? "bg-green-600" : "bg-gray-600"}>
+                            {pricing.is_active ? "Active" : "Inactive"}
+                          </Badge>
+                        </div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-3xl font-bold text-gold">
+                            ${pricing.price.toFixed(2)}
+                          </span>
+                          <span className="text-rainy-grey">
+                            {pricing.pricing_type === "monthly" ? "/month" : "/pip"}
+                          </span>
+                        </div>
+                        {pricing.features && Array.isArray(pricing.features) && (
+                          <ul className="space-y-2">
+                            {pricing.features.map((feature, idx) => (
+                              <li key={idx} className="text-sm text-rainy-grey flex items-start gap-2">
+                                <span className="text-gold mt-1">•</span>
+                                <span>{feature}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                        <Button
+                          onClick={() => handleEdit(pricing)}
+                          className="w-full bg-gold text-cursed-black hover:bg-gold-dark"
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit Pricing
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </SavannaCard>
 
             {/* Subscriptions Table */}
             <SavannaCard>
@@ -1058,8 +1058,8 @@ const AdminSignals: React.FC = () => {
             </Dialog>
           </TabsContent>
         </Tabs>          </DashboardLayout>
-        </PageTransition>
-        );
+    </PageTransition>
+  );
 };
 
-        export default AdminSignals;
+export default AdminSignals;
