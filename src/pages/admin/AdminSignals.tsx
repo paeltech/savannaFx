@@ -234,7 +234,30 @@ const AdminSignals: React.FC = () => {
         );
 
         console.log('Response status:', response.status);
-        const result = await response.json();
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+        // Check if response has content
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+
+        if (!responseText) {
+          showError('Signal created but Edge Function returned empty response. Check if function is deployed.');
+          setIsSignalDialogOpen(false);
+          signalForm.reset();
+          return;
+        }
+
+        let result;
+        try {
+          result = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('Failed to parse response:', parseError);
+          showError(`Signal created but Edge Function returned invalid response: ${responseText.substring(0, 100)}`);
+          setIsSignalDialogOpen(false);
+          signalForm.reset();
+          return;
+        }
+
         console.log('Response data:', result);
 
         if (response.ok) {
