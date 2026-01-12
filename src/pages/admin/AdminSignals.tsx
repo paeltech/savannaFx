@@ -216,18 +216,19 @@ const AdminSignals: React.FC = () => {
 
       // Call Edge Function to send WhatsApp notifications
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const SUPABASE_URL = "https://iurstpwtdnlmpvwyhqfn.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1cnN0cHd0ZG5sbXB2d3locWZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NjAzNDMsImV4cCI6MjA4MTQzNjM0M30.pGCrGsPACMxGgsnMDZf-J-kszQPB1N5y008w_KOj-3o";
 
         console.log('Calling WhatsApp Edge Function for signal:', signal.id);
-        console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
 
         const response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-whatsapp-notification`,
+          `${SUPABASE_URL}/functions/v1/send-whatsapp-notification`,
           {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session?.access_token}`,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'apikey': SUPABASE_ANON_KEY,
             },
             body: JSON.stringify({ signalId: signal.id }),
           }
