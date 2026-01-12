@@ -218,6 +218,9 @@ const AdminSignals: React.FC = () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
 
+        console.log('Calling WhatsApp Edge Function for signal:', signal.id);
+        console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
+
         const response = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-whatsapp-notification`,
           {
@@ -230,17 +233,19 @@ const AdminSignals: React.FC = () => {
           }
         );
 
+        console.log('Response status:', response.status);
         const result = await response.json();
+        console.log('Response data:', result);
 
         if (response.ok) {
           showSuccess(`WhatsApp notifications sent to ${result.successCount || 0} subscribers!`);
         } else {
           console.error('WhatsApp notification error:', result);
-          showError('Signal created but WhatsApp notifications failed. Check logs.');
+          showError(`Signal created but WhatsApp notifications failed: ${result.error || 'Unknown error'}`);
         }
       } catch (error) {
         console.error('Error calling WhatsApp function:', error);
-        showError('Signal created but failed to send WhatsApp notifications.');
+        showError(`Signal created but failed to send WhatsApp notifications: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
 
       setIsSignalDialogOpen(false);

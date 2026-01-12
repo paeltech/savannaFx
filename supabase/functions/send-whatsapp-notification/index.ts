@@ -107,6 +107,8 @@ serve(async (req) => {
             Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
         );
 
+        console.log("Fetching signal with ID:", signalId);
+
         // Fetch signal details
         const { data: signal, error: signalError } = await supabaseClient
             .from("signals")
@@ -114,12 +116,17 @@ serve(async (req) => {
             .eq("id", signalId)
             .single();
 
-        if (signalError) {
-            throw new Error(`Failed to fetch signal: ${signalError.message}`);
-        }
+        console.log("Signal fetch result:", { signal, error: signalError });
 
-        if (!signal) {
-            throw new Error("Signal not found");
+        if (signalError || !signal) {
+            console.error("Error fetching signal:", signalError);
+            return new Response(
+                JSON.stringify({
+                    success: false,
+                    error: `Failed to fetch signal: ${signalError?.message || 'Signal not found'}`
+                }),
+                { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
         }
 
         // Fetch active subscribers with WhatsApp enabled and verified phone numbers
