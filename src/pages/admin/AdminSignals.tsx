@@ -24,7 +24,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { SignalHigh, Edit, DollarSign, Users, TrendingUp } from "lucide-react";
+import { SignalHigh, Edit, DollarSign, Users, TrendingUp, Plus } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import supabase from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -35,6 +35,7 @@ import { z } from "zod";
 import { Form, FormField, FormItem, FormLabel, FormMessage, FormControl } from "@/components/ui/form";
 import { PageTransition } from "@/lib/animations";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface SignalPricing {
   id: string;
@@ -71,9 +72,25 @@ const pricingSchema = z.object({
 
 type PricingFormValues = z.infer<typeof pricingSchema>;
 
+const signalSchema = z.object({
+  trading_pair: z.string().min(1, "Trading pair is required"),
+  signal_type: z.enum(["buy", "sell"]),
+  entry_price: z.number().min(0, "Entry price must be positive"),
+  stop_loss: z.number().min(0, "Stop loss must be positive"),
+  take_profit_1: z.number().min(0).optional(),
+  take_profit_2: z.number().min(0).optional(),
+  take_profit_3: z.number().min(0).optional(),
+  title: z.string().min(1, "Title is required"),
+  analysis: z.string().optional(),
+  confidence_level: z.enum(["low", "medium", "high"]).optional(),
+});
+
+type SignalFormValues = z.infer<typeof signalSchema>;
+
 const AdminSignals: React.FC = () => {
   const [selectedPricing, setSelectedPricing] = useState<SignalPricing | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSignalDialogOpen, setIsSignalDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const form = useForm<PricingFormValues>({
@@ -82,6 +99,22 @@ const AdminSignals: React.FC = () => {
       price: 0,
       description: "",
       is_active: true,
+    },
+  });
+
+  const signalForm = useForm<SignalFormValues>({
+    resolver: zodResolver(signalSchema),
+    defaultValues: {
+      trading_pair: "",
+      signal_type: "buy",
+      entry_price: 0,
+      stop_loss: 0,
+      take_profit_1: undefined,
+      take_profit_2: undefined,
+      take_profit_3: undefined,
+      title: "",
+      analysis: "",
+      confidence_level: "medium",
     },
   });
 
@@ -154,6 +187,41 @@ const AdminSignals: React.FC = () => {
     }
   };
 
+  // Create signal mutation
+  const createSignalMutation = useMutation({
+    mutationFn: async (values: SignalFormValues) => {
+      const { error } = await supabase
+        .from("signals")
+        .insert({
+          trading_pair: values.trading_pair,
+          signal_type: values.signal_type,
+          entry_price: values.entry_price,
+          stop_loss: values.stop_loss,
+          take_profit_1: values.take_profit_1 || null,
+          take_profit_2: values.take_profit_2 || null,
+          take_profit_3: values.take_profit_3 || null,
+          title: values.title,
+          analysis: values.analysis || null,
+          confidence_level: values.confidence_level || null,
+          status: "active",
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      showSuccess("Signal created and WhatsApp notifications sent!");
+      setIsSignalDialogOpen(false);
+      signalForm.reset();
+    },
+    onError: (error: any) => {
+      showError(error.message || "Failed to create signal");
+    },
+  });
+
+  const onSignalSubmit = (values: SignalFormValues) => {
+    createSignalMutation.mutate(values);
+  };
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { label: string; className: string }> = {
       active: { label: "Active", className: "bg-green-600 text-white" },
@@ -191,14 +259,23 @@ const AdminSignals: React.FC = () => {
         {/* Header with Stats */}
         <SavannaCard className="mb-6">
           <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <SignalHigh className="text-gold" size={24} />
-              <div>
-                <h1 className="text-2xl font-semibold text-white">Signal Pricing & Subscriptions</h1>
-                <p className="text-rainy-grey text-sm mt-1">
-                  Manage signal pricing and view subscription statistics
-                </p>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <SignalHigh className="text-gold" size={24} />
+                <div>
+                  <h1 className="text-2xl font-semibold text-white">Signal Pricing & Subscriptions</h1>
+                  <p className="text-rainy-grey text-sm mt-1">
+                    Manage signal pricing and view subscription statistics
+                  </p>
+                </div>
               </div>
+              <Button
+                onClick={() => setIsSignalDialogOpen(true)}
+                className="bg-gold text-cursed-black hover:bg-gold-dark"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Create Signal
+              </Button>
             </div>
 
             {/* Statistics Grid */}
@@ -334,7 +411,7 @@ const AdminSignals: React.FC = () => {
                         <TableCell>{getPaymentStatusBadge(subscription.payment_status)}</TableCell>
                         <TableCell className="text-white">${subscription.amount_paid.toFixed(2)}</TableCell>
                         <TableCell className="text-white">
-                          {subscription.subscription_type === "per_pip" 
+                          {subscription.subscription_type === "per_pip"
                             ? `${subscription.pips_used}/${subscription.pips_purchased}`
                             : "N/A"}
                         </TableCell>
@@ -342,7 +419,7 @@ const AdminSignals: React.FC = () => {
                           {format(new Date(subscription.start_date), "MMM dd, yyyy")}
                         </TableCell>
                         <TableCell className="text-rainy-grey">
-                          {subscription.end_date 
+                          {subscription.end_date
                             ? format(new Date(subscription.end_date), "MMM dd, yyyy")
                             : "N/A"}
                         </TableCell>
@@ -445,6 +522,251 @@ const AdminSignals: React.FC = () => {
                     disabled={updatePricingMutation.isPending}
                   >
                     Update Pricing
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Create Signal Dialog */}
+        <Dialog open={isSignalDialogOpen} onOpenChange={setIsSignalDialogOpen}>
+          <DialogContent className="bg-black border-steel-wool text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-white">Create New Signal</DialogTitle>
+              <DialogDescription className="text-rainy-grey">
+                Create a new trading signal. WhatsApp notifications will be sent automatically to all active subscribers.
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...signalForm}>
+              <form onSubmit={signalForm.handleSubmit(onSignalSubmit)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={signalForm.control}
+                    name="trading_pair"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">Trading Pair</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., EUR/USD"
+                            className="bg-nero border-steel-wool text-white"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={signalForm.control}
+                    name="signal_type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">Signal Type</FormLabel>
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <FormControl>
+                            <SelectTrigger className="bg-nero border-steel-wool text-white">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-nero border-steel-wool">
+                            <SelectItem value="buy" className="text-white">Buy</SelectItem>
+                            <SelectItem value="sell" className="text-white">Sell</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={signalForm.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Title</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., EUR/USD Bullish Breakout"
+                          className="bg-nero border-steel-wool text-white"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={signalForm.control}
+                    name="entry_price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">Entry Price</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.00001"
+                            placeholder="1.08500"
+                            className="bg-nero border-steel-wool text-white"
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={signalForm.control}
+                    name="stop_loss"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">Stop Loss</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.00001"
+                            placeholder="1.08200"
+                            className="bg-nero border-steel-wool text-white"
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <FormField
+                    control={signalForm.control}
+                    name="take_profit_1"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">TP1 (Optional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.00001"
+                            placeholder="1.09000"
+                            className="bg-nero border-steel-wool text-white"
+                            {...field}
+                            value={field.value || ''}
+                            onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={signalForm.control}
+                    name="take_profit_2"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">TP2 (Optional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.00001"
+                            placeholder="1.09500"
+                            className="bg-nero border-steel-wool text-white"
+                            {...field}
+                            value={field.value || ''}
+                            onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={signalForm.control}
+                    name="take_profit_3"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">TP3 (Optional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.00001"
+                            placeholder="1.10000"
+                            className="bg-nero border-steel-wool text-white"
+                            {...field}
+                            value={field.value || ''}
+                            onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={signalForm.control}
+                  name="confidence_level"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Confidence Level</FormLabel>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger className="bg-nero border-steel-wool text-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-nero border-steel-wool">
+                          <SelectItem value="low" className="text-white">Low</SelectItem>
+                          <SelectItem value="medium" className="text-white">Medium</SelectItem>
+                          <SelectItem value="high" className="text-white">High</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={signalForm.control}
+                  name="analysis"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Analysis (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Provide detailed analysis of the signal..."
+                          className="bg-nero border-steel-wool text-white placeholder:text-rainy-grey min-h-[100px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsSignalDialogOpen(false);
+                      signalForm.reset();
+                    }}
+                    className="border-steel-wool text-rainy-grey"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-gold text-cursed-black hover:bg-gold-dark"
+                    disabled={createSignalMutation.isPending}
+                  >
+                    {createSignalMutation.isPending ? "Creating..." : "Create Signal"}
                   </Button>
                 </DialogFooter>
               </form>

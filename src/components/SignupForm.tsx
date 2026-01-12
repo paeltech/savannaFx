@@ -295,7 +295,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
     try {
       // Get the current origin for the redirect URL after email confirmation
       const redirectUrl = `${window.location.origin}/dashboard`;
-      
+
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -321,7 +321,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
         // Check for duplicate email errors - Supabase returns specific error codes/messages
         const errorMessage = error.message.toLowerCase();
         const errorCode = error.code?.toLowerCase() || "";
-        
+
         // Check for email already exists errors
         if (
           errorMessage.includes("already registered") ||
@@ -347,7 +347,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
           }, 2000);
         } else if (
           // Check for email sending errors
-          errorMessage.includes("email") && 
+          errorMessage.includes("email") &&
           (errorMessage.includes("send") || errorMessage.includes("deliver") || errorMessage.includes("smtp"))
         ) {
           // Email sending specific error
@@ -369,10 +369,29 @@ const SignupForm: React.FC<SignupFormProps> = ({
         console.log("User created, confirmation email should be sent");
       }
 
+      // Create user profile with phone number
+      if (data?.user) {
+        const fullPhoneNumber = `${values.countryCode}${values.phoneNumber}`;
+        const { error: profileError } = await supabase
+          .from("user_profiles")
+          .insert({
+            id: data.user.id,
+            phone_number: fullPhoneNumber,
+            phone_verified: false,
+            whatsapp_notifications_enabled: true,
+            email_notifications_enabled: true,
+          });
+
+        if (profileError) {
+          console.error("Error creating user profile:", profileError);
+          // Don't fail signup if profile creation fails - it will be created by trigger
+        }
+      }
+
       showSuccess("Account created successfully! Please check your email to verify your account.");
       form.reset();
       onOpenChange(false);
-      
+
       // Check if there's a redirect path stored
       const redirectPath = sessionStorage.getItem("redirectAfterLogin");
       if (redirectPath) {
