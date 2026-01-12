@@ -25,7 +25,7 @@ import {
 import { showSuccess, showError } from "@/utils/toast";
 import { PageTransition, ScrollReveal, StaggerChildren, fadeInUp, HoverScale } from "@/lib/animations";
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import supabase from "@/integrations/supabase/client";
 import { useSupabaseSession } from "@/components/auth/SupabaseSessionProvider";
 
@@ -100,6 +100,7 @@ const BenefitItem = ({
 const Signals: React.FC = () => {
   const { session } = useSupabaseSession();
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "per_pip">("monthly");
+  const queryClient = useQueryClient();
 
   // Fetch pricing data
   const { data: pricingData, isLoading } = useQuery<SignalPricing[]>({
@@ -120,6 +121,41 @@ const Signals: React.FC = () => {
   const perPipPricing = pricingData?.find((p) => p.pricing_type === "per_pip");
   const activePricing = selectedPlan === "monthly" ? monthlyPricing : perPipPricing;
 
+  // Create subscription mutation
+  const createSubscriptionMutation = useMutation({
+    mutationFn: async () => {
+      if (!session?.user?.id || !activePricing) {
+        throw new Error("Missing required data");
+      }
+
+      const { error } = await supabase
+        .from("signal_subscriptions")
+        .insert({
+          user_id: session.user.id,
+          pricing_id: activePricing.id,
+          subscription_type: selectedPlan,
+          status: "pending",
+          payment_status: "pending",
+          amount_paid: activePricing.price,
+          whatsapp_notifications: true,
+          email_notifications: true,
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["signal-subscriptions"] });
+      showSuccess("Subscription request created! Please complete payment to activate.");
+    },
+    onError: (error: any) => {
+      if (error.message.includes("duplicate")) {
+        showError("You already have a subscription. Please contact support.");
+      } else {
+        showError(error.message || "Failed to create subscription");
+      }
+    },
+  });
+
   const handleSubscribe = async () => {
     if (!session) {
       showError("Please login to subscribe");
@@ -131,10 +167,7 @@ const Signals: React.FC = () => {
       return;
     }
 
-    showSuccess("Redirecting to subscription…");
-    // TODO: Integrate with your payment gateway
-    // For now, just open Telegram
-    window.open("https://t.me", "_blank", "noopener,noreferrer");
+    createSubscriptionMutation.mutate();
   };
 
   return (
@@ -278,11 +311,6 @@ const Signals: React.FC = () => {
                   desc="Review hundreds of previous setups — educational gold."
                 />
                 <FeatureRow
-                  icon={MessageSquare}
-                  title="Private Telegram Access"
-                  desc="Instant alerts. No delays. No missed opportunities."
-                />
-                <FeatureRow
                   icon={Smartphone}
                   title="Mobile-First Delivery"
                   desc="Fast alerts optimized for your phone."
@@ -357,7 +385,7 @@ const Signals: React.FC = () => {
                   >
                     Instant
                   </motion.div>
-                  <div className="text-slate-300">Telegram Alerts</div>
+                  <div className="text-slate-300">WhatsApp Alerts</div>
                 </motion.div>
               </StaggerChildren>
             </CardContent>
@@ -374,8 +402,8 @@ const Signals: React.FC = () => {
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   className={`border-2 rounded-lg p-6 transition-all ${selectedPlan === "monthly"
-                      ? "border-gold bg-gold/5"
-                      : "border-steel-wool bg-nero hover:border-gold/50"
+                    ? "border-gold bg-gold/5"
+                    : "border-steel-wool bg-nero hover:border-gold/50"
                     }`}
                   onClick={() => setSelectedPlan("monthly")}
                 >
@@ -416,8 +444,8 @@ const Signals: React.FC = () => {
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   className={`border-2 rounded-lg p-6 transition-all ${selectedPlan === "per_pip"
-                      ? "border-purple-500 bg-purple-500/5"
-                      : "border-steel-wool bg-nero hover:border-purple-500/50"
+                    ? "border-purple-500 bg-purple-500/5"
+                    : "border-steel-wool bg-nero hover:border-purple-500/50"
                     }`}
                   onClick={() => setSelectedPlan("per_pip")}
                 >

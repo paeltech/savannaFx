@@ -190,7 +190,7 @@ const AdminSignals: React.FC = () => {
   // Create signal mutation
   const createSignalMutation = useMutation({
     mutationFn: async (values: SignalFormValues) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("signals")
         .insert({
           trading_pair: values.trading_pair,
@@ -204,12 +204,45 @@ const AdminSignals: React.FC = () => {
           analysis: values.analysis || null,
           confidence_level: values.confidence_level || null,
           status: "active",
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+      return data;
     },
-    onSuccess: () => {
-      showSuccess("Signal created and WhatsApp notifications sent!");
+    onSuccess: async (signal) => {
+      showSuccess("Signal created successfully!");
+
+      // Call Edge Function to send WhatsApp notifications
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-whatsapp-notification`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session?.access_token}`,
+            },
+            body: JSON.stringify({ signalId: signal.id }),
+          }
+        );
+
+        const result = await response.json();
+
+        if (response.ok) {
+          showSuccess(`WhatsApp notifications sent to ${result.successCount || 0} subscribers!`);
+        } else {
+          console.error('WhatsApp notification error:', result);
+          showError('Signal created but WhatsApp notifications failed. Check logs.');
+        }
+      } catch (error) {
+        console.error('Error calling WhatsApp function:', error);
+        showError('Signal created but failed to send WhatsApp notifications.');
+      }
+
       setIsSignalDialogOpen(false);
       signalForm.reset();
     },
