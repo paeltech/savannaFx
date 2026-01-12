@@ -369,22 +369,26 @@ const SignupForm: React.FC<SignupFormProps> = ({
         console.log("User created, confirmation email should be sent");
       }
 
-      // Create user profile with phone number
+      // Create or update user profile with phone number
+      // Note: A database trigger may have already created the profile
+      // so we use upsert to ensure phone number is saved
       if (data?.user) {
         const fullPhoneNumber = `${values.countryCode}${values.phoneNumber}`;
         const { error: profileError } = await supabase
           .from("user_profiles")
-          .insert({
+          .upsert({
             id: data.user.id,
             phone_number: fullPhoneNumber,
             phone_verified: false,
             whatsapp_notifications_enabled: true,
             email_notifications_enabled: true,
+          }, {
+            onConflict: 'id'
           });
 
         if (profileError) {
-          console.error("Error creating user profile:", profileError);
-          // Don't fail signup if profile creation fails - it will be created by trigger
+          console.error("Error creating/updating user profile:", profileError);
+          showError("Account created but failed to save phone number. Please update it in your profile settings.");
         }
       }
 

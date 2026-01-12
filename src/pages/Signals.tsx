@@ -134,8 +134,8 @@ const Signals: React.FC = () => {
           user_id: session.user.id,
           pricing_id: activePricing.id,
           subscription_type: selectedPlan,
-          status: "pending",
-          payment_status: "pending",
+          status: "active",
+          payment_status: "completed",
           amount_paid: activePricing.price,
           whatsapp_notifications: true,
           email_notifications: true,
@@ -145,7 +145,7 @@ const Signals: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["signal-subscriptions"] });
-      showSuccess("Subscription request created! Please complete payment to activate.");
+      showSuccess("Subscription activated successfully! You will now receive trading signals.");
     },
     onError: (error: any) => {
       if (error.message.includes("duplicate")) {
