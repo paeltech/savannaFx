@@ -36,6 +36,7 @@ import { Form, FormField, FormItem, FormLabel, FormMessage, FormControl } from "
 import { PageTransition, ScrollReveal } from "@/lib/animations";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface SignalPricing {
   id: string;
@@ -109,6 +110,7 @@ const AdminSignals: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSignalDialogOpen, setIsSignalDialogOpen] = useState(false);
   const [selectedSignal, setSelectedSignal] = useState<Signal | null>(null);
+  const [activeTab, setActiveTab] = useState("signals");
   const queryClient = useQueryClient();
 
   const form = useForm<PricingFormValues>({
