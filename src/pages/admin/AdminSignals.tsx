@@ -1056,7 +1056,8 @@ const AdminSignals: React.FC = () => {
                 </Form>
               </DialogContent>
             </Dialog>
-          </DashboardLayout>
+          </TabsContent>
+        </Tabs>          </DashboardLayout>
         </PageTransition>
         );
 };
