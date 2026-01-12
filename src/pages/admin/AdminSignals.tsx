@@ -24,7 +24,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { SignalHigh, Edit, DollarSign, Users, TrendingUp, Plus } from "lucide-react";
+import { SignalHigh, Edit, DollarSign, Users, TrendingUp, Plus, Trash2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import supabase from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -108,11 +108,25 @@ const signalSchema = z.object({
 
 type SignalFormValues = z.infer<typeof signalSchema>;
 
+const subscriptionSchema = z.object({
+  status: z.enum(["active", "cancelled", "expired", "pending"]),
+  payment_status: z.enum(["pending", "completed", "failed", "refunded"]),
+  amount_paid: z.number().min(0, "Amount must be positive"),
+  pips_purchased: z.number().min(0, "Pips must be positive").optional(),
+  pips_used: z.number().min(0, "Pips used must be positive").optional(),
+  start_date: z.string().min(1, "Start date is required"),
+  end_date: z.string().optional().nullable(),
+});
+
+type SubscriptionFormValues = z.infer<typeof subscriptionSchema>;
+
 const AdminSignals: React.FC = () => {
   const [selectedPricing, setSelectedPricing] = useState<SignalPricing | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSignalDialogOpen, setIsSignalDialogOpen] = useState(false);
   const [selectedSignal, setSelectedSignal] = useState<Signal | null>(null);
+  const [selectedSubscription, setSelectedSubscription] = useState<SignalSubscription | null>(null);
+  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("signals");
   const queryClient = useQueryClient();
 
@@ -141,6 +155,19 @@ const AdminSignals: React.FC = () => {
     },
   });
 
+  const subscriptionForm = useForm<SubscriptionFormValues>({
+    resolver: zodResolver(subscriptionSchema),
+    defaultValues: {
+      status: "active",
+      payment_status: "pending",
+      amount_paid: 0,
+      pips_purchased: 0,
+      pips_used: 0,
+      start_date: "",
+      end_date: null,
+    },
+  });
+
   // Fetch pricing data
   const { data: pricingData, isLoading: pricingLoading } = useQuery<SignalPricing[]>({
     queryKey: ["signal-pricing"],
@@ -159,16 +186,33 @@ const AdminSignals: React.FC = () => {
   const { data: subscriptions, isLoading: subscriptionsLoading } = useQuery<SignalSubscription[]>({
     queryKey: ["signal-subscriptions"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch subscriptions
+      const { data: subscriptionsData, error: subscriptionsError } = await supabase
         .from("signal_subscriptions")
-        .select(`
-          *,
-          user_profiles(phone_number)
-        `)
+        .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      return data || [];
+      if (subscriptionsError) throw subscriptionsError;
+      if (!subscriptionsData || subscriptionsData.length === 0) return [];
+
+      // Fetch user profiles for all user IDs
+      const userIds = subscriptionsData.map(sub => sub.user_id);
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("user_profiles")
+        .select("id, phone_number")
+        .in("id", userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Merge phone numbers into subscriptions
+      const subscriptionsWithPhone = subscriptionsData.map(sub => ({
+        ...sub,
+        user_profiles: profilesData?.find(profile => profile.id === sub.user_id) 
+          ? { phone_number: profilesData.find(profile => profile.id === sub.user_id)?.phone_number || null }
+          : { phone_number: null }
+      }));
+
+      return subscriptionsWithPhone;
     },
   });
 
@@ -400,6 +444,87 @@ const AdminSignals: React.FC = () => {
   const handleDeleteSignal = (signalId: string) => {
     if (confirm("Are you sure you want to delete this signal?")) {
       deleteSignalMutation.mutate(signalId);
+    }
+  };
+
+  // Update subscription mutation
+  const updateSubscriptionMutation = useMutation({
+    mutationFn: async ({ id, values }: { id: string; values: SubscriptionFormValues }) => {
+      const { error } = await supabase
+        .from("signal_subscriptions")
+        .update({
+          status: values.status,
+          payment_status: values.payment_status,
+          amount_paid: values.amount_paid,
+          pips_purchased: values.pips_purchased || 0,
+          pips_used: values.pips_used || 0,
+          start_date: values.start_date,
+          end_date: values.end_date || null,
+        })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["signal-subscriptions"] });
+      showSuccess("Subscription updated successfully");
+      setIsSubscriptionDialogOpen(false);
+      setSelectedSubscription(null);
+      subscriptionForm.reset();
+    },
+    onError: (error: any) => {
+      showError(error.message || "Failed to update subscription");
+    },
+  });
+
+  // Delete subscription mutation
+  const deleteSubscriptionMutation = useMutation({
+    mutationFn: async (subscriptionId: string) => {
+      const { error } = await supabase
+        .from("signal_subscriptions")
+        .delete()
+        .eq("id", subscriptionId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["signal-subscriptions"] });
+      showSuccess("Subscription deleted successfully");
+    },
+    onError: (error: any) => {
+      showError(error.message || "Failed to delete subscription");
+    },
+  });
+
+  const handleEditSubscription = (subscription: SignalSubscription) => {
+    setSelectedSubscription(subscription);
+    subscriptionForm.reset({
+      status: subscription.status,
+      payment_status: subscription.payment_status,
+      amount_paid: subscription.amount_paid,
+      pips_purchased: subscription.pips_purchased,
+      pips_used: subscription.pips_used,
+      start_date: subscription.start_date.split('T')[0], // Format date for input
+      end_date: subscription.end_date ? subscription.end_date.split('T')[0] : null,
+    });
+    setIsSubscriptionDialogOpen(true);
+  };
+
+  const handleDeleteSubscription = (subscriptionId: string) => {
+    if (confirm("Are you sure you want to delete this subscription? This action cannot be undone.")) {
+      deleteSubscriptionMutation.mutate(subscriptionId);
+    }
+  };
+
+  const onSubscriptionSubmit = (values: SubscriptionFormValues) => {
+    if (selectedSubscription) {
+      // Convert date strings to ISO format
+      const updateValues = {
+        ...values,
+        start_date: new Date(values.start_date).toISOString(),
+        end_date: values.end_date ? new Date(values.end_date).toISOString() : null,
+      };
+      updateSubscriptionMutation.mutate({ id: selectedSubscription.id, values: updateValues });
     }
   };
 
@@ -685,6 +810,7 @@ const AdminSignals: React.FC = () => {
                           <TableHead className="text-white">Pips</TableHead>
                           <TableHead className="text-white">Start Date</TableHead>
                           <TableHead className="text-white">End Date</TableHead>
+                          <TableHead className="text-white text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -711,6 +837,27 @@ const AdminSignals: React.FC = () => {
                               {subscription.end_date
                                 ? format(new Date(subscription.end_date), "MMM dd, yyyy")
                                 : "N/A"}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex gap-2 justify-end">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleEditSubscription(subscription)}
+                                  className="border-steel-wool text-gold hover:bg-steel-wool"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDeleteSubscription(subscription.id)}
+                                  className="border-steel-wool text-red-500 hover:bg-steel-wool"
+                                  disabled={deleteSubscriptionMutation.isPending}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -811,6 +958,194 @@ const AdminSignals: React.FC = () => {
                         disabled={updatePricingMutation.isPending}
                       >
                         Update Pricing
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+
+            {/* Edit Subscription Dialog */}
+            <Dialog open={isSubscriptionDialogOpen} onOpenChange={setIsSubscriptionDialogOpen}>
+              <DialogContent className="bg-black border-steel-wool text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Edit Subscription</DialogTitle>
+                  <DialogDescription className="text-rainy-grey">
+                    Update subscription details for user: {selectedSubscription?.user_profiles?.phone_number || "N/A"}
+                  </DialogDescription>
+                </DialogHeader>
+                <Form {...subscriptionForm}>
+                  <form onSubmit={subscriptionForm.handleSubmit(onSubscriptionSubmit)} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={subscriptionForm.control}
+                        name="status"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-white">Status</FormLabel>
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <FormControl>
+                                <SelectTrigger className="bg-nero border-steel-wool text-white">
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="bg-nero border-steel-wool">
+                                <SelectItem value="active" className="text-white">Active</SelectItem>
+                                <SelectItem value="cancelled" className="text-white">Cancelled</SelectItem>
+                                <SelectItem value="expired" className="text-white">Expired</SelectItem>
+                                <SelectItem value="pending" className="text-white">Pending</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={subscriptionForm.control}
+                        name="payment_status"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-white">Payment Status</FormLabel>
+                            <Select value={field.value} onValueChange={field.onChange}>
+                              <FormControl>
+                                <SelectTrigger className="bg-nero border-steel-wool text-white">
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="bg-nero border-steel-wool">
+                                <SelectItem value="pending" className="text-white">Pending</SelectItem>
+                                <SelectItem value="completed" className="text-white">Completed</SelectItem>
+                                <SelectItem value="failed" className="text-white">Failed</SelectItem>
+                                <SelectItem value="refunded" className="text-white">Refunded</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={subscriptionForm.control}
+                      name="amount_paid"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-white">Amount Paid</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              className="bg-nero border-steel-wool text-white"
+                              {...field}
+                              onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {selectedSubscription?.subscription_type === "per_pip" && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={subscriptionForm.control}
+                          name="pips_purchased"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-white">Pips Purchased</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  className="bg-nero border-steel-wool text-white"
+                                  {...field}
+                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                  value={field.value || 0}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={subscriptionForm.control}
+                          name="pips_used"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-white">Pips Used</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  className="bg-nero border-steel-wool text-white"
+                                  {...field}
+                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                  value={field.value || 0}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={subscriptionForm.control}
+                        name="start_date"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-white">Start Date</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="date"
+                                className="bg-nero border-steel-wool text-white"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={subscriptionForm.control}
+                        name="end_date"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-white">End Date (Optional)</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="date"
+                                className="bg-nero border-steel-wool text-white"
+                                {...field}
+                                value={field.value || ""}
+                                onChange={(e) => field.onChange(e.target.value || null)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <DialogFooter>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setIsSubscriptionDialogOpen(false);
+                          setSelectedSubscription(null);
+                          subscriptionForm.reset();
+                        }}
+                        className="border-steel-wool text-rainy-grey"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        className="bg-gold text-cursed-black hover:bg-gold-dark"
+                        disabled={updateSubscriptionMutation.isPending}
+                      >
+                        {updateSubscriptionMutation.isPending ? "Updating..." : "Update Subscription"}
                       </Button>
                     </DialogFooter>
                   </form>
