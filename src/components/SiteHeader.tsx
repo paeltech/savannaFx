@@ -6,6 +6,7 @@ import { Menu } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSupabaseSession } from "@/components/auth/SupabaseSessionProvider";
 import { useIsMobile } from "@/hooks/use-mobile";
+import NotificationDropdown from "@/components/notifications/NotificationDropdown";
 
 type SiteHeaderProps = {
   onOpenMenu: () => void;
@@ -78,9 +79,12 @@ const SiteHeader: React.FC<SiteHeaderProps> = ({ onOpenMenu, onOpenSignup, onOpe
         </nav>
         <div className="flex items-center gap-2 sm:gap-4">
           {session ? (
-            <Link to="/dashboard">
-              <Button variant="ghost" className="text-rainy-grey hover:text-gold hidden sm:inline-flex min-h-[44px]">Dashboard</Button>
-            </Link>
+            <>
+              <NotificationDropdown />
+              <Link to="/dashboard">
+                <Button variant="ghost" className="text-rainy-grey hover:text-gold hidden sm:inline-flex min-h-[44px]">Dashboard</Button>
+              </Link>
+            </>
           ) : (
             onOpenSignup && (
               <Button 

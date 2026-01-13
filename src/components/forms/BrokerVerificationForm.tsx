@@ -13,19 +13,19 @@ import { Input } from "@/components/ui/input";
 
 const schema = z.object({
   email: z.string().email("Please enter a valid email"),
-  exness_account_id: z.string().min(3, "Account ID is too short").optional().or(z.literal("")),
+  broker_account_id: z.string().min(3, "Account ID is too short").optional().or(z.literal("")),
   telegram_username: z.string().optional().or(z.literal("")),
 });
 
 type FormValues = z.infer<typeof schema>;
 
-const ExnessVerificationForm: React.FC<{ onSubmitted?: () => void }> = ({ onSubmitted }) => {
+const BrokerVerificationForm: React.FC<{ onSubmitted?: () => void }> = ({ onSubmitted }) => {
   const { session } = useSupabaseSession();
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       email: "",
-      exness_account_id: "",
+      broker_account_id: "",
       telegram_username: "",
     },
   });
@@ -38,11 +38,11 @@ const ExnessVerificationForm: React.FC<{ onSubmitted?: () => void }> = ({ onSubm
     const payload = {
       user_id: session.user.id,
       email: values.email,
-      exness_account_id: values.exness_account_id || null,
+      broker_account_id: values.broker_account_id || null,
       telegram_username: values.telegram_username || null,
       status: "pending",
     };
-    const { error } = await supabase.from("exness_verifications").insert(payload);
+    const { error } = await supabase.from("broker_verifications").insert(payload);
     if (error) {
       showError(error.message);
       throw error;
@@ -71,10 +71,10 @@ const ExnessVerificationForm: React.FC<{ onSubmitted?: () => void }> = ({ onSubm
         <div className="grid sm:grid-cols-2 gap-3">
           <FormField
             control={form.control}
-            name="exness_account_id"
+            name="broker_account_id"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Exness Account ID (optional)</FormLabel>
+                <FormLabel>Broker Account ID (optional)</FormLabel>
                 <FormControl>
                   <Input placeholder="e.g., 12345678" className="bg-slate-900/60 border-slate-800 text-slate-200" {...field} />
                 </FormControl>
@@ -106,4 +106,4 @@ const ExnessVerificationForm: React.FC<{ onSubmitted?: () => void }> = ({ onSubm
   );
 };
 
-export default ExnessVerificationForm;
+export default BrokerVerificationForm;

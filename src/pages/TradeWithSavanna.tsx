@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { showSuccess } from "@/utils/toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import ExnessVerificationForm from "@/components/forms/ExnessVerificationForm.tsx";
+import BrokerVerificationForm from "@/components/forms/BrokerVerificationForm.tsx";
 import { PageTransition, ScrollReveal, StaggerChildren, fadeInUp, HoverScale } from "@/lib/animations";
 import { motion } from "framer-motion";
 
@@ -57,9 +57,9 @@ const BenefitItem = ({
 
 const TradeWithSavanna: React.FC = () => {
   const handleRegister = () => {
-    showSuccess("Redirecting to Exness…");
-    // In a real app, replace with your referral link
-    window.open("https://www.exness.com/", "_blank", "noopener,noreferrer");
+    showSuccess("Redirecting to broker registration…");
+    // In a real app, replace with your broker referral link
+    window.open("https://www.example.com/", "_blank", "noopener,noreferrer");
   };
 
   const [verifyOpen, setVerifyOpen] = React.useState(false);
@@ -80,11 +80,11 @@ const TradeWithSavanna: React.FC = () => {
                   <Handshake className="text-white" size={18} />
                 </motion.div>
                 <h1 className="text-xl md:text-2xl font-semibold text-white">
-                  Trade With Savanna via <span className="text-gold italic">EXNESS</span>
+                  Trade With Savanna
                 </h1>
               </div>
               <p className="text-rainy-grey mt-2">
-                Open a real Exness account with SavannaFX's referral link and get lifetime access to free signals.
+                Open a real broker account with SavannaFX's referral link and get lifetime access to free signals.
               </p>
             </CardContent>
           </SavannaCard>
@@ -121,7 +121,7 @@ const TradeWithSavanna: React.FC = () => {
                   <BenefitItem
                     icon={MessageSquare}
                     title="Private Telegram Group"
-                    desc="Verified Exness traders — tighter community, faster updates."
+                    desc="Verified traders — tighter community, faster updates."
                   />
                   <BenefitItem
                     icon={Trophy}
@@ -141,7 +141,7 @@ const TradeWithSavanna: React.FC = () => {
                   <BenefitItem
                     icon={CalendarClock}
                     title="Monthly Live Recaps"
-                    desc="Exness-only traders performance analysis sessions."
+                    desc="Verified traders performance analysis sessions."
                   />
                 </StaggerChildren>
               </div>
@@ -172,7 +172,7 @@ const TradeWithSavanna: React.FC = () => {
                 onClick={handleRegister}
                 disabled
               >
-                REGISTER ON EXNESS
+                REGISTER WITH BROKER
               </Button>
 
               <div className="mt-4 text-rainy-grey">OR</div>
@@ -220,7 +220,7 @@ const TradeWithSavanna: React.FC = () => {
             <DialogTitle>Submit Verification</DialogTitle>
             <DialogDescription>Provide your email and optional details to request access.</DialogDescription>
           </DialogHeader>
-          <ExnessVerificationForm onSubmitted={() => setVerifyOpen(false)} />
+          <BrokerVerificationForm onSubmitted={() => setVerifyOpen(false)} />
         </DialogContent>
       </Dialog>
       </DashboardLayout>

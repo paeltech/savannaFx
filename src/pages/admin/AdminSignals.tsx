@@ -24,7 +24,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { SignalHigh, Edit, DollarSign, Users, TrendingUp, Plus, Trash2 } from "lucide-react";
+import { SignalHigh, Edit, DollarSign, Users, TrendingUp, Plus, Trash2, RefreshCw, MessageSquare } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import supabase from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -37,6 +37,7 @@ import { PageTransition, ScrollReveal } from "@/lib/animations";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { createNotificationForUsers, formatSignalNotification } from "@/utils/notifications";
 
 interface SignalPricing {
   id: string;
@@ -85,6 +86,19 @@ interface Signal {
   updated_at: string;
 }
 
+interface WhatsAppGroup {
+  id: string;
+  group_name: string;
+  group_jid: string;
+  group_number: number;
+  member_count: number;
+  max_members: number;
+  is_active: boolean;
+  month_year: string;
+  created_at: string;
+  updated_at: string;
+}
+
 const pricingSchema = z.object({
   price: z.number().min(0, "Price must be positive"),
   description: z.string().optional(),
@@ -128,6 +142,7 @@ const AdminSignals: React.FC = () => {
   const [selectedSubscription, setSelectedSubscription] = useState<SignalSubscription | null>(null);
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("signals");
+  const [isRefreshingGroups, setIsRefreshingGroups] = useState(false);
   const queryClient = useQueryClient();
 
   const form = useForm<PricingFormValues>({
@@ -229,6 +244,76 @@ const AdminSignals: React.FC = () => {
       return data || [];
     },
   });
+
+  // Fetch WhatsApp groups
+  const { data: whatsappGroups, isLoading: groupsLoading, refetch: refetchGroups } = useQuery<WhatsAppGroup[]>({
+    queryKey: ["whatsapp-groups"],
+    queryFn: async () => {
+      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
+      const { data, error } = await supabase
+        .from("whatsapp_groups")
+        .select("*")
+        .eq("is_active", true)
+        .eq("month_year", currentMonth)
+        .order("group_number", { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Refresh groups mutation
+  const refreshGroupsMutation = useMutation({
+    mutationFn: async () => {
+      const SUPABASE_URL = "https://iurstpwtdnlmpvwyhqfn.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1cnN0cHd0ZG5sbXB2d3locWZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4NjAzNDMsImV4cCI6MjA4MTQzNjM0M30.pGCrGsPACMxGgsnMDZf-J-kszQPB1N5y008w_KOj-3o";
+
+      const response = await fetch(
+        `${SUPABASE_URL}/functions/v1/refresh-whatsapp-groups`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+            "apikey": SUPABASE_ANON_KEY,
+          },
+        }
+      );
+
+      const responseText = await response.text();
+      
+      if (!response.ok) {
+        let errorMessage = "Failed to refresh groups";
+        try {
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch {
+          errorMessage = responseText || `HTTP ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      try {
+        return JSON.parse(responseText);
+      } catch {
+        throw new Error("Invalid response from server");
+      }
+    },
+    onSuccess: (data) => {
+      showSuccess(`Groups refreshed successfully! ${data.subscribersAdded || 0} subscribers added to ${data.groups?.length || 0} groups.`);
+      refetchGroups();
+      setIsRefreshingGroups(false);
+    },
+    onError: (error: any) => {
+      showError(error.message || "Failed to refresh groups");
+      setIsRefreshingGroups(false);
+    },
+  });
+
+  const handleRefreshGroups = () => {
+    setIsRefreshingGroups(true);
+    refreshGroupsMutation.mutate();
+  };
 
   const updatePricingMutation = useMutation({
     mutationFn: async ({ id, values }: { id: string; values: PricingFormValues }) => {
@@ -365,6 +450,48 @@ const AdminSignals: React.FC = () => {
       } catch (error) {
         console.error('Error calling WhatsApp function:', error);
         showError(`Signal created but failed to send WhatsApp notifications: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+
+      // Create in-app notifications for subscribed users
+      try {
+        console.log('Creating in-app notifications for signal:', signal.id);
+
+        // Fetch all users with active signal subscriptions
+        const { data: subscriptions, error: subsError } = await supabase
+          .from('signal_subscriptions')
+          .select('user_id')
+          .eq('status', 'active');
+
+        if (subsError) {
+          console.error('Error fetching subscriptions:', subsError);
+        } else if (subscriptions && subscriptions.length > 0) {
+          const userIds = subscriptions.map(sub => sub.user_id);
+          const { title, message } = formatSignalNotification({
+            title: signal.title,
+            trading_pair: signal.trading_pair,
+            signal_type: signal.signal_type,
+            entry_price: signal.entry_price,
+          });
+
+          await createNotificationForUsers(userIds, {
+            notification_type: 'signal',
+            title,
+            message,
+            action_url: '/dashboard/signals',
+            metadata: {
+              signal_id: signal.id,
+              trading_pair: signal.trading_pair,
+              signal_type: signal.signal_type,
+            },
+          });
+
+          console.log(`In-app notifications created for ${userIds.length} users`);
+        } else {
+          console.log('No active signal subscriptions found');
+        }
+      } catch (error) {
+        console.error('Error creating in-app notifications:', error);
+        // Don't show error to user - notifications are not critical
       }
 
       setIsSignalDialogOpen(false);
@@ -638,7 +765,7 @@ const AdminSignals: React.FC = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6 bg-nero border border-steel-wool">
+          <TabsList className="grid w-full grid-cols-3 mb-6 bg-nero border border-steel-wool">
             <TabsTrigger
               value="signals"
               className="data-[state=active]:bg-gold data-[state=active]:text-cursed-black text-rainy-grey"
@@ -650,6 +777,12 @@ const AdminSignals: React.FC = () => {
               className="data-[state=active]:bg-gold data-[state=active]:text-cursed-black text-rainy-grey"
             >
               Subscriptions & Pricing
+            </TabsTrigger>
+            <TabsTrigger
+              value="groups"
+              className="data-[state=active]:bg-gold data-[state=active]:text-cursed-black text-rainy-grey"
+            >
+              WhatsApp Groups
             </TabsTrigger>
           </TabsList>
 
@@ -1408,6 +1541,117 @@ const AdminSignals: React.FC = () => {
                 </Form>
               </DialogContent>
             </Dialog>
+          </TabsContent>
+
+          {/* WhatsApp Groups Tab */}
+          <TabsContent value="groups" className="space-y-6">
+            <ScrollReveal>
+              <SavannaCard className="mb-6">
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-slate-200 font-medium">WhatsApp Groups Management</h2>
+                    <Button
+                      onClick={handleRefreshGroups}
+                      disabled={isRefreshingGroups}
+                      className="bg-gold text-cursed-black hover:bg-gold-dark"
+                    >
+                      <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshingGroups ? 'animate-spin' : ''}`} />
+                      {isRefreshingGroups ? "Refreshing..." : "Refresh Groups"}
+                    </Button>
+                  </div>
+
+                  {groupsLoading ? (
+                    <div className="text-center py-8 text-rainy-grey">Loading groups...</div>
+                  ) : !whatsappGroups || whatsappGroups.length === 0 ? (
+                    <div className="text-center py-8 text-rainy-grey">
+                      <MessageSquare className="mx-auto h-12 w-12 mb-4 opacity-50" />
+                      <p>No active WhatsApp groups found for this month.</p>
+                      <p className="text-sm mt-2">Click "Refresh Groups" to create groups and migrate subscribers.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {whatsappGroups.map((group) => (
+                          <div
+                            key={group.id}
+                            className="bg-nero border border-steel-wool rounded-lg p-4"
+                          >
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <h3 className="text-white font-medium">{group.group_name}</h3>
+                                <p className="text-rainy-grey text-sm">Group #{group.group_number}</p>
+                              </div>
+                              <Badge
+                                className={group.is_active ? "bg-green-600" : "bg-gray-600"}
+                              >
+                                {group.is_active ? "Active" : "Inactive"}
+                              </Badge>
+                            </div>
+                            <div className="mt-4 space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-rainy-grey">Members:</span>
+                                <span className="text-white font-medium">
+                                  {group.member_count} / {group.max_members}
+                                </span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-rainy-grey">Month:</span>
+                                <span className="text-white">{group.month_year}</span>
+                              </div>
+                              <div className="w-full bg-steel-wool rounded-full h-2 mt-2">
+                                <div
+                                  className="bg-gold h-2 rounded-full"
+                                  style={{
+                                    width: `${Math.min((group.member_count / group.max_members) * 100, 100)}%`,
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <div className="mt-4 pt-4 border-t border-steel-wool">
+                              <p className="text-xs text-rainy-grey break-all">
+                                JID: {group.group_jid}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="mt-6 p-4 bg-nero border border-steel-wool rounded-lg">
+                        <h3 className="text-white font-medium mb-2">Summary</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                          <div>
+                            <span className="text-rainy-grey">Total Groups:</span>
+                            <span className="text-white font-medium ml-2">{whatsappGroups.length}</span>
+                          </div>
+                          <div>
+                            <span className="text-rainy-grey">Total Members:</span>
+                            <span className="text-white font-medium ml-2">
+                              {whatsappGroups.reduce((sum, g) => sum + g.member_count, 0)}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-rainy-grey">Capacity Used:</span>
+                            <span className="text-white font-medium ml-2">
+                              {(
+                                (whatsappGroups.reduce((sum, g) => sum + g.member_count, 0) /
+                                  (whatsappGroups.reduce((sum, g) => sum + g.max_members, 0))) *
+                                100
+                              ).toFixed(1)}%
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-rainy-grey">Current Month:</span>
+                            <span className="text-white font-medium ml-2">
+                              {whatsappGroups[0]?.month_year || "N/A"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </SavannaCard>
+            </ScrollReveal>
           </TabsContent>
         </Tabs>          </DashboardLayout>
     </PageTransition>

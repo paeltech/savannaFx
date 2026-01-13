@@ -43,6 +43,7 @@ import { z } from "zod";
 import { Form, FormField, FormItem, FormLabel, FormMessage, FormControl } from "@/components/ui/form";
 import { PageTransition } from "@/lib/animations";
 import { cn } from "@/lib/utils";
+import { createNotificationForUsers, formatEventNotification } from "@/utils/notifications";
 
 interface Event {
   id: string;
@@ -235,7 +236,7 @@ const AdminEvents: React.FC = () => {
         }
       }
 
-      const { error } = await supabase.from("events").insert({
+      const { data, error } = await supabase.from("events").insert({
         title: values.title,
         organizer: values.organizer,
         description: values.description,
@@ -253,14 +254,56 @@ const AdminEvents: React.FC = () => {
         status: values.status,
         is_featured: values.is_featured,
         created_by: session?.user?.id || null,
-      });
+      })
+      .select()
+      .single();
 
       if (error) throw error;
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: async (event) => {
       queryClient.invalidateQueries({ queryKey: ["admin-events"] });
       queryClient.invalidateQueries({ queryKey: ["events"] });
       showSuccess("Event created successfully");
+
+      // Create in-app notifications for all users
+      try {
+        console.log('Creating in-app notifications for event:', event.id);
+
+        // Fetch all user IDs
+        const { data: users, error: usersError } = await supabase
+          .from('user_profiles')
+          .select('id');
+
+        if (usersError) {
+          console.error('Error fetching users:', usersError);
+        } else if (users && users.length > 0) {
+          const userIds = users.map(user => user.id);
+          const { title, message } = formatEventNotification({
+            title: event.title,
+            event_type: event.type,
+            start_date: event.start_date,
+          });
+
+          await createNotificationForUsers(userIds, {
+            notification_type: 'event',
+            title,
+            message,
+            action_url: `/dashboard/events/${event.id}`,
+            metadata: {
+              event_id: event.id,
+              event_type: event.type,
+              category: event.category,
+            },
+          });
+
+          console.log(`In-app notifications created for ${userIds.length} users`);
+        }
+      } catch (error) {
+        console.error('Error creating in-app notifications:', error);
+        // Don't show error to user - notifications are not critical
+      }
+
       setIsDialogOpen(false);
       form.reset();
       setImageFile(null);

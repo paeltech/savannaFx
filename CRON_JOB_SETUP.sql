@@ -1,0 +1,39 @@
+-- ============================================
+-- Cron Job Setup for Monthly Group Refresh
+-- ============================================
+-- 
+-- IMPORTANT: Use Supabase Dashboard Cron Jobs (Recommended)
+-- 
+-- Steps:
+-- 1. Go to Supabase Dashboard > Database > Cron Jobs
+-- 2. Click "New Cron Job"
+-- 3. Fill in:
+--    - Name: refresh-whatsapp-groups-monthly
+--    - Schedule: 0 0 1 * *
+--    - SQL: (copy the SQL below)
+-- 4. Click "Create"
+--
+-- ============================================
+
+-- SQL to run in the cron job:
+SELECT call_refresh_whatsapp_groups();
+
+-- ============================================
+-- Alternative: Using pg_cron (if extension is enabled)
+-- ============================================
+-- 
+-- If pg_cron extension is enabled, you can run this SQL instead:
+--
+-- SELECT cron.schedule(
+--   'refresh-whatsapp-groups-monthly',
+--   '0 0 1 * *',
+--   'SELECT call_refresh_whatsapp_groups();'
+-- );
+--
+-- To check if pg_cron is enabled:
+-- SELECT * FROM pg_extension WHERE extname = 'pg_cron';
+--
+-- To enable pg_cron:
+-- Go to Supabase Dashboard > Database > Extensions > Enable pg_cron
+--
+-- ============================================
