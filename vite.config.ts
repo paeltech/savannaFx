@@ -45,22 +45,22 @@ export default defineConfig({
             purpose: 'maskable'
           }
         ],
-        screenshots: [
-          {
-            src: '/screenshot-wide.png',
-            sizes: '1280x720',
-            type: 'image/png',
-            form_factor: 'wide',
-            label: 'SavannaFX Dashboard'
-          },
-          {
-            src: '/screenshot-mobile.png',
-            sizes: '750x1334',
-            type: 'image/png',
-            form_factor: 'narrow',
-            label: 'SavannaFX Mobile'
-          }
-        ],
+        // screenshots: [
+        //   {
+        //     src: '/screenshot-wide.png',
+        //     sizes: '1280x720',
+        //     type: 'image/png',
+        //     form_factor: 'wide',
+        //     label: 'SavannaFX Dashboard'
+        //   },
+        //   {
+        //     src: '/screenshot-mobile.png',
+        //     sizes: '750x1334',
+        //     type: 'image/png',
+        //     form_factor: 'narrow',
+        //     label: 'SavannaFX Mobile'
+        //   }
+        // ],
         categories: ['finance', 'education'],
         shortcuts: [
           {
