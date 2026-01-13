@@ -370,21 +370,16 @@ const SignupForm: React.FC<SignupFormProps> = ({
       }
 
       // Create or update user profile with phone number
-      // Note: A database trigger may have already created the profile
-      // so we use upsert to ensure phone number is saved
+      // Use RPC function to bypass RLS (user may not have session yet if email confirmation required)
       if (data?.user) {
         const fullPhoneNumber = `${values.countryCode}${values.phoneNumber}`;
-        const { error: profileError } = await supabase
-          .from("user_profiles")
-          .upsert({
-            id: data.user.id,
-            phone_number: fullPhoneNumber,
-            phone_verified: true,
-            whatsapp_notifications_enabled: true,
-            email_notifications_enabled: true,
-          }, {
-            onConflict: 'id'
-          });
+        const { error: profileError } = await supabase.rpc('update_user_profile_on_signup', {
+          user_id: data.user.id,
+          phone_number_param: fullPhoneNumber,
+          phone_verified_param: true,
+          whatsapp_notifications_param: true,
+          email_notifications_param: true,
+        });
 
         if (profileError) {
           console.error("Error creating/updating user profile:", profileError);

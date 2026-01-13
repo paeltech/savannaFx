@@ -10,12 +10,15 @@ const corsHeaders = {
 const WASENDER_API_KEY = Deno.env.get("WASENDER_API_KEY");
 const WASENDER_SESSION_ID = Deno.env.get("WASENDER_SESSION_ID");
 
-// Rate limiting configuration
-const BATCH_SIZE = 5; // Reduced batch size to avoid rate limits (Wasender free tier is very limited)
-const BATCH_DELAY_MS = 3000; // Increased delay between batches (3 seconds)
-const MAX_RETRIES = 3; // Maximum retry attempts for failed messages
-const RETRY_DELAYS = [5000, 10000, 20000]; // Longer delays for rate limit retries (5s, 10s, 20s)
-const RATE_LIMIT_RETRY_DELAYS = [10000, 30000, 60000]; // Even longer delays specifically for 429 errors (10s, 30s, 60s)
+// Rate limiting configuration - Conservative settings to avoid WhatsApp account restrictions
+const BATCH_SIZE = 2; // Very small batches to avoid bulk messaging patterns (WhatsApp flags bulk messages)
+const BATCH_DELAY_MS = 8000; // 8 seconds between batches - WhatsApp needs time between message groups
+const MESSAGE_DELAY_MS = 2000; // 2 seconds delay between individual messages within a batch
+const MAX_RETRIES = 2; // Reduced retries to avoid repeated attempts on invalid numbers
+const RETRY_DELAYS = [10000, 30000]; // Longer delays for retries (10s, 30s)
+const RATE_LIMIT_RETRY_DELAYS = [30000, 120000]; // Much longer delays for 429 errors (30s, 2min)
+const MAX_MESSAGES_PER_HOUR = 20; // Maximum messages per hour to avoid restrictions
+const PRE_FILTER_WHATSAPP = true; // Pre-check if numbers are on WhatsApp before sending
 
 // Twilio credentials (commented out for future use)
 // const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
@@ -117,8 +120,8 @@ async function checkSessionStatus(): Promise<boolean> {
     }
 }
 
-// Check if a phone number is on WhatsApp (optional optimization)
-async function isOnWhatsApp(phoneNumber: string): Promise<boolean> {
+// Check if a phone number is on WhatsApp (pre-filtering to avoid sending to invalid numbers)
+async function isOnWhatsApp(phoneNumber: string): Promise<{ onWhatsApp: boolean; error?: string }> {
     try {
         const cleanPhoneNumber = phoneNumber.replace('+', '').replace(/\s/g, '');
         const url = `https://api.wasenderapi.com/api/on-whatsapp/${cleanPhoneNumber}`;
@@ -131,11 +134,22 @@ async function isOnWhatsApp(phoneNumber: string): Promise<boolean> {
             },
         });
 
+        if (!response.ok) {
+            // If check fails, assume not on WhatsApp to be safe
+            return { onWhatsApp: false, error: `Check failed: ${response.status}` };
+        }
+
         const data = await response.json();
-        return response.ok && data?.onWhatsApp === true;
+        const onWhatsApp = data?.onWhatsApp === true || data?.exists === true;
+        
+        return { 
+            onWhatsApp, 
+            error: onWhatsApp ? undefined : 'Number not on WhatsApp' 
+        };
     } catch (error) {
         console.error(`Error checking if ${phoneNumber} is on WhatsApp:`, error);
-        return true; // Assume on WhatsApp if check fails to avoid blocking sends
+        // If check fails, assume not on WhatsApp to avoid sending to invalid numbers
+        return { onWhatsApp: false, error: error instanceof Error ? error.message : 'Check error' };
     }
 }
 
@@ -364,10 +378,40 @@ serve(async (req) => {
 
         console.log(`Preparing to send WhatsApp messages to ${profiles.length} subscribers`);
 
+        // Pre-filter: Check which numbers are actually on WhatsApp (if enabled)
+        let validProfiles = profiles;
+        let preFilteredCount = 0;
+        if (PRE_FILTER_WHATSAPP) {
+            console.log("Pre-filtering: Checking which numbers are on WhatsApp...");
+            const preFilterResults = await Promise.all(
+                profiles.map(async (profile) => {
+                    const checkResult = await isOnWhatsApp(profile.phone_number!);
+                    return { profile, onWhatsApp: checkResult.onWhatsApp, error: checkResult.error };
+                })
+            );
+
+            validProfiles = preFilterResults
+                .filter(result => result.onWhatsApp)
+                .map(result => result.profile);
+
+            preFilteredCount = profiles.length - validProfiles.length;
+            if (preFilteredCount > 0) {
+                console.log(`Pre-filtered out ${preFilteredCount} numbers that are not on WhatsApp`);
+            }
+
+            console.log(`Proceeding with ${validProfiles.length} valid WhatsApp numbers`);
+        }
+
+        // Limit total messages to avoid hourly restrictions
+        if (validProfiles.length > MAX_MESSAGES_PER_HOUR) {
+            console.warn(`Limiting to ${MAX_MESSAGES_PER_HOUR} messages (out of ${validProfiles.length}) to avoid hourly restrictions`);
+            validProfiles = validProfiles.slice(0, MAX_MESSAGES_PER_HOUR);
+        }
+
         // Process messages in batches to respect rate limits
-        const batches: typeof profiles[] = [];
-        for (let i = 0; i < profiles.length; i += BATCH_SIZE) {
-            batches.push(profiles.slice(i, i + BATCH_SIZE));
+        const batches: typeof validProfiles[] = [];
+        for (let i = 0; i < validProfiles.length; i += BATCH_SIZE) {
+            batches.push(validProfiles.slice(i, i + BATCH_SIZE));
         }
 
         console.log(`Processing ${batches.length} batches of up to ${BATCH_SIZE} messages each`);
@@ -379,117 +423,126 @@ serve(async (req) => {
             const batch = batches[batchIndex];
             console.log(`Processing batch ${batchIndex + 1}/${batches.length} (${batch.length} messages)`);
 
-            // Send messages in current batch in parallel
-            const batchPromises = batch.map(async (profile) => {
-            try {
-                console.log(`Sending WhatsApp message to ${profile.phone_number} (user: ${profile.id})`);
+            // Send messages in current batch SEQUENTIALLY (not in parallel) with delays
+            // This is critical to avoid bulk messaging patterns that WhatsApp flags
+            for (let msgIndex = 0; msgIndex < batch.length; msgIndex++) {
+                const profile = batch[msgIndex];
                 
+                // Add delay before each message (except the first in batch)
+                if (msgIndex > 0) {
+                    console.log(`Waiting ${MESSAGE_DELAY_MS}ms before next message...`);
+                    await new Promise(resolve => setTimeout(resolve, MESSAGE_DELAY_MS));
+                }
+
                 // Send message with retry logic
-                const result = await sendWhatsAppMessage(profile.phone_number!, message);
+                let result;
+                try {
+                    console.log(`Sending WhatsApp message to ${profile.phone_number} (user: ${profile.id}) [${msgIndex + 1}/${batch.length} in batch]`);
+                    
+                    // Send message with retry logic
+                    const sendResult = await sendWhatsAppMessage(profile.phone_number!, message);
 
-                // Determine success based on HTTP status and response data
-                // Wasender API may return 200 even for some failures, so check response body carefully
-                const httpSuccess = result.httpStatus >= 200 && result.httpStatus < 300;
-                
-                // Check for various error indicators in Wasender response
-                const hasError = 
-                    result.error || 
-                    result.error_code || 
-                    result.error_message ||
-                    result.message === false ||
-                    (result.httpStatus && (result.httpStatus < 200 || result.httpStatus >= 300));
-                
-                // Check for success indicators - be strict: require a message ID or explicit success
-                const hasSuccessIndicator = 
-                    result.success === true ||
-                    result.id ||
-                    result.messageId ||
-                    result.sid ||
-                    (result.message && result.message !== false);
-                
-                // Final success = HTTP success AND no errors AND has success indicator
-                // Be conservative: if we don't have clear success indicators, mark as failed
-                const finalSuccess = httpSuccess && !hasError && hasSuccessIndicator;
+                    // Determine success based on HTTP status and response data
+                    // Wasender API may return 200 even for some failures, so check response body carefully
+                    const httpSuccess = sendResult.httpStatus >= 200 && sendResult.httpStatus < 300;
+                    
+                    // Check for various error indicators in Wasender response
+                    const hasError = 
+                        sendResult.error || 
+                        sendResult.error_code || 
+                        sendResult.error_message ||
+                        sendResult.message === false ||
+                        (sendResult.httpStatus && (sendResult.httpStatus < 200 || sendResult.httpStatus >= 300));
+                    
+                    // Check for success indicators - be strict: require a message ID or explicit success
+                    const hasSuccessIndicator = 
+                        sendResult.success === true ||
+                        sendResult.id ||
+                        sendResult.messageId ||
+                        sendResult.sid ||
+                        (sendResult.message && sendResult.message !== false);
+                    
+                    // Final success = HTTP success AND no errors AND has success indicator
+                    // Be conservative: if we don't have clear success indicators, mark as failed
+                    const finalSuccess = httpSuccess && !hasError && hasSuccessIndicator;
 
-                console.log(`Message to ${profile.phone_number}: ${finalSuccess ? 'SUCCESS' : 'FAILED'}`, {
-                    httpStatus: result.httpStatus,
-                    error: result.error || result.error_code || result.error_message,
-                    messageId: result.id || result.messageId || result.sid
-                });
+                    console.log(`Message to ${profile.phone_number}: ${finalSuccess ? 'SUCCESS' : 'FAILED'}`, {
+                        httpStatus: sendResult.httpStatus,
+                        error: sendResult.error || sendResult.error_code || sendResult.error_message,
+                        messageId: sendResult.id || sendResult.messageId || sendResult.sid
+                    });
 
-                // Extract error message for logging
-                const logErrorMsg = result.error_message || result.error || result.error_code || 
-                    (result.httpStatus === 429 ? 'Rate limit exceeded' : null) ||
-                    (!finalSuccess ? `HTTP ${result.httpStatus || 'unknown'}` : null);
+                    // Extract error message for logging
+                    const logErrorMsg = sendResult.error_message || sendResult.error || sendResult.error_code || 
+                        (sendResult.httpStatus === 429 ? 'Rate limit exceeded' : null) ||
+                        (!finalSuccess ? `HTTP ${sendResult.httpStatus || 'unknown'}` : null);
 
-                // Log the notification (non-blocking, happens after message is sent)
-                const logPromise = supabaseClient.from("notification_logs").insert({
-                    user_id: profile.id,
-                    signal_id: signalId,
-                    notification_type: "whatsapp",
-                    phone_number: profile.phone_number,
-                    message_content: message,
-                    status: finalSuccess ? "sent" : "failed",
-                    error_message: logErrorMsg,
-                    provider_message_id: result.id || result.messageId || result.sid || null,
-                    sent_at: new Date().toISOString(),
-                }).then(() => {
-                    console.log(`Logged notification for ${profile.phone_number}: ${finalSuccess ? 'sent' : 'failed'}`);
-                }).catch(err => {
-                    console.error(`Failed to log notification for ${profile.phone_number}:`, err);
-                });
+                    // Log the notification (non-blocking, happens after message is sent)
+                    const logPromise = supabaseClient.from("notification_logs").insert({
+                        user_id: profile.id,
+                        signal_id: signalId,
+                        notification_type: "whatsapp",
+                        phone_number: profile.phone_number,
+                        message_content: message,
+                        status: finalSuccess ? "sent" : "failed",
+                        error_message: logErrorMsg,
+                        provider_message_id: sendResult.id || sendResult.messageId || sendResult.sid || null,
+                        sent_at: new Date().toISOString(),
+                    }).then(() => {
+                        console.log(`Logged notification for ${profile.phone_number}: ${finalSuccess ? 'sent' : 'failed'}`);
+                    }).catch(err => {
+                        console.error(`Failed to log notification for ${profile.phone_number}:`, err);
+                    });
 
-                // Don't await the log - let it happen in background
-                // This ensures message sending isn't blocked by logging
-                logPromise.catch(() => {});
+                    // Don't await the log - let it happen in background
+                    // This ensures message sending isn't blocked by logging
+                    logPromise.catch(() => {});
 
-                // Extract error message properly
-                const errorMsg = result.error_message || result.error || result.error_code || 
-                    (result.httpStatus === 429 ? 'Rate limit exceeded - message not sent' : null) ||
-                    (!finalSuccess && result.httpStatus ? `HTTP ${result.httpStatus}` : null) ||
-                    (!finalSuccess ? 'Unknown error' : null);
+                    // Extract error message properly
+                    const errorMsg = sendResult.error_message || sendResult.error || sendResult.error_code || 
+                        (sendResult.httpStatus === 429 ? 'Rate limit exceeded - message not sent' : null) ||
+                        (!finalSuccess && sendResult.httpStatus ? `HTTP ${sendResult.httpStatus}` : null) ||
+                        (!finalSuccess ? 'Unknown error' : null);
 
-                return {
-                    userId: profile.id,
-                    phoneNumber: profile.phone_number,
-                    success: finalSuccess,
-                    messageId: result.id || result.messageId || result.sid,
-                    error: errorMsg,
-                    httpStatus: result.httpStatus,
-                };
-            } catch (error) {
-                console.error(`Error sending to ${profile.phone_number}:`, error);
-                
-                const errorMessage = error instanceof Error ? error.message : String(error);
-                
-                // Log failed notification (non-blocking)
-                const logPromise = supabaseClient.from("notification_logs").insert({
-                    user_id: profile.id,
-                    signal_id: signalId,
-                    notification_type: "whatsapp",
-                    phone_number: profile.phone_number,
-                    message_content: message,
-                    status: "failed",
-                    error_message: errorMessage,
-                    sent_at: new Date().toISOString(),
-                }).catch(err => {
-                    console.error(`Failed to log error for ${profile.phone_number}:`, err);
-                });
+                    result = {
+                        userId: profile.id,
+                        phoneNumber: profile.phone_number,
+                        success: finalSuccess,
+                        messageId: sendResult.id || sendResult.messageId || sendResult.sid,
+                        error: errorMsg,
+                        httpStatus: sendResult.httpStatus,
+                    };
+                } catch (error) {
+                    console.error(`Error sending to ${profile.phone_number}:`, error);
+                    
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    
+                    // Log failed notification (non-blocking)
+                    const logPromise = supabaseClient.from("notification_logs").insert({
+                        user_id: profile.id,
+                        signal_id: signalId,
+                        notification_type: "whatsapp",
+                        phone_number: profile.phone_number,
+                        message_content: message,
+                        status: "failed",
+                        error_message: errorMessage,
+                        sent_at: new Date().toISOString(),
+                    }).catch(err => {
+                        console.error(`Failed to log error for ${profile.phone_number}:`, err);
+                    });
 
-                logPromise.catch(() => {});
+                    logPromise.catch(() => {});
 
-                return {
-                    userId: profile.id,
-                    phoneNumber: profile.phone_number,
-                    success: false,
-                    error: errorMessage,
-                };
+                    result = {
+                        userId: profile.id,
+                        phoneNumber: profile.phone_number,
+                        success: false,
+                        error: errorMessage,
+                    };
+                }
+
+                allResults.push({ status: "fulfilled", value: result });
             }
-            });
-
-            // Wait for current batch to complete
-            const batchResults = await Promise.allSettled(batchPromises);
-            allResults.push(...batchResults);
 
             // Add delay between batches (except for the last batch)
             if (batchIndex < batches.length - 1) {
@@ -544,6 +597,7 @@ serve(async (req) => {
             JSON.stringify({
                 success: true,
                 totalSubscribers: profiles.length,
+                preFilteredCount: preFilteredCount || 0,
                 totalAttempted: results.length,
                 successCount,
                 failureCount,
