@@ -68,12 +68,22 @@ CREATE POLICY "Admins can manage all profiles"
   WITH CHECK (is_admin(auth.uid()));
 
 -- Create function to automatically create user profile on signup
+-- This function is designed to be safe and not fail user creation
 CREATE OR REPLACE FUNCTION create_user_profile()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.user_profiles (id)
-  VALUES (NEW.id)
-  ON CONFLICT (id) DO NOTHING;
+  -- Wrap in exception handler to prevent errors from blocking user creation
+  BEGIN
+    INSERT INTO public.user_profiles (id)
+    VALUES (NEW.id)
+    ON CONFLICT (id) DO NOTHING;
+  EXCEPTION
+    WHEN OTHERS THEN
+      -- Log error but don't fail user creation
+      -- In production, you might want to log this to a table
+      RAISE WARNING 'Error in create_user_profile for user %: %', NEW.id, SQLERRM;
+  END;
+  
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

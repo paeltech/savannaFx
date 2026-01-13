@@ -12,13 +12,23 @@ WHERE ur.user_id IS NULL
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Create function to automatically assign default 'user' role to new users
+-- This function is designed to be safe and not fail user creation
 CREATE OR REPLACE FUNCTION assign_default_user_role()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- Insert default 'user' role for new user
-  INSERT INTO public.user_roles (user_id, role)
-  VALUES (NEW.id, 'user')
-  ON CONFLICT (user_id) DO NOTHING;
+  -- Wrap in exception handler to prevent errors from blocking user creation
+  BEGIN
+    -- Insert default 'user' role for new user
+    INSERT INTO public.user_roles (user_id, role)
+    VALUES (NEW.id, 'user')
+    ON CONFLICT (user_id) DO NOTHING;
+  EXCEPTION
+    WHEN OTHERS THEN
+      -- Log error but don't fail user creation
+      -- In production, you might want to log this to a table
+      RAISE WARNING 'Error in assign_default_user_role for user %: %', NEW.id, SQLERRM;
+  END;
+  
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
