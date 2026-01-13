@@ -40,12 +40,17 @@ interface SignalData {
 function formatSignalMessage(signal: SignalData): string {
     const emoji = signal.signal_type === 'buy' ? '📈' : '📉';
 
-    let message = `🚨 *New Trading Signal* 🚨\n\n`;
+    // Use signal title as the main message title
+    let message = `🚨 *${signal.title}* 🚨\n\n`;
+    
+    // Trading pair and signal type
     message += `📊 *Pair*: ${signal.trading_pair}\n`;
     message += `${emoji} *Type*: ${signal.signal_type.toUpperCase()}\n\n`;
+    
+    // Entry price
     message += `💰 *Entry*: ${signal.entry_price}\n`;
-    // message += `🛑 *Stop Loss*: ${signal.stop_loss}\n`;
-
+    
+    // Take profit levels
     if (signal.take_profit_1) {
         message += `🎯 *TP1*: ${signal.take_profit_1}\n`;
     }
@@ -58,6 +63,7 @@ function formatSignalMessage(signal: SignalData): string {
 
     message += `\n`;
 
+    // Risk/Reward and Confidence
     if (signal.risk_reward_ratio) {
         message += `⚖️ *R:R*: 1:${signal.risk_reward_ratio}\n`;
     }
@@ -65,13 +71,16 @@ function formatSignalMessage(signal: SignalData): string {
         message += `💪 *Confidence*: ${signal.confidence_level.toUpperCase()}\n`;
     }
 
-    if (signal.analysis) {
-        message += `\n📝 *Analysis*: ${signal.analysis.substring(0, 200)}${signal.analysis.length > 200 ? '...' : ''}\n`;
+    // Include full analysis if available (WhatsApp messages can be up to 4096 characters)
+    if (signal.analysis && signal.analysis.trim()) {
+        message += `\n📝 *Analysis*\n`;
+        message += `${signal.analysis}\n`;
     }
 
-    message += `\n Login to the dashboard to view the full signal details with SL and bonus TPs`;
-    message += `\n\n🔗 Click here to view: https://savannaFX.co/dashboard/signals\n\n`;
-    message += `_Trade responsibly. Manage your risk._`;
+    // Footer with link
+    message += `\n_Login to the dashboard to view the full signal details with SL and bonus TPs_\n`;
+    message += `\n🔗 https://savannaFX.co/dashboard/signals\n`;
+    message += `\n_Trade responsibly. Manage your risk._`;
 
     return message;
 }
