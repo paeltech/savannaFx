@@ -39,11 +39,14 @@ const RequireAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         } else {
           // Check if user has admin role
           const hasAdminRole = data?.role === "admin";
-          console.log("Admin check result:", { 
-            userId: session.user.id, 
-            role: data?.role, 
-            isAdmin: hasAdminRole 
-          });
+          // Only log in development to reduce console spam
+          if (process.env.NODE_ENV === 'development') {
+            console.log("Admin check result:", { 
+              userId: session.user.id, 
+              role: data?.role, 
+              isAdmin: hasAdminRole 
+            });
+          }
           setIsAdmin(hasAdminRole);
         }
       } catch (error) {

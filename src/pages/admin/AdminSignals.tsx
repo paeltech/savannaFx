@@ -346,7 +346,18 @@ const AdminSignals: React.FC = () => {
         console.log('Response data:', result);
 
         if (response.ok) {
-          showSuccess(`WhatsApp notifications sent to ${result.successCount || 0} subscribers!`);
+          const successMsg = result.successCount 
+            ? `WhatsApp notifications sent to ${result.successCount} of ${result.totalSubscribers} subscribers!`
+            : `Signal created but no notifications were sent.`;
+          
+          if (result.warning) {
+            showError(result.warning); // Show warning as error for visibility
+            setTimeout(() => showSuccess(successMsg), 3000); // Then show success
+          } else if (result.failureCount > 0) {
+            showError(`${result.failureCount} notifications failed. ${successMsg}`);
+          } else {
+            showSuccess(successMsg);
+          }
         } else {
           console.error('WhatsApp notification error:', result);
           showError(`Signal created but WhatsApp notifications failed: ${result.error || 'Unknown error'}`);

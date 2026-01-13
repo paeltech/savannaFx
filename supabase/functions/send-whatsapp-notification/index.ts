@@ -11,10 +11,11 @@ const WASENDER_API_KEY = Deno.env.get("WASENDER_API_KEY");
 const WASENDER_SESSION_ID = Deno.env.get("WASENDER_SESSION_ID");
 
 // Rate limiting configuration
-const BATCH_SIZE = 15; // Messages per batch (adjust based on your Wasender plan)
-const BATCH_DELAY_MS = 1500; // Delay between batches in milliseconds
+const BATCH_SIZE = 5; // Reduced batch size to avoid rate limits (Wasender free tier is very limited)
+const BATCH_DELAY_MS = 3000; // Increased delay between batches (3 seconds)
 const MAX_RETRIES = 3; // Maximum retry attempts for failed messages
-const RETRY_DELAYS = [1000, 2000, 4000]; // Exponential backoff delays in ms
+const RETRY_DELAYS = [5000, 10000, 20000]; // Longer delays for rate limit retries (5s, 10s, 20s)
+const RATE_LIMIT_RETRY_DELAYS = [10000, 30000, 60000]; // Even longer delays specifically for 429 errors (10s, 30s, 60s)
 
 // Twilio credentials (commented out for future use)
 // const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
@@ -162,11 +163,19 @@ async function sendWhatsAppMessage(
             data: JSON.stringify(data).substring(0, 200) // Log first 200 chars
         });
 
-        // Handle rate limiting (429) with retry
+        // Handle rate limiting (429) with longer retry delays
         if (response.status === 429 && retryCount < MAX_RETRIES) {
-            const delay = RETRY_DELAYS[retryCount] || RETRY_DELAYS[RETRY_DELAYS.length - 1];
-            console.log(`Rate limited. Retrying in ${delay}ms (attempt ${retryCount + 1}/${MAX_RETRIES})`);
-            await new Promise(resolve => setTimeout(resolve, delay));
+            // Use longer delays specifically for rate limits
+            const delay = RATE_LIMIT_RETRY_DELAYS[retryCount] || RATE_LIMIT_RETRY_DELAYS[RATE_LIMIT_RETRY_DELAYS.length - 1];
+            
+            // Check for Retry-After header if available
+            const retryAfter = response.headers.get('Retry-After');
+            const actualDelay = retryAfter ? parseInt(retryAfter) * 1000 : delay;
+            
+            console.log(`Rate limited (429). Waiting ${actualDelay}ms before retry (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+            console.log(`Rate limit response:`, JSON.stringify(data).substring(0, 200));
+            
+            await new Promise(resolve => setTimeout(resolve, actualDelay));
             return sendWhatsAppMessage(phoneNumber, message, retryCount + 1);
         }
 
@@ -178,11 +187,21 @@ async function sendWhatsAppMessage(
             return sendWhatsAppMessage(phoneNumber, message, retryCount + 1);
         }
 
-        // Return response with HTTP status included for proper success checking
+        // Extract error message from response if present
+        const errorMessage = data.error || data.error_message || data.message || 
+            (data.error_code ? `Error code: ${data.error_code}` : null) ||
+            (response.status === 429 ? 'Rate limit exceeded' : null) ||
+            (response.status >= 400 && response.status < 500 ? `Client error: ${response.status}` : null) ||
+            (response.status >= 500 ? `Server error: ${response.status}` : null);
+
+        // Return response with HTTP status and error info included
         return {
             ...data,
             httpStatus: response.status,
-            isSuccess: response.status >= 200 && response.status < 300 && !data.error && !data.error_code
+            error: errorMessage,
+            error_code: data.error_code,
+            error_message: data.error_message || errorMessage,
+            isSuccess: response.status >= 200 && response.status < 300 && !data.error && !data.error_code && !errorMessage
         };
     } catch (error) {
         // Network errors - retry if attempts remaining
@@ -389,6 +408,11 @@ serve(async (req) => {
                     messageId: result.id || result.messageId || result.sid
                 });
 
+                // Extract error message for logging
+                const logErrorMsg = result.error_message || result.error || result.error_code || 
+                    (result.httpStatus === 429 ? 'Rate limit exceeded' : null) ||
+                    (!finalSuccess ? `HTTP ${result.httpStatus || 'unknown'}` : null);
+
                 // Log the notification (non-blocking, happens after message is sent)
                 const logPromise = supabaseClient.from("notification_logs").insert({
                     user_id: profile.id,
@@ -397,11 +421,11 @@ serve(async (req) => {
                     phone_number: profile.phone_number,
                     message_content: message,
                     status: finalSuccess ? "sent" : "failed",
-                    error_message: result.error_message || result.error || result.error_code || null,
+                    error_message: logErrorMsg,
                     provider_message_id: result.id || result.messageId || result.sid || null,
                     sent_at: new Date().toISOString(),
                 }).then(() => {
-                    console.log(`Logged notification for ${profile.phone_number}`);
+                    console.log(`Logged notification for ${profile.phone_number}: ${finalSuccess ? 'sent' : 'failed'}`);
                 }).catch(err => {
                     console.error(`Failed to log notification for ${profile.phone_number}:`, err);
                 });
@@ -410,12 +434,18 @@ serve(async (req) => {
                 // This ensures message sending isn't blocked by logging
                 logPromise.catch(() => {});
 
+                // Extract error message properly
+                const errorMsg = result.error_message || result.error || result.error_code || 
+                    (result.httpStatus === 429 ? 'Rate limit exceeded - message not sent' : null) ||
+                    (!finalSuccess && result.httpStatus ? `HTTP ${result.httpStatus}` : null) ||
+                    (!finalSuccess ? 'Unknown error' : null);
+
                 return {
                     userId: profile.id,
                     phoneNumber: profile.phone_number,
                     success: finalSuccess,
                     messageId: result.id || result.messageId || result.sid,
-                    error: result.error_message || result.error || result.error_code,
+                    error: errorMsg,
                     httpStatus: result.httpStatus,
                 };
             } catch (error) {
@@ -470,11 +500,17 @@ serve(async (req) => {
         const failureCount = fulfilledResults.filter(r => r.success === false).length;
         const errorCount = rejectedResults.length;
 
+        // Categorize failures by type
+        const rateLimitFailures = fulfilledResults.filter(r => !r.success && r.httpStatus === 429).length;
+        const otherFailures = failureCount - rateLimitFailures;
+
         // Log detailed breakdown
         console.log(`Message sending summary:`, {
             totalAttempted: results.length,
             successful: successCount,
             failed: failureCount,
+            rateLimitFailures: rateLimitFailures,
+            otherFailures: otherFailures,
             errors: errorCount,
             successRate: `${((successCount / results.length) * 100).toFixed(1)}%`
         });
@@ -489,6 +525,12 @@ serve(async (req) => {
             })));
         }
 
+        // Generate warning message if rate limited
+        let warningMessage: string | null = null;
+        if (rateLimitFailures > 0) {
+            warningMessage = `${rateLimitFailures} messages failed due to rate limiting. Consider upgrading your Wasender plan or reducing batch size.`;
+        }
+
         return new Response(
             JSON.stringify({
                 success: true,
@@ -497,6 +539,9 @@ serve(async (req) => {
                 successCount,
                 failureCount,
                 errorCount,
+                rateLimitFailures,
+                otherFailures,
+                warning: warningMessage,
                 results: results.map(r => r.status === "fulfilled" ? r.value : { success: false, error: r.reason }),
             }),
             { headers: { ...corsHeaders, "Content-Type": "application/json" } }
