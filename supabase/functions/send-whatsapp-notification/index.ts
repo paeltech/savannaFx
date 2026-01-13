@@ -156,6 +156,12 @@ async function sendWhatsAppMessage(
 
         const data = await response.json();
 
+        // Log response for debugging
+        console.log(`Wasender API response for ${cleanPhoneNumber}:`, {
+            status: response.status,
+            data: JSON.stringify(data).substring(0, 200) // Log first 200 chars
+        });
+
         // Handle rate limiting (429) with retry
         if (response.status === 429 && retryCount < MAX_RETRIES) {
             const delay = RETRY_DELAYS[retryCount] || RETRY_DELAYS[RETRY_DELAYS.length - 1];
@@ -172,7 +178,12 @@ async function sendWhatsAppMessage(
             return sendWhatsAppMessage(phoneNumber, message, retryCount + 1);
         }
 
-        return data;
+        // Return response with HTTP status included for proper success checking
+        return {
+            ...data,
+            httpStatus: response.status,
+            isSuccess: response.status >= 200 && response.status < 300 && !data.error && !data.error_code
+        };
     } catch (error) {
         // Network errors - retry if attempts remaining
         if (retryCount < MAX_RETRIES) {
@@ -348,6 +359,36 @@ serve(async (req) => {
                 // Send message with retry logic
                 const result = await sendWhatsAppMessage(profile.phone_number!, message);
 
+                // Determine success based on HTTP status and response data
+                // Wasender API may return 200 even for some failures, so check response body carefully
+                const httpSuccess = result.httpStatus >= 200 && result.httpStatus < 300;
+                
+                // Check for various error indicators in Wasender response
+                const hasError = 
+                    result.error || 
+                    result.error_code || 
+                    result.error_message ||
+                    result.message === false ||
+                    (result.httpStatus && (result.httpStatus < 200 || result.httpStatus >= 300));
+                
+                // Check for success indicators - be strict: require a message ID or explicit success
+                const hasSuccessIndicator = 
+                    result.success === true ||
+                    result.id ||
+                    result.messageId ||
+                    result.sid ||
+                    (result.message && result.message !== false);
+                
+                // Final success = HTTP success AND no errors AND has success indicator
+                // Be conservative: if we don't have clear success indicators, mark as failed
+                const finalSuccess = httpSuccess && !hasError && hasSuccessIndicator;
+
+                console.log(`Message to ${profile.phone_number}: ${finalSuccess ? 'SUCCESS' : 'FAILED'}`, {
+                    httpStatus: result.httpStatus,
+                    error: result.error || result.error_code || result.error_message,
+                    messageId: result.id || result.messageId || result.sid
+                });
+
                 // Log the notification (non-blocking, happens after message is sent)
                 const logPromise = supabaseClient.from("notification_logs").insert({
                     user_id: profile.id,
@@ -355,9 +396,9 @@ serve(async (req) => {
                     notification_type: "whatsapp",
                     phone_number: profile.phone_number,
                     message_content: message,
-                    status: result.error_code ? "failed" : "sent",
-                    error_message: result.error_message || null,
-                    provider_message_id: result.sid || null,
+                    status: finalSuccess ? "sent" : "failed",
+                    error_message: result.error_message || result.error || result.error_code || null,
+                    provider_message_id: result.id || result.messageId || result.sid || null,
                     sent_at: new Date().toISOString(),
                 }).then(() => {
                     console.log(`Logged notification for ${profile.phone_number}`);
@@ -372,9 +413,10 @@ serve(async (req) => {
                 return {
                     userId: profile.id,
                     phoneNumber: profile.phone_number,
-                    success: !result.error_code,
-                    messageId: result.sid,
-                    error: result.error_message,
+                    success: finalSuccess,
+                    messageId: result.id || result.messageId || result.sid,
+                    error: result.error_message || result.error || result.error_code,
+                    httpStatus: result.httpStatus,
                 };
             } catch (error) {
                 console.error(`Error sending to ${profile.phone_number}:`, error);
@@ -420,15 +462,41 @@ serve(async (req) => {
         console.log(`All batches processed. Total: ${allResults.length} messages`);
         const results = allResults;
 
-        const successCount = results.filter(r => r.status === "fulfilled" && r.value.success).length;
-        const failureCount = results.length - successCount;
+        // Categorize results for better reporting
+        const fulfilledResults = results.filter(r => r.status === "fulfilled").map(r => r.value);
+        const rejectedResults = results.filter(r => r.status === "rejected");
+        
+        const successCount = fulfilledResults.filter(r => r.success === true).length;
+        const failureCount = fulfilledResults.filter(r => r.success === false).length;
+        const errorCount = rejectedResults.length;
+
+        // Log detailed breakdown
+        console.log(`Message sending summary:`, {
+            totalAttempted: results.length,
+            successful: successCount,
+            failed: failureCount,
+            errors: errorCount,
+            successRate: `${((successCount / results.length) * 100).toFixed(1)}%`
+        });
+
+        // Log failed messages for debugging
+        const failedMessages = fulfilledResults.filter(r => !r.success);
+        if (failedMessages.length > 0) {
+            console.log(`Failed messages (first 5):`, failedMessages.slice(0, 5).map(f => ({
+                phone: f.phoneNumber,
+                error: f.error,
+                httpStatus: f.httpStatus
+            })));
+        }
 
         return new Response(
             JSON.stringify({
                 success: true,
                 totalSubscribers: profiles.length,
+                totalAttempted: results.length,
                 successCount,
                 failureCount,
+                errorCount,
                 results: results.map(r => r.status === "fulfilled" ? r.value : { success: false, error: r.reason }),
             }),
             { headers: { ...corsHeaders, "Content-Type": "application/json" } }
