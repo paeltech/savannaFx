@@ -14,10 +14,10 @@ const SavannaCard: React.FC<Props> = ({ className, hoverable = true, rounded = "
   return (
     <Card
       className={cn(
-        // SavannaFX dark card style
-        "bg-nero border-steel-wool/40",
+        // SavannaFX dark card style with enhanced mobile-friendly design
+        "bg-nero/95 border-steel-wool/50 backdrop-blur-sm",
         roundedClass,
-        hoverable && "transition-colors hover:border-[#0f1d18]/80",
+        hoverable && "transition-all duration-300 hover:border-gold/40 hover:bg-nero hover:shadow-lg hover:shadow-gold/5",
         className
       )}
       {...props}

@@ -4,6 +4,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SavannaCard from "./SavannaCard";
+import { ArrowRight } from "lucide-react";
 
 type Props = {
   to: string;
@@ -15,15 +16,28 @@ type Props = {
 
 const DashboardTile: React.FC<Props> = ({ to, title, description, Icon, iconBg = "bg-gold" }) => {
   return (
-    <Link to={to} className="block">
-      <SavannaCard className="cursor-pointer">
-        <CardHeader className="pb-4">
-          <div className={`w-10 h-10 rounded-md ${iconBg} flex items-center justify-center mb-4`}>
-            <Icon className="text-cursed-black" size={20} />
+    <Link to={to} className="block group">
+      <SavannaCard 
+        className="cursor-pointer h-full transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-gold/10 active:scale-[0.98]"
+        hoverable={true}
+      >
+        <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6 pt-4 sm:pt-6">
+          <div className="flex items-start justify-between mb-3 sm:mb-4">
+            <div 
+              className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl ${iconBg} flex items-center justify-center 
+                transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-lg`}
+            >
+              <Icon className="text-cursed-black" size={24} />
+            </div>
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <ArrowRight className="text-gold" size={20} />
+            </div>
           </div>
-          <CardTitle className="text-white text-lg">{title}</CardTitle>
+          <CardTitle className="text-white text-base sm:text-lg font-bold leading-tight group-hover:text-gold transition-colors duration-300">
+            {title}
+          </CardTitle>
         </CardHeader>
-        <CardContent className="text-rainy-grey text-sm leading-relaxed">
+        <CardContent className="text-rainy-grey text-xs sm:text-sm leading-relaxed px-4 sm:px-6 pb-4 sm:pb-6">
           {description}
         </CardContent>
       </SavannaCard>
