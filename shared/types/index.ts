@@ -4,3 +4,4 @@
  */
 export * from './signal';
 export * from './notification';
+export * from './analysis';
