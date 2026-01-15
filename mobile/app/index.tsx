@@ -36,8 +36,8 @@ export default function IndexScreen() {
         <Text style={styles.appName}>SavannaFX</Text>
         <Text style={styles.tagline}>PIPS HUNTING</Text>
         <ActivityIndicator size="large" color={Colors.gold} style={{ marginTop: 24 }} />
-      </View>
-    </View>
+          </View>
+        </View>
   );
 }
 
