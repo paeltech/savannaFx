@@ -64,6 +64,14 @@ export default function RootLayout() {
               <Stack.Screen name="signals" />
               <Stack.Screen name="analysis/index" />
               <Stack.Screen name="analysis/[id]" />
+              <Stack.Screen name="academy" />
+              <Stack.Screen name="mentorship" />
+              <Stack.Screen name="events" />
+              <Stack.Screen name="one-on-one" />
+              <Stack.Screen name="calculator" />
+              <Stack.Screen name="calendar" />
+              <Stack.Screen name="sentiment" />
+              <Stack.Screen name="help" />
             </Stack>
           </View>
         </QueryClientProvider>

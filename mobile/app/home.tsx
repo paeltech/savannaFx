@@ -243,7 +243,7 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionSubtitle}>LEARN THE CRAFT</Text>
           <View style={styles.iconRow}>
-            <TouchableOpacity style={styles.learnIcon}>
+            <TouchableOpacity style={styles.learnIcon} onPress={() => router.push('/academy')}>
               <View style={{ alignItems: 'center' }}>
                 <View style={styles.learnIconCircle}>
                   <GraduationCap size={30} color="#1A1A1A" strokeWidth={2} />
@@ -251,7 +251,7 @@ export default function HomeScreen() {
                 <Text style={styles.learnIconLabel}>Academy</Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.learnIcon, { marginLeft: 8 }]}>
+            <TouchableOpacity style={[styles.learnIcon, { marginLeft: 8 }]} onPress={() => router.push('/mentorship')}>
               <View style={{ alignItems: 'center' }}>
                 <View style={styles.learnIconCircle}>
                   <Users size={30} color="#1A1A1A" strokeWidth={2} />
@@ -259,7 +259,7 @@ export default function HomeScreen() {
                 <Text style={styles.learnIconLabel}>Mentorship</Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.learnIcon, { marginLeft: 8 }]}>
+            <TouchableOpacity style={[styles.learnIcon, { marginLeft: 8 }]} onPress={() => router.push('/events')}>
               <View style={{ alignItems: 'center' }}>
                 <View style={styles.learnIconCircle}>
                   <CalendarIcon size={30} color="#1A1A1A" strokeWidth={2} />
@@ -267,7 +267,7 @@ export default function HomeScreen() {
                 <Text style={styles.learnIconLabel}>Events</Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.learnIcon, { marginLeft: 8 }]}>
+            <TouchableOpacity style={[styles.learnIcon, { marginLeft: 8 }]} onPress={() => router.push('/one-on-one')}>
               <View style={{ alignItems: 'center' }}>
                 <View style={styles.learnIconCircle}>
                   <UserRound size={30} color="#1A1A1A" strokeWidth={2} />
@@ -282,25 +282,25 @@ export default function HomeScreen() {
         <View style={styles.toolsSection}>
           <Text style={styles.toolsTitle}>Tools of the game</Text>
           <View style={styles.iconRow}>
-            <TouchableOpacity style={styles.toolIcon}>
+            <TouchableOpacity style={styles.toolIcon} onPress={() => router.push('/calculator')}>
               <View style={styles.toolIconCircle}>
                 <Calculator size={22} color={Colors.gold} strokeWidth={2} />
               </View>
               <Text style={styles.toolIconLabel}>Calculator</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.toolIcon, { marginLeft: 8 }]}>
+            <TouchableOpacity style={[styles.toolIcon, { marginLeft: 8 }]} onPress={() => router.push('/calendar')}>
               <View style={styles.toolIconCircle}>
                 <CalendarIcon size={22} color={Colors.gold} strokeWidth={2} />
               </View>
               <Text style={styles.toolIconLabel}>Calendar</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.toolIcon, { marginLeft: 8 }]}>
+            <TouchableOpacity style={[styles.toolIcon, { marginLeft: 8 }]} onPress={() => router.push('/sentiment')}>
               <View style={styles.toolIconCircle}>
                 <TrendingDown size={22} color={Colors.gold} strokeWidth={2} />
               </View>
               <Text style={styles.toolIconLabel}>Sentiment</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.toolIcon, { marginLeft: 8 }]}>
+            <TouchableOpacity style={[styles.toolIcon, { marginLeft: 8 }]} onPress={() => router.push('/help')}>
               <View style={styles.toolIconCircle}>
                 <FolderOpen size={22} color={Colors.gold} strokeWidth={2} />
               </View>
