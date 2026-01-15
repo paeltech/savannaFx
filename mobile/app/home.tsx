@@ -24,12 +24,15 @@ export default function HomeScreen() {
   const [latestSignal, setLatestSignal] = useState<Signal | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const { unreadCount: unreadNotificationsCount, refreshCount } = useUnreadNotificationsCount();
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       router.replace('/auth/login');
+    } else {
+      setUser(session.user);
     }
   };
 
@@ -58,29 +61,6 @@ export default function HomeScreen() {
       if (!isRefreshing) {
         setIsLoading(false);
       }
-    }
-  };
-
-  const fetchUnreadNotificationsCount = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return;
-
-      const { count, error } = await supabase
-        .from('notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', session.user.id)
-        .eq('read', false)
-        .eq('deleted', false);
-
-      if (error) {
-        console.error('Error fetching unread notifications count:', error);
-        return;
-      }
-
-      setUnreadNotificationsCount(count || 0);
-    } catch (error) {
-      console.error('Error fetching unread notifications count:', error);
     }
   };
 
@@ -116,7 +96,7 @@ export default function HomeScreen() {
     setRefreshing(true);
     await Promise.all([
       fetchLatestSignal(true),
-      fetchUnreadNotificationsCount()
+      refreshCount()
     ]);
     setRefreshing(false);
   };
@@ -147,7 +127,12 @@ export default function HomeScreen() {
             </View>
             <View style={{ marginLeft: 12 }}>
               <Text style={styles.welcomeText}>Welcome back,</Text>
-              <Text style={styles.userName}>Paul</Text>
+              <Text style={styles.userName}>
+                {(() => {
+                  const name = user?.user_metadata?.full_name || 'User';
+                  return name.charAt(0).toUpperCase() + name.slice(1);
+                })()}
+              </Text>
             </View>
           </TouchableOpacity>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
