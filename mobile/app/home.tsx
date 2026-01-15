@@ -18,39 +18,13 @@ import {
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import type { Signal } from '../../shared/types/signal';
+import { useUnreadNotificationsCount } from '../hooks/use-unread-notifications';
 
 export default function HomeScreen() {
   const [latestSignal, setLatestSignal] = useState<Signal | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
-  useEffect(() => {
-    checkAuth();
-    fetchLatestSignal();
-
-    // Subscribe to real-time updates for signals
-    const channel = supabase
-      .channel('signals-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'signals'
-        },
-        (payload) => {
-          console.log('Signal update received:', payload);
-          // Refetch the latest signal when any change occurs
-          fetchLatestSignal();
-        }
-      )
-      .subscribe();
-
-    // Cleanup subscription on unmount
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+  const { unreadCount: unreadNotificationsCount, refreshCount } = useUnreadNotificationsCount();
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -87,9 +61,63 @@ export default function HomeScreen() {
     }
   };
 
+  const fetchUnreadNotificationsCount = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+
+      const { count, error } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id)
+        .eq('read', false)
+        .eq('deleted', false);
+
+      if (error) {
+        console.error('Error fetching unread notifications count:', error);
+        return;
+      }
+
+      setUnreadNotificationsCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching unread notifications count:', error);
+    }
+  };
+
+  useEffect(() => {
+    checkAuth();
+    fetchLatestSignal();
+
+    // Subscribe to real-time updates for signals
+    const signalsChannel = supabase
+      .channel('signals-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'signals'
+        },
+        (payload) => {
+          console.log('Signal update received:', payload);
+          // Refetch the latest signal when any change occurs
+          fetchLatestSignal();
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscriptions on unmount
+    return () => {
+      supabase.removeChannel(signalsChannel);
+    };
+  }, []);
+
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchLatestSignal(true);
+    await Promise.all([
+      fetchLatestSignal(true),
+      fetchUnreadNotificationsCount()
+    ]);
     setRefreshing(false);
   };
 
@@ -123,9 +151,23 @@ export default function HomeScreen() {
             </View>
           </TouchableOpacity>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <TouchableOpacity style={styles.notificationIcon}>
+            <TouchableOpacity 
+              style={styles.notificationIcon}
+              onPress={() => router.push('/notifications')}
+            >
               <Bell size={20} color={Colors.gold} strokeWidth={2} />
-              <View style={styles.notificationBadge} />
+              {unreadNotificationsCount > 0 && (
+                <View style={styles.notificationBadge}>
+                  <Text style={{ 
+                    color: 'white', 
+                    fontSize: 11, 
+                    fontFamily: 'Axiforma-Bold',
+                    lineHeight: 13
+                  }}>
+                    {unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount}
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -180,13 +222,19 @@ export default function HomeScreen() {
             </View>
              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
                <Text style={styles.signalTimestamp}>
-                 {new Date(latestSignal.created_at).toLocaleString('en-US', {
-                   month: 'short',
-                   day: 'numeric',
-                   hour: '2-digit',
-                   minute: '2-digit',
-                   hour12: false,
-                 }).replace(',', '').replace(/(\d{2}):(\d{2})/, (_, h, m) => `${h}${m}hrs`)}
+                 {(() => {
+                   const now = new Date();
+                   const createdAt = new Date(latestSignal.created_at);
+                   const diffMs = now.getTime() - createdAt.getTime();
+                   const diffSec = Math.floor(diffMs / 1000);
+                   if (diffSec < 60) return `${diffSec} sec${diffSec === 1 ? '' : 's'} ago`;
+                   const diffMin = Math.floor(diffSec / 60);
+                   if (diffMin < 60) return `${diffMin} min${diffMin === 1 ? '' : 's'} ago`;
+                   const diffHr = Math.floor(diffMin / 60);
+                   if (diffHr < 24) return `${diffHr} hour${diffHr === 1 ? '' : 's'} ago`;
+                   const diffDay = Math.floor(diffHr / 24);
+                   return `${diffDay} day${diffDay === 1 ? '' : 's'} ago`;
+                 })()}
                </Text>
                {latestSignal.confidence_level && (
                  <View style={{ 

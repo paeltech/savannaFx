@@ -6,11 +6,13 @@ import { ChevronLeft, Bell, Calendar, TrendingUp, AlertCircle } from 'lucide-rea
 import { router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import type { TradeAnalysis } from '../../../shared/types/analysis';
+import { useUnreadNotificationsCount } from '../../hooks/use-unread-notifications';
 
 export default function AnalysisScreen() {
   const [analyses, setAnalyses] = useState<TradeAnalysis[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { unreadCount } = useUnreadNotificationsCount();
 
   useEffect(() => {
     fetchAnalyses();
@@ -181,9 +183,18 @@ export default function AnalysisScreen() {
           <ChevronLeft size={28} color={Colors.gold} strokeWidth={2.5} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Analysis</Text>
-        <TouchableOpacity style={styles.notificationIcon}>
+        <TouchableOpacity 
+          style={styles.notificationIcon}
+          onPress={() => router.push('/notifications')}
+        >
           <Bell size={20} color={Colors.gold} strokeWidth={2} />
-          <View style={styles.notificationBadge} />
+          {unreadCount > 0 && (
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationBadgeText}>
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -287,12 +298,21 @@ const styles = StyleSheet.create({
   },
   notificationBadge: {
     position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: 6,
+    right: 6,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: '#EF4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  notificationBadgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontFamily: 'Axiforma-Bold',
+    lineHeight: 12,
   },
   scrollView: {
     flex: 1,

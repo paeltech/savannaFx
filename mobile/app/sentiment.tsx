@@ -5,6 +5,7 @@ import { Colors } from '../../shared/constants/colors';
 import { ChevronLeft, Bell, TrendingUp, TrendingDown, Minus } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
+import { useUnreadNotificationsCount } from '../hooks/use-unread-notifications';
 
 type SentimentType = 'bullish' | 'bearish' | 'neutral';
 type CurrencyPair = 'EUR/USD' | 'GBP/USD' | 'USD/JPY' | 'AUD/USD' | 'USD/CAD' | 'EUR/GBP' | 'XAU/USD';
@@ -33,6 +34,7 @@ export default function SentimentScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const { unreadCount } = useUnreadNotificationsCount();
 
   useEffect(() => {
     fetchUserAndSentiment();
@@ -160,9 +162,18 @@ export default function SentimentScreen() {
             <ChevronLeft size={24} color={Colors.gold} strokeWidth={2.5} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Sentiment</Text>
-          <TouchableOpacity style={styles.notificationIcon}>
+          <TouchableOpacity 
+            style={styles.notificationIcon}
+            onPress={() => router.push('/notifications')}
+          >
             <Bell size={20} color={Colors.gold} strokeWidth={2} />
-            <View style={styles.notificationBadge} />
+            {unreadCount > 0 && (
+              <View style={styles.notificationBadge}>
+                <Text style={styles.notificationBadgeText}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -312,12 +323,21 @@ const styles = StyleSheet.create({
   },
   notificationBadge: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: 6,
+    right: 6,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: '#EF4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  notificationBadgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontFamily: 'Axiforma-Bold',
+    lineHeight: 12,
   },
   infoBanner: {
     backgroundColor: 'rgba(212, 175, 55, 0.1)',

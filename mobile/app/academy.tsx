@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../shared/constants/colors';
 import { ChevronLeft, Bell, Search, GraduationCap, Clock, BookOpen, Lock } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { useUnreadNotificationsCount } from '../hooks/use-unread-notifications';
 
 interface Course {
   id: string;
@@ -45,6 +46,7 @@ const courses: Course[] = [
 export default function AcademyScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<'all' | 'Beginner' | 'Advanced'>('all');
+  const { unreadCount } = useUnreadNotificationsCount();
 
   const filteredCourses = courses.filter(course => {
     const matchesSearch = 
@@ -73,9 +75,18 @@ export default function AcademyScreen() {
             <ChevronLeft size={24} color={Colors.gold} strokeWidth={2.5} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Academy</Text>
-          <TouchableOpacity style={styles.notificationIcon}>
+          <TouchableOpacity 
+            style={styles.notificationIcon}
+            onPress={() => router.push('/notifications')}
+          >
             <Bell size={20} color={Colors.gold} strokeWidth={2} />
-            <View style={styles.notificationBadge} />
+            {unreadCount > 0 && (
+              <View style={styles.notificationBadge}>
+                <Text style={styles.notificationBadgeText}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -226,12 +237,21 @@ const styles = StyleSheet.create({
   },
   notificationBadge: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: 6,
+    right: 6,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: '#EF4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  notificationBadgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontFamily: 'Axiforma-Bold',
+    lineHeight: 12,
   },
   searchContainer: {
     flexDirection: 'row',

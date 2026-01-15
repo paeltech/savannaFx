@@ -6,11 +6,13 @@ import { ChevronLeft, Bell } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import type { Signal } from '../../shared/types/signal';
+import { useUnreadNotificationsCount } from '../hooks/use-unread-notifications';
 
 export default function SignalsScreen() {
   const [signals, setSignals] = useState<Signal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { unreadCount } = useUnreadNotificationsCount();
 
   useEffect(() => {
     fetchSignals();
@@ -146,13 +148,19 @@ export default function SignalsScreen() {
       </View>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
         <Text style={styles.signalTimestamp}>
-          {new Date(signal.created_at).toLocaleString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false,
-          }).replace(',', '').replace(/(\d{2}):(\d{2})/, (_, h, m) => `${h}${m}hrs`)}
+          {(() => {
+            const now = new Date();
+            const createdAt = new Date(signal.created_at);
+            const diffMs = now.getTime() - createdAt.getTime();
+            const diffSec = Math.floor(diffMs / 1000);
+            if (diffSec < 60) return `${diffSec} sec${diffSec === 1 ? '' : 's'} ago`;
+            const diffMin = Math.floor(diffSec / 60);
+            if (diffMin < 60) return `${diffMin} min${diffMin === 1 ? '' : 's'} ago`;
+            const diffHr = Math.floor(diffMin / 60);
+            if (diffHr < 24) return `${diffHr} hour${diffHr === 1 ? '' : 's'} ago`;
+            const diffDay = Math.floor(diffHr / 24);
+            return `${diffDay} day${diffDay === 1 ? '' : 's'} ago`;
+          })()}
         </Text>
         {signal.confidence_level && (
           <View style={{ 
@@ -187,9 +195,18 @@ export default function SignalsScreen() {
           <ChevronLeft size={28} color={Colors.gold} strokeWidth={2.5} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Signals</Text>
-        <TouchableOpacity style={styles.notificationIcon}>
+        <TouchableOpacity 
+          style={styles.notificationIcon}
+          onPress={() => router.push('/notifications')}
+        >
           <Bell size={20} color={Colors.gold} strokeWidth={2} />
-          <View style={styles.notificationBadge} />
+          {unreadCount > 0 && (
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationBadgeText}>
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -278,12 +295,21 @@ const styles = StyleSheet.create({
   },
   notificationBadge: {
     position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: 6,
+    right: 6,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: '#EF4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  notificationBadgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontFamily: 'Axiforma-Bold',
+    lineHeight: 12,
   },
   scrollView: {
     flex: 1,

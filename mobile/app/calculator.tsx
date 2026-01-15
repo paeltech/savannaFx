@@ -5,6 +5,7 @@ import { Colors } from '../../shared/constants/colors';
 import { ChevronLeft, Bell, Calculator as CalculatorIcon, TrendingUp, DollarSign, AlertTriangle, Info } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
+import { useUnreadNotificationsCount } from '../hooks/use-unread-notifications';
 
 const currencyPairs = [
   { value: 'EUR/USD', label: 'EUR/USD' },
@@ -20,6 +21,7 @@ export default function CalculatorScreen() {
   const [riskPercentage, setRiskPercentage] = useState('2');
   const [stopLossPips, setStopLossPips] = useState('50');
   const [currencyPair, setCurrencyPair] = useState('EUR/USD');
+  const { unreadCount } = useUnreadNotificationsCount();
 
   const calculation = useMemo(() => {
     const balance = parseFloat(accountBalance) || 0;
@@ -59,9 +61,18 @@ export default function CalculatorScreen() {
             <ChevronLeft size={24} color={Colors.gold} strokeWidth={2.5} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Calculator</Text>
-          <TouchableOpacity style={styles.notificationIcon}>
+          <TouchableOpacity 
+            style={styles.notificationIcon}
+            onPress={() => router.push('/notifications')}
+          >
             <Bell size={20} color={Colors.gold} strokeWidth={2} />
-            <View style={styles.notificationBadge} />
+            {unreadCount > 0 && (
+              <View style={styles.notificationBadge}>
+                <Text style={styles.notificationBadgeText}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -254,12 +265,21 @@ const styles = StyleSheet.create({
   },
   notificationBadge: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: 6,
+    right: 6,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: '#EF4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  notificationBadgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontFamily: 'Axiforma-Bold',
+    lineHeight: 12,
   },
   infoCard: {
     flexDirection: 'row',

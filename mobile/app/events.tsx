@@ -5,6 +5,7 @@ import { Colors } from '../../shared/constants/colors';
 import { ChevronLeft, Bell, Calendar as CalendarIcon, MapPin, Users, Clock, DollarSign } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
+import { useUnreadNotificationsCount } from '../hooks/use-unread-notifications';
 
 interface Event {
   id: string;
@@ -28,6 +29,7 @@ export default function EventsScreen() {
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { unreadCount } = useUnreadNotificationsCount();
 
   useEffect(() => {
     fetchEvents();
@@ -92,9 +94,18 @@ export default function EventsScreen() {
             <ChevronLeft size={24} color={Colors.gold} strokeWidth={2.5} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Events</Text>
-          <TouchableOpacity style={styles.notificationIcon}>
+          <TouchableOpacity 
+            style={styles.notificationIcon}
+            onPress={() => router.push('/notifications')}
+          >
             <Bell size={20} color={Colors.gold} strokeWidth={2} />
-            <View style={styles.notificationBadge} />
+            {unreadCount > 0 && (
+              <View style={styles.notificationBadge}>
+                <Text style={styles.notificationBadgeText}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -224,12 +235,21 @@ const styles = StyleSheet.create({
   },
   notificationBadge: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: 6,
+    right: 6,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: '#EF4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  notificationBadgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontFamily: 'Axiforma-Bold',
+    lineHeight: 12,
   },
   loadingContainer: {
     flex: 1,
