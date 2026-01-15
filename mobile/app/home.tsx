@@ -110,7 +110,10 @@ export default function HomeScreen() {
       >
         {/* Header Section */}
         <View style={styles.header}>
-          <View style={styles.headerLeft}>
+          <TouchableOpacity 
+            style={styles.headerLeft}
+            onPress={() => router.push('/profile')}
+          >
             <View style={styles.profileIcon}>
               <User size={24} color={Colors.gold} strokeWidth={2} />
             </View>
@@ -118,7 +121,7 @@ export default function HomeScreen() {
               <Text style={styles.welcomeText}>Welcome back,</Text>
               <Text style={styles.userName}>Paul</Text>
             </View>
-          </View>
+          </TouchableOpacity>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity style={styles.notificationIcon}>
               <Bell size={20} color={Colors.gold} strokeWidth={2} />

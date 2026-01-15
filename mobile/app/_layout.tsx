@@ -61,6 +61,7 @@ export default function RootLayout() {
               <Stack.Screen name="auth/login" options={{ animation: 'slide_from_right' }} />
               <Stack.Screen name="auth/signup" options={{ animation: 'slide_from_right' }} />
               <Stack.Screen name="home" />
+              <Stack.Screen name="profile" />
               <Stack.Screen name="signals" />
               <Stack.Screen name="analysis/index" />
               <Stack.Screen name="analysis/[id]" />
@@ -72,6 +73,12 @@ export default function RootLayout() {
               <Stack.Screen name="calendar" />
               <Stack.Screen name="sentiment" />
               <Stack.Screen name="help" />
+              <Stack.Screen name="notifications" />
+              <Stack.Screen name="notification-preferences" />
+              <Stack.Screen name="terms" />
+              <Stack.Screen name="privacy" />
+              <Stack.Screen name="about" />
+              <Stack.Screen name="faq" />
             </Stack>
           </View>
         </QueryClientProvider>
