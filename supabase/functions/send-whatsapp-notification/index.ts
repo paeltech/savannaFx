@@ -6,19 +6,16 @@ const corsHeaders = {
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// WaSender API credentials from environment variables
-const WASENDER_API_KEY = Deno.env.get("WASENDER_API_KEY");
-const WASENDER_SESSION_ID = Deno.env.get("WASENDER_SESSION_ID");
+// Facebook WhatsApp Business API credentials from environment variables
+const WHATSAPP_PHONE_NUMBER_ID = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
+const WHATSAPP_ACCESS_TOKEN = Deno.env.get("WHATSAPP_ACCESS_TOKEN");
+const WHATSAPP_API_VERSION = Deno.env.get("WHATSAPP_API_VERSION") || "v24.0";
 
-// Group messaging configuration
-const GROUP_MESSAGE_DELAY_MS = 2000; // 2 seconds delay between group messages
-const MAX_RETRIES = 2; // Maximum retry attempts for failed group messages
+// Individual messaging configuration
+const BATCH_SIZE = 10; // Number of messages to send in parallel per batch
+const BATCH_DELAY_MS = 500; // Delay between batches to avoid rate limits
+const MAX_RETRIES = 2; // Maximum retry attempts for failed messages
 const RETRY_DELAYS = [5000, 10000]; // Retry delays (5s, 10s)
-
-// Twilio credentials (commented out for future use)
-// const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
-// const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
-// const TWILIO_WHATSAPP_NUMBER = Deno.env.get("TWILIO_WHATSAPP_NUMBER");
 
 interface SignalData {
     id: string;
@@ -83,72 +80,43 @@ function formatSignalMessage(signal: SignalData): string {
     return message;
 }
 
-// Check if WhatsApp session is connected
-async function checkSessionStatus(): Promise<boolean> {
-    try {
-        const url = `https://api.wasenderapi.com/api/status`;
-        const response = await fetch(url, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${WASENDER_API_KEY}`,
-                "Content-Type": "application/json",
-            },
-        });
-
-        if (!response.ok) {
-            console.warn(`Session status check returned ${response.status}`);
-            return true; // Assume connected if check fails to avoid blocking sends
-        }
-
-        const data = await response.json();
-        // Check various possible response formats
-        const isConnected = 
-            data?.connected === true || 
-            data?.status === 'connected' || 
-            data?.state === 'connected' ||
-            (data?.session && data?.session?.status === 'connected');
-        
-        return isConnected;
-    } catch (error) {
-        console.error("Error checking session status:", error);
-        return true; // Assume connected if check fails to avoid blocking sends
-    }
-}
-
-// Get current month in YYYY-MM format
-function getCurrentMonthYear(): string {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    return `${year}-${month}`;
-}
-
-// Send message to WhatsApp group via WaSender API
-async function sendGroupMessage(
-    groupJid: string,
+// Send individual WhatsApp message via Facebook Graph API
+async function sendIndividualMessage(
+    phoneNumber: string,
     message: string,
     retryCount: number = 0
 ): Promise<any> {
-    const url = `https://api.wasenderapi.com/api/send-group-message`;
+    // Clean phone number: remove + and ensure it's in E.164 format
+    const cleanPhoneNumber = phoneNumber.replace(/^\+/, "").replace(/\s/g, "").replace(/[^0-9]/g, "");
+    
+    // Format phone number with + prefix for API
+    const formattedPhoneNumber = `+${cleanPhoneNumber}`;
+    
+    const url = `https://graph.facebook.com/${WHATSAPP_API_VERSION}/${WHATSAPP_PHONE_NUMBER_ID}/messages`;
 
     try {
         const response = await fetch(url, {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${WASENDER_API_KEY}`,
+                "Authorization": `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                session: WASENDER_SESSION_ID,
-                groupId: groupJid,
-                text: message,
+                messaging_product: "whatsapp",
+                recipient_type: "individual",
+                to: formattedPhoneNumber,
+                type: "text",
+                text: {
+                    preview_url: false,
+                    body: message,
+                },
             }),
         });
 
         const data = await response.json();
 
         // Log response for debugging
-        console.log(`Wasender API response for group ${groupJid}:`, {
+        console.log(`Facebook Graph API response for ${formattedPhoneNumber}:`, {
             status: response.status,
             data: JSON.stringify(data).substring(0, 200)
         });
@@ -161,7 +129,7 @@ async function sendGroupMessage(
             
             console.log(`Rate limited (429). Waiting ${actualDelay}ms before retry (attempt ${retryCount + 1}/${MAX_RETRIES})`);
             await new Promise(resolve => setTimeout(resolve, actualDelay));
-            return sendGroupMessage(groupJid, message, retryCount + 1);
+            return sendIndividualMessage(phoneNumber, message, retryCount + 1);
         }
 
         // Handle server errors (5xx) with retry
@@ -169,12 +137,12 @@ async function sendGroupMessage(
             const delay = RETRY_DELAYS[retryCount] || RETRY_DELAYS[RETRY_DELAYS.length - 1];
             console.log(`Server error. Retrying in ${delay}ms (attempt ${retryCount + 1}/${MAX_RETRIES})`);
             await new Promise(resolve => setTimeout(resolve, delay));
-            return sendGroupMessage(groupJid, message, retryCount + 1);
+            return sendIndividualMessage(phoneNumber, message, retryCount + 1);
         }
 
         // Extract error message from response if present
-        const errorMessage = data.error || data.error_message || data.message || 
-            (data.error_code ? `Error code: ${data.error_code}` : null) ||
+        const errorMessage = data.error?.message || data.error_message || 
+            (data.error?.code ? `Error code: ${data.error.code}` : null) ||
             (response.status === 429 ? 'Rate limit exceeded' : null) ||
             (response.status >= 400 && response.status < 500 ? `Client error: ${response.status}` : null) ||
             (response.status >= 500 ? `Server error: ${response.status}` : null);
@@ -184,9 +152,9 @@ async function sendGroupMessage(
             ...data,
             httpStatus: response.status,
             error: errorMessage,
-            error_code: data.error_code,
-            error_message: data.error_message || errorMessage,
-            isSuccess: response.status >= 200 && response.status < 300 && !data.error && !data.error_code && !errorMessage
+            error_code: data.error?.code,
+            error_message: errorMessage,
+            isSuccess: response.status >= 200 && response.status < 300 && !data.error && data.messages && data.messages[0]?.id
         };
     } catch (error) {
         // Network errors - retry if attempts remaining
@@ -194,7 +162,7 @@ async function sendGroupMessage(
             const delay = RETRY_DELAYS[retryCount] || RETRY_DELAYS[RETRY_DELAYS.length - 1];
             console.log(`Network error. Retrying in ${delay}ms (attempt ${retryCount + 1}/${MAX_RETRIES})`);
             await new Promise(resolve => setTimeout(resolve, delay));
-            return sendGroupMessage(groupJid, message, retryCount + 1);
+            return sendIndividualMessage(phoneNumber, message, retryCount + 1);
         }
         
         // Max retries reached or non-retryable error
@@ -202,53 +170,33 @@ async function sendGroupMessage(
     }
 }
 
-// Helper function to log group operations
-async function logGroupOperation(
+// Helper function to log notification operations
+async function logNotificationOperation(
     supabaseClient: any,
-    operationType: string,
-    groupId: string | null,
-    groupJid: string | null,
     signalId: string,
+    userId: string | null,
+    phoneNumber: string | null,
     success: boolean,
     errorMessage: string | null,
+    messageId: string | null = null,
     responseData: any = null
 ) {
     try {
-        await supabaseClient.from("whatsapp_group_operations").insert({
-            operation_type: operationType,
-            group_id: groupId,
-            group_jid: groupJid,
+        await supabaseClient.from("notification_logs").insert({
             signal_id: signalId,
+            user_id: userId,
+            notification_type: "whatsapp",
+            phone_number: phoneNumber,
             success,
             error_message: errorMessage,
+            message_id: messageId,
             response_data: responseData,
         });
     } catch (error) {
-        console.error("Failed to log group operation:", error);
+        console.error("Failed to log notification operation:", error);
     }
 }
 
-// Twilio implementation (commented out for future use)
-/*
-async function sendWhatsAppMessageTwilio(phoneNumber: string, message: string): Promise<any> {
-    const url = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
-
-    const response = await fetch(url, {
-        method: "POST",
-        headers: {
-            "Authorization": `Basic ${btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`)}`,
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-            From: `whatsapp:${TWILIO_WHATSAPP_NUMBER}`,
-            To: `whatsapp:${phoneNumber}`,
-            Body: message,
-        }),
-    });
-
-    return await response.json();
-}
-*/
 
 serve(async (req) => {
     // Handle CORS preflight requests
@@ -263,15 +211,23 @@ serve(async (req) => {
             throw new Error("signalId is required");
         }
 
-        // Validate WaSender credentials
-        if (!WASENDER_API_KEY || !WASENDER_SESSION_ID) {
-            throw new Error("WaSender API credentials not configured");
+        // Validate Facebook WhatsApp API credentials
+        if (!WHATSAPP_PHONE_NUMBER_ID || !WHATSAPP_ACCESS_TOKEN) {
+            throw new Error("WhatsApp API credentials not configured. Please set WHATSAPP_PHONE_NUMBER_ID and WHATSAPP_ACCESS_TOKEN");
         }
 
-        // Twilio validation (commented out)
-        // if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_WHATSAPP_NUMBER) {
-        //     throw new Error("Twilio credentials not configured");
-        // }
+        // Validate access token format (should not be the same as phone number ID)
+        if (WHATSAPP_ACCESS_TOKEN === WHATSAPP_PHONE_NUMBER_ID) {
+            throw new Error("WHATSAPP_ACCESS_TOKEN cannot be the same as WHATSAPP_PHONE_NUMBER_ID. Please set a valid Facebook OAuth access token.");
+        }
+
+        // Log token info for debugging (without exposing the full token)
+        console.log("WhatsApp API Configuration:", {
+            phoneNumberId: WHATSAPP_PHONE_NUMBER_ID,
+            apiVersion: WHATSAPP_API_VERSION,
+            accessTokenPrefix: WHATSAPP_ACCESS_TOKEN.substring(0, 10) + "...",
+            accessTokenLength: WHATSAPP_ACCESS_TOKEN.length
+        });
 
         // Initialize Supabase client with service role
         const supabaseClient = createClient(
@@ -301,160 +257,222 @@ serve(async (req) => {
             );
         }
 
-        // Check if WhatsApp session is connected
-        console.log("Checking WhatsApp session status...");
-        const isConnected = await checkSessionStatus();
-        if (!isConnected) {
-            console.warn("WhatsApp session is not connected. Messages may fail.");
-        } else {
-            console.log("WhatsApp session is connected ✓");
-        }
-
         // Format the message
         const message = formatSignalMessage(signal);
 
-        // Get current month for group lookup
-        const currentMonthYear = getCurrentMonthYear();
-        console.log(`Fetching active WhatsApp groups for ${currentMonthYear}`);
+        console.log("Fetching active subscribers with WhatsApp notifications enabled...");
 
-        // Fetch active groups for current month
-        const { data: activeGroups, error: groupsError } = await supabaseClient
-            .from("whatsapp_groups")
-            .select("*")
-            .eq("is_active", true)
-            .eq("month_year", currentMonthYear)
-            .order("group_number", { ascending: true });
+        // Fetch active subscribers with WhatsApp notifications enabled
+        const { data: subscriptions, error: subscriptionsError } = await supabaseClient
+            .from("signal_subscriptions")
+            .select("id, user_id, whatsapp_notifications")
+            .eq("status", "active")
+            .eq("whatsapp_notifications", true);
 
-        if (groupsError) {
-            throw new Error(`Failed to fetch groups: ${groupsError.message}`);
+        if (subscriptionsError) {
+            throw new Error(`Failed to fetch subscriptions: ${subscriptionsError.message}`);
         }
 
-        if (!activeGroups || activeGroups.length === 0) {
+        if (!subscriptions || subscriptions.length === 0) {
             return new Response(
                 JSON.stringify({
                     success: true,
-                    message: `No active WhatsApp groups found for ${currentMonthYear}. Please run group refresh first.`,
-                    totalGroups: 0,
-                    totalMembers: 0,
+                    message: "No active subscribers with WhatsApp notifications enabled found.",
+                    totalSubscribers: 0,
+                    successCount: 0,
+                    failureCount: 0,
                 }),
                 { headers: { ...corsHeaders, "Content-Type": "application/json" } }
             );
         }
 
-        console.log(`Found ${activeGroups.length} active groups. Sending message to each group.`);
+        console.log(`Found ${subscriptions.length} subscriptions. Fetching user profiles...`);
 
-        const groupResults: any[] = [];
-        let totalMembers = 0;
+        // Extract user IDs
+        const userIds = subscriptions.map((sub: any) => sub.user_id);
 
-        // Send message to each group sequentially
-        for (let i = 0; i < activeGroups.length; i++) {
-            const group = activeGroups[i];
-            totalMembers += group.member_count || 0;
+        // Fetch user profiles for these users
+        const { data: profiles, error: profilesError } = await supabaseClient
+            .from("user_profiles")
+            .select("id, phone_number, phone_verified, whatsapp_notifications_enabled")
+            .in("id", userIds);
 
-            // Add delay before each group message (except the first)
-            if (i > 0) {
-                console.log(`Waiting ${GROUP_MESSAGE_DELAY_MS}ms before next group...`);
-                await new Promise(resolve => setTimeout(resolve, GROUP_MESSAGE_DELAY_MS));
-            }
+        if (profilesError) {
+            throw new Error(`Failed to fetch user profiles: ${profilesError.message}`);
+        }
 
-            try {
-                console.log(`Sending message to group ${group.group_name} (${group.group_number}) - ${group.member_count} members [${i + 1}/${activeGroups.length}]`);
+        // Create a map of user_id to profile for quick lookup
+        const profileMap = new Map();
+        if (profiles) {
+            profiles.forEach((profile: any) => {
+                profileMap.set(profile.id, profile);
+            });
+        }
 
-                const sendResult = await sendGroupMessage(group.group_jid, message);
+        console.log(`Found ${profiles?.length || 0} user profiles. Filtering for valid phone numbers...`);
 
-                // Determine success
-                const httpSuccess = sendResult.httpStatus >= 200 && sendResult.httpStatus < 300;
-                const hasError = sendResult.error || sendResult.error_code || sendResult.error_message ||
-                    (sendResult.httpStatus && (sendResult.httpStatus < 200 || sendResult.httpStatus >= 300));
-                const hasSuccessIndicator = sendResult.success === true ||
-                    sendResult.id || sendResult.messageId || sendResult.sid ||
-                    (sendResult.message && sendResult.message !== false);
+        // Filter subscribers with valid phone numbers and WhatsApp enabled
+        const validSubscribers = subscriptions
+            .map((sub: any) => {
+                const profile = profileMap.get(sub.user_id);
+                return {
+                    ...sub,
+                    profile: profile || null,
+                };
+            })
+            .filter((sub: any) => {
+                const profile = sub.profile;
+                return profile &&
+                    profile.phone_number &&
+                    profile.phone_verified === true &&
+                    profile.whatsapp_notifications_enabled === true;
+            });
 
-                const finalSuccess = httpSuccess && !hasError && hasSuccessIndicator;
+        if (validSubscribers.length === 0) {
+            return new Response(
+                JSON.stringify({
+                    success: true,
+                    message: "No subscribers with verified phone numbers and WhatsApp notifications enabled.",
+                    totalSubscribers: subscriptions.length,
+                    validSubscribers: 0,
+                    successCount: 0,
+                    failureCount: 0,
+                }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            );
+        }
 
-                console.log(`Message to group ${group.group_jid}: ${finalSuccess ? 'SUCCESS' : 'FAILED'}`, {
-                    httpStatus: sendResult.httpStatus,
-                    error: sendResult.error || sendResult.error_code || sendResult.error_message,
-                    messageId: sendResult.id || sendResult.messageId || sendResult.sid
-                });
+        console.log(`Sending messages to ${validSubscribers.length} subscribers with valid phone numbers.`);
 
-                // Log group operation
-                await logGroupOperation(
-                    supabaseClient,
-                    "send_message",
-                    group.id,
-                    group.group_jid,
-                    signalId,
-                    finalSuccess,
-                    sendResult.error || sendResult.error_message || null,
-                    sendResult
-                );
+        const messageResults: any[] = [];
+        let successCount = 0;
+        let failureCount = 0;
 
-                groupResults.push({
-                    groupId: group.id,
-                    groupName: group.group_name,
-                    groupNumber: group.group_number,
-                    groupJid: group.group_jid,
-                    memberCount: group.member_count,
-                    success: finalSuccess,
-                    messageId: sendResult.id || sendResult.messageId || sendResult.sid,
-                    error: sendResult.error || sendResult.error_message || null,
-                    httpStatus: sendResult.httpStatus,
-                });
-            } catch (error) {
-                console.error(`Error sending to group ${group.group_jid}:`, error);
-                const errorMessage = error instanceof Error ? error.message : String(error);
+        // Process messages in batches for better performance
+        const totalBatches = Math.ceil(validSubscribers.length / BATCH_SIZE);
+        console.log(`Processing ${validSubscribers.length} messages in ${totalBatches} batches of ${BATCH_SIZE}`);
 
-                // Log failed operation
-                await logGroupOperation(
-                    supabaseClient,
-                    "send_message",
-                    group.id,
-                    group.group_jid,
-                    signalId,
-                    false,
-                    errorMessage,
-                    null
-                );
+        for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+            const batchStart = batchIndex * BATCH_SIZE;
+            const batchEnd = Math.min(batchStart + BATCH_SIZE, validSubscribers.length);
+            const batch = validSubscribers.slice(batchStart, batchEnd);
 
-                groupResults.push({
-                    groupId: group.id,
-                    groupName: group.group_name,
-                    groupNumber: group.group_number,
-                    groupJid: group.group_jid,
-                    memberCount: group.member_count,
-                    success: false,
-                    error: errorMessage,
-                });
+            console.log(`Processing batch ${batchIndex + 1}/${totalBatches} (messages ${batchStart + 1}-${batchEnd})`);
+
+            // Send all messages in the batch in parallel
+            const batchPromises = batch.map(async (subscription: any) => {
+                const profile = subscription.profile;
+                const phoneNumber = profile.phone_number;
+
+                try {
+                    const sendResult = await sendIndividualMessage(phoneNumber, message);
+
+                    // Determine success
+                    const httpSuccess = sendResult.httpStatus >= 200 && sendResult.httpStatus < 300;
+                    const hasError = sendResult.error || sendResult.error_code || sendResult.error_message ||
+                        (sendResult.httpStatus && (sendResult.httpStatus < 200 || sendResult.httpStatus >= 300));
+                    const messageId = sendResult.messages?.[0]?.id || null;
+                    const hasSuccessIndicator = sendResult.isSuccess || messageId !== null;
+
+                    const finalSuccess = httpSuccess && !hasError && hasSuccessIndicator;
+
+                    console.log(`Message to ${phoneNumber}: ${finalSuccess ? 'SUCCESS' : 'FAILED'}`, {
+                        httpStatus: sendResult.httpStatus,
+                        error: sendResult.error || sendResult.error_message,
+                        messageId: messageId
+                    });
+
+                    // Log notification operation (non-blocking)
+                    logNotificationOperation(
+                        supabaseClient,
+                        signalId,
+                        subscription.user_id,
+                        phoneNumber,
+                        finalSuccess,
+                        sendResult.error || sendResult.error_message || null,
+                        messageId,
+                        sendResult
+                    ).catch(err => console.error(`Failed to log notification for ${phoneNumber}:`, err));
+
+                    return {
+                        userId: subscription.user_id,
+                        phoneNumber: phoneNumber,
+                        success: finalSuccess,
+                        messageId: messageId,
+                        error: sendResult.error || sendResult.error_message || null,
+                        httpStatus: sendResult.httpStatus,
+                    };
+                } catch (error) {
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    console.error(`Error sending to ${phoneNumber}:`, error);
+
+                    // Log failed operation (non-blocking)
+                    logNotificationOperation(
+                        supabaseClient,
+                        signalId,
+                        subscription.user_id,
+                        phoneNumber,
+                        false,
+                        errorMessage,
+                        null,
+                        null
+                    ).catch(err => console.error(`Failed to log notification for ${phoneNumber}:`, err));
+
+                    return {
+                        userId: subscription.user_id,
+                        phoneNumber: phoneNumber,
+                        success: false,
+                        error: errorMessage,
+                    };
+                }
+            });
+
+            // Wait for all messages in the batch to complete
+            const batchResults = await Promise.allSettled(batchPromises);
+            
+            // Process batch results
+            batchResults.forEach((result) => {
+                if (result.status === 'fulfilled') {
+                    const messageResult = result.value;
+                    messageResults.push(messageResult);
+                    if (messageResult.success) {
+                        successCount++;
+                    } else {
+                        failureCount++;
+                    }
+                } else {
+                    failureCount++;
+                    console.error('Batch promise rejected:', result.reason);
+                }
+            });
+
+            // Add delay between batches (except after the last batch)
+            if (batchIndex < totalBatches - 1) {
+                await new Promise(resolve => setTimeout(resolve, BATCH_DELAY_MS));
             }
         }
 
-        const successCount = groupResults.filter(r => r.success === true).length;
-        const failureCount = groupResults.filter(r => r.success === false).length;
-
-        console.log(`Group message sending summary:`, {
-            totalGroups: activeGroups.length,
+        console.log(`Message sending summary:`, {
+            totalSubscribers: validSubscribers.length,
             successful: successCount,
             failed: failureCount,
-            totalMembers,
         });
 
-        // Generate warning message if any groups failed
+        // Generate warning message if any messages failed
         let warningMessage: string | null = null;
         if (failureCount > 0) {
-            warningMessage = `${failureCount} out of ${activeGroups.length} groups failed to receive the message.`;
+            warningMessage = `${failureCount} out of ${validSubscribers.length} messages failed to send.`;
         }
 
         return new Response(
             JSON.stringify({
                 success: true,
-                message: `Sent signal notification to ${successCount} out of ${activeGroups.length} groups`,
-                totalGroups: activeGroups.length,
-                totalMembers,
+                message: `Sent signal notification to ${successCount} out of ${validSubscribers.length} subscribers`,
+                totalSubscribers: validSubscribers.length,
                 successCount,
                 failureCount,
                 warning: warningMessage,
-                results: groupResults,
+                results: messageResults,
             }),
             { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
