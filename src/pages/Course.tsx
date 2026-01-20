@@ -58,26 +58,22 @@ const CoursePage: React.FC = () => {
   const handleEnroll = (courseId: string) => {
     const course = initialCourses.find((c) => c.id === courseId);
     if (!course) return;
-    if (course.price === 0) {
-      if (!enrolledIds.includes(courseId)) {
-        setEnrolledIds((prev) => [...prev, courseId]);
-      }
-      if (session?.user?.id) {
-        // Save enrollment to Supabase for free courses
-        supabase.from("user_course_enrollments").insert({
-          user_id: session.user.id,
-          course_id: courseId,
-        }).then(({ error }) => {
-          if (error) {
-            throw error;
-          }
-        });
-      }
-      showSuccess("Enrolled successfully. Access granted.");
-    } else {
-      showSuccess("Redirecting to checkout…");
-      window.open("https://t.me", "_blank", "noopener,noreferrer");
+    // All courses are now free - directly enroll
+    if (!enrolledIds.includes(courseId)) {
+      setEnrolledIds((prev) => [...prev, courseId]);
     }
+    if (session?.user?.id) {
+      // Save enrollment to Supabase
+      supabase.from("user_course_enrollments").insert({
+        user_id: session.user.id,
+        course_id: courseId,
+      }).then(({ error }) => {
+        if (error) {
+          throw error;
+        }
+      });
+    }
+    showSuccess("Enrolled successfully. Access granted.");
   };
 
   const filtered = initialCourses.filter((c) => {

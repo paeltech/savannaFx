@@ -57,13 +57,8 @@ export default function AcademyScreen() {
   });
 
   const handleEnroll = (course: Course) => {
-    if (course.price === 0) {
-      // Free course - directly enroll
-      alert('Enrolled successfully! Access granted.');
-    } else {
-      // Paid course - redirect to checkout
-      alert(`Redirecting to checkout for $${course.price}...`);
-    }
+    // All courses are now free - directly enroll
+    alert('Enrolled successfully! Access granted.');
   };
 
   return (
@@ -146,12 +141,6 @@ export default function AcademyScreen() {
                   ]}>
                     <Text style={styles.levelBadgeText}>{course.level}</Text>
                   </View>
-                  {course.premium && (
-                    <View style={styles.premiumBadge}>
-                      <Lock size={10} color={Colors.gold} strokeWidth={2} />
-                      <Text style={styles.premiumBadgeText}>Premium</Text>
-                    </View>
-                  )}
                 </View>
                 <Text style={styles.courseTitle}>{course.title}</Text>
                 <Text style={styles.courseAuthor}>by {course.author}</Text>

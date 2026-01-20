@@ -179,6 +179,7 @@ async function logNotificationOperation(
     success: boolean,
     errorMessage: string | null,
     messageId: string | null = null,
+    messageContent: string | null = null,
     responseData: any = null
 ) {
     try {
@@ -187,9 +188,12 @@ async function logNotificationOperation(
             user_id: userId,
             notification_type: "whatsapp",
             phone_number: phoneNumber,
+            message_content: messageContent || "Signal notification",
             success,
             error_message: errorMessage,
-            message_id: messageId,
+            provider_message_id: messageId, // Use provider_message_id for webhook tracking
+            status: success ? "sent" : "failed",
+            sent_at: success ? new Date().toISOString() : null,
             response_data: responseData,
         });
     } catch (error) {
@@ -260,80 +264,41 @@ serve(async (req) => {
         // Format the message
         const message = formatSignalMessage(signal);
 
-        console.log("Fetching active subscribers with WhatsApp notifications enabled...");
+        console.log("Fetching users with WhatsApp notifications enabled...");
 
-        // Fetch active subscribers with WhatsApp notifications enabled
-        const { data: subscriptions, error: subscriptionsError } = await supabaseClient
-            .from("signal_subscriptions")
-            .select("id, user_id, whatsapp_notifications")
-            .eq("status", "active")
-            .eq("whatsapp_notifications", true);
-
-        if (subscriptionsError) {
-            throw new Error(`Failed to fetch subscriptions: ${subscriptionsError.message}`);
-        }
-
-        if (!subscriptions || subscriptions.length === 0) {
-            return new Response(
-                JSON.stringify({
-                    success: true,
-                    message: "No active subscribers with WhatsApp notifications enabled found.",
-                    totalSubscribers: 0,
-                    successCount: 0,
-                    failureCount: 0,
-                }),
-                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-            );
-        }
-
-        console.log(`Found ${subscriptions.length} subscriptions. Fetching user profiles...`);
-
-        // Extract user IDs
-        const userIds = subscriptions.map((sub: any) => sub.user_id);
-
-        // Fetch user profiles for these users
+        // Fetch all users with verified phone numbers and WhatsApp notifications enabled
+        // (Subscription check removed - all users can receive notifications)
         const { data: profiles, error: profilesError } = await supabaseClient
             .from("user_profiles")
             .select("id, phone_number, phone_verified, whatsapp_notifications_enabled")
-            .in("id", userIds);
+            .eq("phone_verified", true)
+            .eq("whatsapp_notifications_enabled", true);
 
         if (profilesError) {
             throw new Error(`Failed to fetch user profiles: ${profilesError.message}`);
         }
 
-        // Create a map of user_id to profile for quick lookup
-        const profileMap = new Map();
-        if (profiles) {
-            profiles.forEach((profile: any) => {
-                profileMap.set(profile.id, profile);
-            });
-        }
+        console.log(`Found ${profiles?.length || 0} users with verified phone numbers and WhatsApp notifications enabled.`);
 
-        console.log(`Found ${profiles?.length || 0} user profiles. Filtering for valid phone numbers...`);
-
-        // Filter subscribers with valid phone numbers and WhatsApp enabled
-        const validSubscribers = subscriptions
-            .map((sub: any) => {
-                const profile = profileMap.get(sub.user_id);
-                return {
-                    ...sub,
-                    profile: profile || null,
-                };
-            })
-            .filter((sub: any) => {
-                const profile = sub.profile;
+        // Filter users with valid phone numbers
+        const validSubscribers = (profiles || [])
+            .filter((profile: any) => {
                 return profile &&
                     profile.phone_number &&
                     profile.phone_verified === true &&
                     profile.whatsapp_notifications_enabled === true;
-            });
+            })
+            .map((profile: any) => ({
+                user_id: profile.id,
+                profile: profile,
+            }));
 
         if (validSubscribers.length === 0) {
             return new Response(
                 JSON.stringify({
                     success: true,
-                    message: "No subscribers with verified phone numbers and WhatsApp notifications enabled.",
-                    totalSubscribers: subscriptions.length,
+                    message: "No users with verified phone numbers and WhatsApp notifications enabled.",
+                    totalUsers: 0,
                     validSubscribers: 0,
                     successCount: 0,
                     failureCount: 0,
@@ -360,8 +325,8 @@ serve(async (req) => {
             console.log(`Processing batch ${batchIndex + 1}/${totalBatches} (messages ${batchStart + 1}-${batchEnd})`);
 
             // Send all messages in the batch in parallel
-            const batchPromises = batch.map(async (subscription: any) => {
-                const profile = subscription.profile;
+            const batchPromises = batch.map(async (subscriber: any) => {
+                const profile = subscriber.profile;
                 const phoneNumber = profile.phone_number;
 
                 try {
@@ -386,16 +351,17 @@ serve(async (req) => {
                     logNotificationOperation(
                         supabaseClient,
                         signalId,
-                        subscription.user_id,
+                        subscriber.user_id,
                         phoneNumber,
                         finalSuccess,
                         sendResult.error || sendResult.error_message || null,
                         messageId,
+                        message, // Include message content
                         sendResult
                     ).catch(err => console.error(`Failed to log notification for ${phoneNumber}:`, err));
 
                     return {
-                        userId: subscription.user_id,
+                        userId: subscriber.user_id,
                         phoneNumber: phoneNumber,
                         success: finalSuccess,
                         messageId: messageId,
@@ -410,16 +376,17 @@ serve(async (req) => {
                     logNotificationOperation(
                         supabaseClient,
                         signalId,
-                        subscription.user_id,
+                        subscriber.user_id,
                         phoneNumber,
                         false,
                         errorMessage,
                         null,
+                        message, // Include message content
                         null
                     ).catch(err => console.error(`Failed to log notification for ${phoneNumber}:`, err));
 
                     return {
-                        userId: subscription.user_id,
+                        userId: subscriber.user_id,
                         phoneNumber: phoneNumber,
                         success: false,
                         error: errorMessage,

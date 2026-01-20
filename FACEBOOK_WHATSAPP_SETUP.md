@@ -143,14 +143,97 @@ Facebook requires message templates for production use:
 3. Submit for approval (usually takes 24-48 hours)
 4. Once approved, update the Edge Function to use templates
 
-### 4.2 Webhook Setup (Optional but Recommended)
+### 4.2 Webhook Setup (Recommended)
 
-Set up webhooks to track message delivery status:
+Set up webhooks to track message delivery status in real-time:
 
-1. In your app dashboard, go to **WhatsApp** → **Configuration**
-2. Set up webhook URL: `https://your-project.supabase.co/functions/v1/whatsapp-webhook`
-3. Subscribe to `messages` events
-4. Verify webhook token
+#### Step 1: Set Webhook Verify Token and App Secret
+
+Generate secure tokens and set them as Supabase secrets:
+
+```bash
+# Generate a random verify token (or use your own secure token)
+supabase secrets set WHATSAPP_WEBHOOK_VERIFY_TOKEN=your_secure_random_token_here
+
+# Get your App Secret from Facebook (optional but recommended for signature verification)
+# Go to: Meta App Dashboard → Settings → Basic → App Secret
+supabase secrets set WHATSAPP_WEBHOOK_APP_SECRET=your_app_secret_here
+```
+
+**Example verify token**: `SavannaFX_Webhook_2024_Secret_Key_12345`
+
+**Note**: The App Secret is optional but recommended for production. It's used to verify webhook signatures.
+
+#### Step 2: Deploy Webhook Function
+
+Deploy the webhook Edge Function:
+
+```bash
+supabase functions deploy whatsapp-webhook
+```
+
+#### Step 3: Configure Webhook in Facebook
+
+**REQUIRED**: Supabase Edge Functions require authentication at the infrastructure level. For Facebook's webhook verification (GET request) to work, we need to include the anon key in the URL. This is safe because:
+
+- ✅ **Anon key is designed to be public** - It's used in client-side code and is protected by Row Level Security (RLS) policies
+- ✅ **Only used for verification** - The GET request only verifies the token, no database access needed
+- ✅ **POST requests are secure** - They use service role key from environment variables (not in URL)
+- ✅ **Additional security** - Webhook signature verification adds another layer of protection
+
+**Steps**:
+
+1. **Get your Supabase Anon Key**:
+   - Go to Supabase Dashboard → **Settings** → **API**
+   - Copy the `anon` `public` key (not the service_role key)
+
+2. **Configure Webhook in Facebook**:
+   - Go to Meta App Dashboard: https://developers.facebook.com/apps/
+   - Select your app → **WhatsApp** → **Configuration**
+   - Scroll down to **Webhook** section → Click **Edit** or **Set up webhook**
+   - Enter your webhook URL **with anon key**:
+     ```
+     https://YOUR_PROJECT_REF.supabase.co/functions/v1/whatsapp-webhook?apikey=YOUR_ANON_KEY
+     ```
+     Replace:
+     - `YOUR_PROJECT_REF` with your Supabase project reference
+     - `YOUR_ANON_KEY` with your Supabase anon/public key
+   - Enter your **Verify Token** (the same token you set in Step 1)
+   - Click **Verify and Save**
+
+**Why Anon Key is Safe**:
+- The anon key is **meant to be public** - it's already exposed in your frontend code
+- It's **protected by RLS policies** - can only access data your policies allow
+- **No database writes** - anon key cannot bypass RLS to write data
+- **Verification only** - GET request doesn't access any database
+- **POST requests secure** - Use service role key from environment (not exposed)
+
+#### Step 4: Subscribe to Events
+
+After verification, subscribe to the following events:
+- ✅ **messages** - Incoming messages (optional, for future features)
+- ✅ **message_status** - Message delivery status updates (required)
+
+Click **Manage** next to each event and enable it.
+
+#### Step 5: Test Webhook
+
+1. Send a test WhatsApp message from your admin panel
+2. Check the Edge Function logs in Supabase Dashboard
+3. Verify that status updates are being received:
+   - `sent` - Message sent to WhatsApp
+   - `delivered` - Message delivered to recipient
+   - `read` - Message read by recipient
+   - `failed` - Message failed to send
+
+#### Webhook URL Format
+
+Your webhook URL should be:
+```
+https://iurstpwtdnlmpvwyhqfn.supabase.co/functions/v1/whatsapp-webhook
+```
+
+Replace `iurstpwtdnlmpvwyhqfn` with your actual Supabase project reference.
 
 ### 4.3 Rate Limits & Performance
 
@@ -232,6 +315,34 @@ Content-Type: application/json
 - You've hit Facebook's rate limits
 - The function automatically retries with exponential backoff
 - Check your tier limits in Meta Business Settings
+
+### Webhook Verification Failed - HTTP 401 Unauthorized
+- **Issue**: Facebook can't verify your webhook, getting 401 error
+- **Common Causes**:
+  1. Verify token doesn't match (case-sensitive)
+  2. Webhook URL is incorrect
+  3. Function not deployed or not accessible
+- **Solution**:
+  1. **Ensure webhook function is deployed**: `supabase functions deploy whatsapp-webhook`
+  2. **Check verify token is set**: `supabase secrets list` (should see `WHATSAPP_WEBHOOK_VERIFY_TOKEN`)
+  3. **Verify token matches exactly** in Facebook (case-sensitive, no extra spaces, no quotes)
+  4. **Check Edge Function logs** in Supabase Dashboard for verification attempts
+  5. **Test webhook URL directly**:
+     ```bash
+     curl "https://YOUR_PROJECT.supabase.co/functions/v1/whatsapp-webhook?hub.mode=subscribe&hub.verify_token=YOUR_TOKEN&hub.challenge=test123"
+     ```
+     Should return `test123` if working correctly
+  6. **Verify webhook URL** in Facebook matches exactly (no trailing slashes, correct project reference)
+  7. **Check Supabase function logs** for any errors during verification
+
+### Webhook Not Receiving Status Updates
+- **Issue**: Messages are sent but status updates aren't received
+- **Solution**:
+  1. Verify webhook is subscribed to `message_status` events in Facebook
+  2. Check Edge Function logs for incoming webhook events
+  3. Verify `provider_message_id` matches between sent messages and webhook updates
+  4. Check that the webhook function is deployed: `supabase functions deploy whatsapp-webhook`
+  5. Ensure RLS policies allow service role to update notification_logs
 
 ### Message not received
 - Check Edge Function logs for errors

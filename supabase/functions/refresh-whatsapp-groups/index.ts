@@ -306,20 +306,21 @@ serve(async (req) => {
             }
         }
 
-        // Get all active subscribers with WhatsApp enabled
-        const { data: subscriptions, error: subsError } = await supabaseClient
-            .from("signal_subscriptions")
-            .select("id, user_id")
-            .eq("status", "active")
-            .eq("whatsapp_notifications", true);
+        // Get all users with verified phone numbers and WhatsApp notifications enabled
+        // (Subscription check removed - all users can be added to groups)
+        const { data: users, error: usersError } = await supabaseClient
+            .from("user_profiles")
+            .select("id")
+            .eq("phone_verified", true)
+            .eq("whatsapp_notifications_enabled", true);
 
-        if (subsError) {
-            throw new Error(`Failed to fetch subscriptions: ${subsError.message}`);
+        if (usersError) {
+            throw new Error(`Failed to fetch users: ${usersError.message}`);
         }
 
-        console.log(`Found ${subscriptions?.length || 0} subscriptions with active status and whatsapp_notifications enabled`);
+        console.log(`Found ${users?.length || 0} users with verified phone numbers and WhatsApp notifications enabled`);
 
-        if (!subscriptions || subscriptions.length === 0) {
+        if (!users || users.length === 0) {
             // Create empty group for the month anyway
             const emptyGroup = await createGroup(
                 supabaseClient,
@@ -339,28 +340,11 @@ serve(async (req) => {
             );
         }
 
-        // Get user profiles for subscribers (with more lenient filtering to see what we get)
-        const userIds = subscriptions.map(sub => sub.user_id);
-        
-        // First, get ALL profiles for these users to see what's available
-        const { data: allProfiles, error: allProfilesError } = await supabaseClient
-            .from("user_profiles")
-            .select("id, phone_number, phone_verified, whatsapp_notifications_enabled")
-            .in("id", userIds);
-        
-        console.log(`Found ${allProfiles?.length || 0} user profiles for ${userIds.length} subscription user IDs`);
-        if (allProfiles) {
-            const withPhone = allProfiles.filter(p => p.phone_number).length;
-            const phoneVerified = allProfiles.filter(p => p.phone_verified).length;
-            const whatsappEnabled = allProfiles.filter(p => p.whatsapp_notifications_enabled).length;
-            console.log(`Profiles breakdown: ${withPhone} with phone, ${phoneVerified} phone verified, ${whatsappEnabled} whatsapp enabled`);
-        }
-        
-        // Now apply the filters
+        // Get user profiles for all users with verified phone numbers and WhatsApp enabled
+        // (Subscription check removed - all users can be added to groups)
         const { data: profiles, error: profilesError } = await supabaseClient
             .from("user_profiles")
             .select("id, phone_number, phone_verified, whatsapp_notifications_enabled")
-            .in("id", userIds)
             .eq("phone_verified", true)
             .eq("whatsapp_notifications_enabled", true)
             .not("phone_number", "is", null);
@@ -369,28 +353,13 @@ serve(async (req) => {
             throw new Error(`Failed to fetch user profiles: ${profilesError.message}`);
         }
 
-        console.log(`Found ${profiles?.length || 0} profiles matching all criteria (phone_verified=true, whatsapp_notifications_enabled=true, has phone number)`);
+        console.log(`Found ${profiles?.length || 0} users matching all criteria (phone_verified=true, whatsapp_notifications_enabled=true, has phone number)`);
 
-        // TEMPORARY: For testing, let's relax the filters and just require a phone number
-        console.log("⚠️ Using relaxed filters for testing - only requiring phone_number to be present");
-        const { data: relaxedProfiles, error: relaxedError } = await supabaseClient
-            .from("user_profiles")
-            .select("id, phone_number, phone_verified, whatsapp_notifications_enabled")
-            .in("id", userIds)
-            .not("phone_number", "is", null);
-
-        console.log(`With relaxed filters: ${relaxedProfiles?.length || 0} profiles have phone numbers`);
-
-        // Use relaxed profiles for now (TODO: change back to strict filters after testing)
-        const profilesToUse = relaxedProfiles || profiles;
-
-        // Filter subscriptions to only those with valid profiles
-        const validSubscriptions = subscriptions
-            .map(sub => {
-                const profile = profilesToUse?.find(p => p.id === sub.user_id);
-                return profile ? { ...sub, user_profiles: profile } : null;
-            })
-            .filter((sub): sub is typeof subscriptions[0] & { user_profiles: typeof profilesToUse[0] } => sub !== null);
+        // Map profiles to the format expected by the rest of the function
+        const validSubscriptions = (profiles || []).map(profile => ({
+            user_id: profile.id,
+            user_profiles: profile,
+        }));
 
         if (!validSubscriptions || validSubscriptions.length === 0) {
             // Create empty group if none exists, otherwise return existing group
@@ -414,18 +383,13 @@ serve(async (req) => {
                 return new Response(
                     JSON.stringify({
                         success: true,
-                        message: `No subscribers with valid criteria found. Created empty group for ${currentMonthYear}`,
+                        message: `No users with valid criteria found. Created empty group for ${currentMonthYear}`,
                         groups: [emptyGroup],
                         subscribersAdded: 0,
                         debug: {
-                            totalSubscriptions: subscriptions.length,
-                            profilesFound: allProfiles?.length || 0,
-                            strictValidProfiles: profiles?.length || 0,
-                            relaxedValidProfiles: relaxedProfiles?.length || 0,
-                            profileDetails: profileDetails?.slice(0, 5),
-                            issue: profiles?.length === 0 && allProfiles?.length > 0 
-                                ? "Users have phone numbers but phone_verified or whatsapp_notifications_enabled is false"
-                                : "No user profiles found with phone numbers"
+                            totalUsers: users?.length || 0,
+                            profilesFound: profiles?.length || 0,
+                            issue: "No user profiles found with verified phone numbers and WhatsApp notifications enabled"
                         }
                     }),
                     { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -442,18 +406,13 @@ serve(async (req) => {
                 return new Response(
                     JSON.stringify({
                         success: true,
-                        message: `No new subscribers to add. Groups for ${currentMonthYear} already exist.`,
+                        message: `No new users to add. Groups for ${currentMonthYear} already exist.`,
                         groups: existingGroups,
                         subscribersAdded: 0,
                         debug: {
-                            totalSubscriptions: subscriptions.length,
-                            profilesFound: allProfiles?.length || 0,
-                            strictValidProfiles: profiles?.length || 0,
-                            relaxedValidProfiles: relaxedProfiles?.length || 0,
-                            profileDetails: profileDetails?.slice(0, 5), // First 5 for debugging
-                            issue: profiles?.length === 0 && allProfiles?.length > 0 
-                                ? "Users have phone numbers but phone_verified or whatsapp_notifications_enabled is false"
-                                : "No user profiles found with phone numbers"
+                            totalUsers: users?.length || 0,
+                            profilesFound: profiles?.length || 0,
+                            issue: "No user profiles found with verified phone numbers and WhatsApp notifications enabled"
                         }
                     }),
                     { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -461,7 +420,7 @@ serve(async (req) => {
             }
         }
 
-        console.log(`Found ${validSubscriptions.length} active subscribers to migrate`);
+        console.log(`Found ${validSubscriptions.length} users to add to groups`);
 
         // Use existing group or create new one
         let currentGroup;
@@ -560,15 +519,8 @@ serve(async (req) => {
                 );
                 console.log(`✅ Step 1 complete`);
 
-                console.log(`🔹 Step 2: Updating subscription record...`);
-                // Update subscription with group info
-                await supabaseClient
-                    .from("signal_subscriptions")
-                    .update({
-                        whatsapp_group_id: currentGroup.id,
-                        whatsapp_group_jid: currentGroup.group_jid,
-                    })
-                    .eq("id", subscription.id);
+                console.log(`🔹 Step 2: Skipping subscription update (subscriptions removed)...`);
+                // Note: Subscription tracking removed - users are added directly to groups
                 console.log(`✅ Step 2 complete`);
 
                 console.log(`🔹 Step 3: Updating group member count...`);
