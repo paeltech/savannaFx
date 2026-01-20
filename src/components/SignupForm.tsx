@@ -686,7 +686,8 @@ const SignupForm: React.FC<SignupFormProps> = ({
                         <a
                           href="/terms"
                           className="text-gold hover:underline transition-colors"
-                          onClick={(e) => e.preventDefault()}
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
                           Terms & Conditions
                         </a>
@@ -694,7 +695,8 @@ const SignupForm: React.FC<SignupFormProps> = ({
                         <a
                           href="/privacy"
                           className="text-gold hover:underline transition-colors"
-                          onClick={(e) => e.preventDefault()}
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
                           Privacy Policy
                         </a>{" "}
@@ -702,7 +704,8 @@ const SignupForm: React.FC<SignupFormProps> = ({
                         <a
                           href="/email-policy"
                           className="text-gold hover:underline transition-colors"
-                          onClick={(e) => e.preventDefault()}
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
                           Email Policy
                         </a>{" "}

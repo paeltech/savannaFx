@@ -333,9 +333,6 @@ const Signals: React.FC = () => {
           </ScrollReveal>
         </DashboardLayout>
       </PageTransition>
-    );
-      </DashboardLayout>
-    </PageTransition>
   );
 };
 
