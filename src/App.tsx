@@ -22,6 +22,7 @@ import TradeAnalysis from "./pages/TradeAnalysis";
 import NotificationPreferences from "./pages/NotificationPreferences";
 import Notifications from "./pages/Notifications";
 import Login from "./pages/Login";
+import Privacy from "./pages/Privacy";
 import SupabaseSessionProvider from "@/components/auth/SupabaseSessionProvider";
 import RequireAuth from "@/components/auth/RequireAuth";
 import RequireAdmin from "@/components/auth/RequireAdmin";
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/privacy" element={<Privacy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
             <Route path="/dashboard/trade-with-savanna" element={<RequireAuth><TradeWithSavanna /></RequireAuth>} />

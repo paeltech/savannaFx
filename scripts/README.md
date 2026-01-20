@@ -1,6 +1,6 @@
-# Export Phone Numbers Script
+# Export Scripts
 
-This directory contains scripts to export phone numbers from the database to CSV format.
+This directory contains scripts to export user data (phone numbers and emails) from the database to CSV format.
 
 ## Method 1: TypeScript Script (Recommended)
 
@@ -17,21 +17,28 @@ This directory contains scripts to export phone numbers from the database to CSV
 
 ### Usage
 
-Run the export script:
+Run the export scripts:
 
+**Export Phone Numbers:**
 ```bash
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here npm run export:phones
+```
+
+**Export Emails:**
+```bash
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here npm run export:emails
 ```
 
 Or set the environment variable first:
 
 ```bash
 export SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
-npm run export:phones
+npm run export:phones  # or npm run export:emails
 ```
 
 ### Output
 
+**Phone Numbers Export:**
 The script will create a CSV file named `phone-numbers-export-YYYY-MM-DD.csv` in the project root directory.
 
 The CSV includes:
@@ -44,12 +51,35 @@ The CSV includes:
 - Created At
 - Updated At
 
+**Emails Export:**
+The script will create a CSV file named `emails-export-YYYY-MM-DD.csv` in the project root directory.
+
+The CSV includes:
+- User ID
+- Email
+- Email Confirmed At
+- Full Name
+- Phone Number
+- Phone Verified
+- Email Notifications Enabled
+- WhatsApp Notifications Enabled
+- User Created At
+- Profile Created At
+- Profile Updated At
+
 ## Method 2: SQL Script (Alternative)
 
 If you prefer to export directly from Supabase SQL Editor:
 
+**For Phone Numbers:**
 1. Open Supabase Dashboard → SQL Editor
 2. Copy and paste the contents of `export-phone-numbers.sql`
+3. Run the query
+4. Click "Download CSV" or copy the results
+
+**For Emails:**
+1. Open Supabase Dashboard → SQL Editor
+2. Copy and paste the contents of `export-emails.sql`
 3. Run the query
 4. Click "Download CSV" or copy the results
 
@@ -82,12 +112,13 @@ Make sure you've set the environment variable before running the script.
 - Check that the service role key is valid
 - Ensure you have network access to Supabase
 
-### "Could not fetch emails"
+### "Could not fetch emails" or "RPC function failed"
 
-The script will still export phone numbers even if emails can't be fetched. You can:
-- Use the SQL script method instead
-- Check that the `get_all_users_with_roles` function exists in your database
-- Verify RLS policies allow service role access
+The email export script uses the Supabase Admin API as a fallback. If you encounter issues:
+- Verify your service role key is correct and has admin privileges
+- Use the SQL script method instead (works directly in Supabase SQL Editor)
+- Check that your Supabase URL is correct
+- Ensure you have network access to Supabase
 
 ## Example Output
 

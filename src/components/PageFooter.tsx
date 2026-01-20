@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 const PageFooter: React.FC = () => {
@@ -61,7 +62,12 @@ const PageFooter: React.FC = () => {
           <div className="text-xs sm:text-sm text-rainy-grey leading-relaxed">
             <p>© {new Date().getFullYear()} SavannaFX — All rights reserved.</p>
             <div className="mt-3 flex flex-wrap gap-3 sm:gap-4">
-              <span className="hover:text-gold transition-colors duration-200 cursor-pointer min-h-[32px] flex items-center">Privacy Policy</span>
+              <Link 
+                to="/privacy" 
+                className="hover:text-gold transition-colors duration-200 cursor-pointer min-h-[32px] flex items-center"
+              >
+                Privacy Policy
+              </Link>
               <span className="text-steel-wool hidden sm:inline">•</span>
               <span className="hover:text-gold transition-colors duration-200 cursor-pointer min-h-[32px] flex items-center">Terms</span>
             </div>
