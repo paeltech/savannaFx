@@ -226,7 +226,26 @@ const Privacy: React.FC = () => {
                   <li><strong className="text-white">Opt-Out:</strong> Unsubscribe from marketing communications or adjust notification preferences</li>
                 </ul>
                 <p className="text-rainy-grey leading-relaxed mb-4">
-                  To exercise these rights, please contact us at <a href="mailto:privacy@savannafx.co" className="text-gold hover:underline">privacy@savannafx.co</a>. We will respond to your request within 30 days.
+                  To exercise these rights, you can:
+                </p>
+                <ul className="list-disc list-inside text-rainy-grey space-y-2 mb-4 ml-4">
+                  <li>
+                    <strong className="text-white">Request Account Deletion:</strong>{" "}
+                    <Link to="/dashboard/delete-account" className="text-gold hover:underline">
+                      Delete your account and data
+                    </Link>{" "}
+                    directly from your dashboard (requires login)
+                  </li>
+                  <li>
+                    <strong className="text-white">Contact Us:</strong> Email us at{" "}
+                    <a href="mailto:privacy@savannafx.co" className="text-gold hover:underline">
+                      privacy@savannafx.co
+                    </a>{" "}
+                    for other data requests
+                  </li>
+                </ul>
+                <p className="text-rainy-grey leading-relaxed mb-4">
+                  We will respond to your request within 30 days.
                 </p>
               </section>
 

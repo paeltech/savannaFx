@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import DashboardLayout from "../components/dashboard/DashboardLayout.tsx";
 import { CardContent } from "@/components/ui/card";
 import SavannaCard from "@/components/dashboard/SavannaCard";
@@ -229,6 +230,25 @@ const NotificationPreferences: React.FC = () => {
                                     <strong>Note:</strong> You must have an active signal subscription to receive
                                     notifications. WhatsApp notifications require a verified phone number.
                                 </p>
+                            </div>
+
+                            {/* Account Deletion Section */}
+                            <div className="bg-red-900/20 border border-red-700/50 rounded-lg p-6">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <Shield className="text-red-500" size={20} />
+                                    <h2 className="text-lg font-semibold text-white">Account Management</h2>
+                                </div>
+                                <p className="text-sm text-red-200 mb-4">
+                                    You have the right to request deletion of your account and all associated data
+                                    in accordance with our Privacy Policy.
+                                </p>
+                                <Link
+                                    to="/dashboard/delete-account"
+                                    className="inline-flex items-center gap-2 text-red-400 hover:text-red-300 text-sm font-medium transition-colors"
+                                >
+                                    <span>Request Account Deletion</span>
+                                    <span>→</span>
+                                </Link>
                             </div>
                         </div>
                     </CardContent>
