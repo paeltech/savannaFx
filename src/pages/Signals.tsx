@@ -16,6 +16,7 @@ import {
   Target,
   X,
   CheckCircle2,
+  BarChart3,
 } from "lucide-react";
 import { PageTransition, ScrollReveal } from "@/lib/animations";
 import { motion } from "framer-motion";
