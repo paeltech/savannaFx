@@ -1,0 +1,29 @@
+🎯 SavannaFX Mobile v1.0.0 - Internal Testing Release
+
+Welcome to the first internal testing release of SavannaFX Mobile!
+
+✨ KEY FEATURES:
+• Real-time trading signals with entry, stop loss, and take profit levels
+• Trade analysis and market insights
+• Educational content: Academy, Mentorship, and One-on-One coaching
+• Trading tools: Calculator, Calendar, and Market Sentiment
+• Push notifications for signal alerts
+• Profile management and notification preferences
+
+🔧 WHAT TO TEST:
+• Authentication flow (signup/login)
+• Signal delivery and real-time updates
+• Notification system and preferences
+• Navigation and screen transitions
+• All trading tools and features
+
+⚠️ KNOWN LIMITATIONS:
+• Payment integration pending (Google Play Billing)
+• WhatsApp notifications require phone verification
+• iOS version coming soon
+
+📝 FEEDBACK:
+Report issues to: support@savannafx.co
+Include device model, Android version, and steps to reproduce.
+
+Thank you for testing! Your feedback helps us improve.

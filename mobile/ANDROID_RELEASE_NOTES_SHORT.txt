@@ -1,0 +1,7 @@
+SavannaFX Mobile v1.0.0
+
+First Android release. Features: Trading signals, analysis, educational content, notifications, and trading tools.
+
+Testing: Authentication, signals, notifications.
+
+Report issues: support@savannafx.co

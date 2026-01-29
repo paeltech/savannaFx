@@ -1,0 +1,15 @@
+SavannaFX Mobile v1.0.0 - Internal Testing
+
+First release of SavannaFX Mobile app for Android.
+
+Features:
+• Real-time trading signals
+• Trade analysis and insights
+• Educational content (Academy, Mentorship, Coaching)
+• Trading calculator and tools
+• Push notifications
+• Profile management
+
+Testing focus: Authentication, signals, notifications, navigation.
+
+Report issues to: support@savannafx.co
