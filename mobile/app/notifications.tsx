@@ -101,6 +101,31 @@ export default function NotificationsScreen() {
     }
   };
 
+  const getActionRoute = (notification: Notification): string | null => {
+    const meta = notification.metadata ?? {};
+    switch (notification.notification_type) {
+      case 'signal':
+        if (meta.signal_id) return `/signals/${meta.signal_id}`;
+        return '/signals';
+      case 'event':
+        if (meta.event_id) return `/events/${meta.event_id}`;
+        return '/events';
+      case 'announcement':
+        if (meta.analysis_id) return `/analysis/${meta.analysis_id}`;
+        return '/analysis';
+      default:
+        return null;
+    }
+  };
+
+  const handleNotificationPress = (notification: Notification) => {
+    markAsRead(notification.id);
+    const route = getActionRoute(notification);
+    if (route) {
+      router.push(route);
+    }
+  };
+
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'signal':
@@ -164,7 +189,8 @@ export default function NotificationsScreen() {
     <TouchableOpacity
       key={notification.id}
       style={[styles.notificationCard, !notification.read && styles.unreadCard]}
-      onPress={() => markAsRead(notification.id)}
+      onPress={() => handleNotificationPress(notification)}
+      activeOpacity={0.8}
     >
       <View style={styles.notificationIcon}>
         {getNotificationIcon(notification.notification_type)}

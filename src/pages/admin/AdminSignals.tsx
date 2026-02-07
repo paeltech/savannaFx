@@ -24,7 +24,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { SignalHigh, Edit, DollarSign, Users, TrendingUp, Plus, Trash2, RefreshCw, MessageSquare } from "lucide-react";
+import { SignalHigh, Edit, DollarSign, Users, TrendingUp, Plus, Trash2, RefreshCw, MessageSquare, History } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import supabase from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -38,6 +38,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createNotificationForUsers, formatSignalNotification } from "@/utils/notifications";
+import type { SignalUpdate } from "@shared/types/signal";
 
 interface SignalPricing {
   id: string;
@@ -122,6 +123,20 @@ const signalSchema = z.object({
 
 type SignalFormValues = z.infer<typeof signalSchema>;
 
+const SIGNAL_UPDATE_FIELD_LABELS: Record<string, string> = {
+  trading_pair: "Trading pair",
+  signal_type: "Type",
+  entry_price: "Entry",
+  stop_loss: "Stop loss",
+  take_profit_1: "TP1",
+  take_profit_2: "TP2",
+  take_profit_3: "TP3",
+  title: "Title",
+  analysis: "Analysis",
+  confidence_level: "Confidence",
+  status: "Status",
+};
+
 const subscriptionSchema = z.object({
   status: z.enum(["active", "cancelled", "expired", "pending"]),
   payment_status: z.enum(["pending", "completed", "failed", "refunded"]),
@@ -143,6 +158,11 @@ const AdminSignals: React.FC = () => {
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("signals");
   const [isRefreshingGroups, setIsRefreshingGroups] = useState(false);
+  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
+  const [signalForHistory, setSignalForHistory] = useState<Signal | null>(null);
+  const [signalUpdates, setSignalUpdates] = useState<SignalUpdate[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const form = useForm<PricingFormValues>({
@@ -243,6 +263,32 @@ const AdminSignals: React.FC = () => {
       if (error) throw error;
       return data || [];
     },
+  });
+
+  // Fetch signal update counts (for badges in table)
+  const { data: signalUpdateCounts } = useQuery<Record<string, number>>({
+    queryKey: ["signal-update-counts", signals?.length],
+    queryFn: async () => {
+      if (!signals?.length) return {};
+      try {
+        const ids = signals.map((s) => s.id);
+        const { data, error } = await supabase
+          .from("signal_updates")
+          .select("signal_id")
+          .in("signal_id", ids)
+          .eq("revision_type", "update");
+        if (error) return {};
+        const counts: Record<string, number> = {};
+        ids.forEach((id) => { counts[id] = 0; });
+        (data || []).forEach((row: { signal_id: string }) => {
+          counts[row.signal_id] = (counts[row.signal_id] ?? 0) + 1;
+        });
+        return counts;
+      } catch {
+        return {};
+      }
+    },
+    enabled: !!signals && signals.length > 0,
   });
 
   // Fetch WhatsApp groups
@@ -532,27 +578,29 @@ const AdminSignals: React.FC = () => {
   // Update signal mutation
   const updateSignalMutation = useMutation({
     mutationFn: async ({ id, values }: { id: string; values: SignalFormValues }) => {
+      const payload = {
+        trading_pair: values.trading_pair,
+        signal_type: values.signal_type,
+        entry_price: Number(values.entry_price),
+        stop_loss: Number(values.stop_loss),
+        take_profit_1: values.take_profit_1 != null && values.take_profit_1 !== "" ? Number(values.take_profit_1) : null,
+        take_profit_2: values.take_profit_2 != null && values.take_profit_2 !== "" ? Number(values.take_profit_2) : null,
+        take_profit_3: values.take_profit_3 != null && values.take_profit_3 !== "" ? Number(values.take_profit_3) : null,
+        title: values.title,
+        analysis: values.analysis || null,
+        confidence_level: values.confidence_level || null,
+      };
       const { error } = await supabase
         .from("signals")
-        .update({
-          trading_pair: values.trading_pair,
-          signal_type: values.signal_type,
-          entry_price: values.entry_price,
-          stop_loss: values.stop_loss,
-          take_profit_1: values.take_profit_1 || null,
-          take_profit_2: values.take_profit_2 || null,
-          take_profit_3: values.take_profit_3 || null,
-          title: values.title,
-          analysis: values.analysis || null,
-          confidence_level: values.confidence_level || null,
-        })
+        .update(payload)
         .eq("id", id);
 
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["signals"] });
-      showSuccess("Signal updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["signal-update-counts"] });
+      showSuccess("Signal updated successfully. Changes are stored and notifications sent.");
       setIsSignalDialogOpen(false);
       setSelectedSignal(null);
       signalForm.reset();
@@ -561,6 +609,43 @@ const AdminSignals: React.FC = () => {
       showError(error.message || "Failed to update signal");
     },
   });
+
+  const openHistoryDialog = async (signal: Signal) => {
+    setSignalForHistory(signal);
+    setHistoryError(null);
+    setSignalUpdates([]);
+    setIsHistoryDialogOpen(true);
+    setHistoryLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("signal_updates")
+        .select("*")
+        .eq("signal_id", signal.id)
+        .order("created_at", { ascending: true });
+      if (error) {
+        console.error("Signal updates fetch error:", error);
+        setHistoryError(error.message || "Failed to load update history");
+        showError(error.message || "Failed to load update history. Ensure the signal_updates migration has been run.");
+      } else {
+        setSignalUpdates(data || []);
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to load update history";
+      setHistoryError(msg);
+      showError(msg);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  const closeHistoryDialog = (open: boolean) => {
+    if (!open) {
+      setSignalForHistory(null);
+      setSignalUpdates([]);
+      setHistoryError(null);
+    }
+    setIsHistoryDialogOpen(open);
+  };
 
   const handleEditSignal = (signal: Signal) => {
     setSelectedSignal(signal);
@@ -713,13 +798,6 @@ const AdminSignals: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <Button
-                onClick={() => setIsSignalDialogOpen(true)}
-                className="bg-gold text-cursed-black hover:bg-gold-dark"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Create Signal
-              </Button>
             </div>
 
             {/* Statistics Grid */}
@@ -788,7 +866,19 @@ const AdminSignals: React.FC = () => {
 
           {/* Signals Tab */}
           <TabsContent value="signals" className="space-y-6">
-
+            <div className="flex justify-end mb-4">
+              <Button
+                onClick={() => {
+                  setSelectedSignal(null);
+                  signalForm.reset();
+                  setIsSignalDialogOpen(true);
+                }}
+                className="bg-gold text-cursed-black hover:bg-gold-dark"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Create Signal
+              </Button>
+            </div>
             {/* Signals Table */}
             <ScrollReveal>
               <SavannaCard className="mb-6">
@@ -810,6 +900,7 @@ const AdminSignals: React.FC = () => {
                             <TableHead className="text-rainy-grey">TP1</TableHead>
                             <TableHead className="text-rainy-grey">Confidence</TableHead>
                             <TableHead className="text-rainy-grey">Status</TableHead>
+                            <TableHead className="text-rainy-grey">Updates</TableHead>
                             <TableHead className="text-rainy-grey">Created</TableHead>
                             <TableHead className="text-rainy-grey text-right">Actions</TableHead>
                           </TableRow>
@@ -838,11 +929,29 @@ const AdminSignals: React.FC = () => {
                                 )}
                               </TableCell>
                               <TableCell>{getStatusBadge(signal.status)}</TableCell>
+                              <TableCell>
+                                {(signalUpdateCounts?.[signal.id] ?? 0) > 0 ? (
+                                  <Badge className="bg-gold text-cursed-black font-medium">
+                                    {(signalUpdateCounts?.[signal.id] ?? 0)} update{(signalUpdateCounts?.[signal.id] ?? 0) === 1 ? "" : "s"}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-rainy-grey text-sm">—</span>
+                                )}
+                              </TableCell>
                               <TableCell className="text-rainy-grey">
                                 {format(new Date(signal.created_at), "MMM dd, yyyy")}
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex gap-2 justify-end">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => openHistoryDialog(signal)}
+                                    className="border-steel-wool text-gold hover:bg-steel-wool"
+                                    title="View update history"
+                                  >
+                                    <History className="h-4 w-4" />
+                                  </Button>
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -858,7 +967,7 @@ const AdminSignals: React.FC = () => {
                                     className="border-steel-wool text-red-500 hover:bg-steel-wool"
                                     disabled={deleteSignalMutation.isPending}
                                   >
-                                    <SignalHigh className="h-4 w-4" />
+                                    <Trash2 className="h-4 w-4" />
                                   </Button>
                                 </div>
                               </TableCell>
@@ -875,7 +984,7 @@ const AdminSignals: React.FC = () => {
           </TabsContent>
 
           {/* Subscriptions Tab */}
-          <TabsContent value="subscriptions" className="space-y-6">
+          <TabsContent value="subscriptions" className="space-y-6" forceMount hidden={activeTab !== "subscriptions"}>
 
             {/* Pricing Configuration */}
             <SavannaCard className="mb-6">
@@ -1297,13 +1406,17 @@ const AdminSignals: React.FC = () => {
               </DialogContent>
             </Dialog>
 
-            {/* Create Signal Dialog */}
+            {/* Create / Edit Signal Dialog */}
             <Dialog open={isSignalDialogOpen} onOpenChange={setIsSignalDialogOpen}>
               <DialogContent className="bg-black border-steel-wool text-white max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle className="text-white">Create New Signal</DialogTitle>
+                  <DialogTitle className="text-white">
+                    {selectedSignal ? "Edit Signal" : "Create New Signal"}
+                  </DialogTitle>
                   <DialogDescription className="text-rainy-grey">
-                    Create a new trading signal. WhatsApp notifications will be sent automatically to all active subscribers.
+                    {selectedSignal
+                      ? "Update the signal. Changes are stored in history and in-app notifications are sent to subscribers."
+                      : "Create a new trading signal. WhatsApp notifications will be sent automatically to all active subscribers."}
                   </DialogDescription>
                 </DialogHeader>
                 <Form {...signalForm}>
@@ -1522,6 +1635,7 @@ const AdminSignals: React.FC = () => {
                         type="button"
                         variant="outline"
                         onClick={() => {
+                          setSelectedSignal(null);
                           setIsSignalDialogOpen(false);
                           signalForm.reset();
                         }}
@@ -1532,13 +1646,109 @@ const AdminSignals: React.FC = () => {
                       <Button
                         type="submit"
                         className="bg-gold text-cursed-black hover:bg-gold-dark"
-                        disabled={createSignalMutation.isPending}
+                        disabled={createSignalMutation.isPending || updateSignalMutation.isPending}
                       >
-                        {createSignalMutation.isPending ? "Creating..." : "Create Signal"}
+                        {selectedSignal
+                          ? (updateSignalMutation.isPending ? "Updating..." : "Update Signal")
+                          : (createSignalMutation.isPending ? "Creating..." : "Create Signal")}
                       </Button>
                     </DialogFooter>
                   </form>
                 </Form>
+              </DialogContent>
+            </Dialog>
+
+            {/* Signal Update History Dialog */}
+            <Dialog open={isHistoryDialogOpen} onOpenChange={closeHistoryDialog}>
+              <DialogContent className="bg-black border-steel-wool text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-white flex items-center gap-2">
+                    <History className="h-5 w-5 text-gold" />
+                    Update history {signalForHistory && `— ${signalForHistory.trading_pair}`}
+                  </DialogTitle>
+                  <DialogDescription className="text-rainy-grey">
+                    Initial state and all changes (SL, TP, etc.) are stored separately. Subscribers receive notifications on each update.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  {historyLoading ? (
+                    <div className="text-center py-8 text-rainy-grey">Loading history...</div>
+                  ) : historyError ? (
+                    <div className="rounded-lg border border-red-500/50 bg-red-500/10 p-4">
+                      <p className="text-red-400 text-sm">{historyError}</p>
+                      <p className="text-rainy-grey text-xs mt-2">Run the migration 20260207000000_create_signal_updates.sql if the signal_updates table does not exist yet.</p>
+                    </div>
+                  ) : signalUpdates.length === 0 ? (
+                    <p className="text-rainy-grey text-sm">No updates recorded for this signal yet.</p>
+                  ) : (
+                    <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                      {signalUpdates.map((rev) => (
+                        <div
+                          key={rev.id}
+                          className="rounded-lg border border-steel-wool bg-nero/50 p-4"
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <Badge variant="outline" className="border-gold text-gold text-xs">
+                              {rev.revision_type === "initial" ? "Initial state (before first update)" : "Update"}
+                            </Badge>
+                            <span className="text-rainy-grey text-xs">
+                              {format(new Date(rev.created_at), "MMM dd, yyyy HH:mm")}
+                            </span>
+                          </div>
+                          {rev.revision_type === "initial" && rev.snapshot && typeof rev.snapshot === "object" && (
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                              {Object.entries(rev.snapshot).map(([key, val]) => (
+                                <div key={key} className="flex justify-between">
+                                  <span className="text-rainy-grey">{SIGNAL_UPDATE_FIELD_LABELS[key] ?? key}</span>
+                                  <span className="text-white">{val != null ? String(val) : "—"}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {rev.revision_type === "update" && rev.changes && typeof rev.changes === "object" && (
+                            <div className="space-y-1 text-sm">
+                              {Object.entries(rev.changes).map(([field, change]) => {
+                                const c = change as { old?: number | string | null; new?: number | string | null };
+                                return (
+                                  <div key={field} className="flex justify-between items-center">
+                                    <span className="text-rainy-grey">{SIGNAL_UPDATE_FIELD_LABELS[field] ?? field}</span>
+                                    <span className="text-gold">
+                                      {c.old != null ? String(c.old) : "—"} → {c.new != null ? String(c.new) : "—"}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => closeHistoryDialog(false)}
+                    className="border-steel-wool text-rainy-grey"
+                  >
+                    Close
+                  </Button>
+                  {signalForHistory && (
+                    <Button
+                      type="button"
+                      className="bg-gold text-cursed-black hover:bg-gold-dark"
+                      onClick={() => {
+                        closeHistoryDialog(false);
+                        handleEditSignal(signalForHistory);
+                        setIsSignalDialogOpen(true);
+                      }}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit this signal
+                    </Button>
+                  )}
+                </DialogFooter>
               </DialogContent>
             </Dialog>
           </TabsContent>

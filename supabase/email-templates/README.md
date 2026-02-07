@@ -124,5 +124,5 @@ Replace the logo URL in the header section:
 ## Support
 
 For issues or questions about email templates:
-- Contact: support@savannafx.co
+- Contact: info@savannafx.co
 - Check Supabase documentation: https://supabase.com/docs/guides/auth/auth-email-templates

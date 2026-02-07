@@ -75,6 +75,16 @@ export default function ProfileScreen() {
       Alert.alert('Error', 'Failed to update profile. Please try again.');
       console.error('Profile update error:', error);
     } else {
+      const name = fullName.trim();
+      const parts = name.split(/\s+/).filter(Boolean);
+      await supabase.auth.updateUser({
+        data: {
+          full_name: name || undefined,
+          first_name: parts[0] ?? undefined,
+          last_name: parts.length > 1 ? parts.slice(1).join(' ') : undefined,
+          phone: phoneNumber.trim() || undefined,
+        },
+      });
       Alert.alert('Success', 'Profile updated successfully!');
       setIsEditing(false);
       fetchUserProfile();

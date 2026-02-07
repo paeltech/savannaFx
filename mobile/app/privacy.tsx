@@ -125,8 +125,10 @@ export default function PrivacyScreen() {
         <Text style={styles.paragraph}>
           If you have any questions about this Privacy Policy or our data practices, please contact us:
         </Text>
-        <Text style={styles.contactInfo}>Email: privacy@savannafx.com</Text>
-        <Text style={styles.contactInfo}>Phone: +254 XXX XXX XXX</Text>
+        <Text style={styles.contactInfo}>Email: info@savannafx.co</Text>
+        <Text style={styles.contactInfo}>Phone: +255716885996</Text>
+        <Text style={styles.contactInfo}>Location: Dar es salaam, Tanzania</Text>
+        <Text style={styles.contactInfo}>Website: www.savannafx.co</Text>
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>

@@ -23,7 +23,7 @@ Welcome to the first internal testing release of SavannaFX Mobile!
 • iOS version coming soon
 
 📝 FEEDBACK:
-Report issues to: support@savannafx.co
+Report issues to: info@savannafx.co
 Include device model, Android version, and steps to reproduce.
 
 Thank you for testing! Your feedback helps us improve.

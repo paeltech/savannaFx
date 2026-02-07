@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../../shared/constants/colors';
 import { 
   User, 
@@ -13,7 +14,8 @@ import {
   Calendar as CalendarIcon,
   Calculator,
   TrendingDown,
-  FolderOpen
+  FolderOpen,
+  Edit3
 } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
@@ -22,10 +24,18 @@ import { useUnreadNotificationsCount } from '../hooks/use-unread-notifications';
 
 export default function HomeScreen() {
   const [latestSignal, setLatestSignal] = useState<Signal | null>(null);
+  const [latestSignalUpdateCount, setLatestSignalUpdateCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState<any>(null);
   const { unreadCount: unreadNotificationsCount, refreshCount } = useUnreadNotificationsCount();
+
+  // Refresh unread count when screen gains focus (e.g. after marking as read on notifications screen)
+  useFocusEffect(
+    useCallback(() => {
+      refreshCount();
+    }, [refreshCount])
+  );
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -51,10 +61,27 @@ export default function HomeScreen() {
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching signal:', error);
+        setLatestSignal(null);
+        setLatestSignalUpdateCount(0);
         return;
       }
 
       setLatestSignal(data);
+
+      if (data?.id) {
+        const { count, error: countError } = await supabase
+          .from('signal_updates')
+          .select('*', { count: 'exact', head: true })
+          .eq('signal_id', data.id)
+          .eq('revision_type', 'update');
+        if (!countError && count != null) {
+          setLatestSignalUpdateCount(count);
+        } else {
+          setLatestSignalUpdateCount(0);
+        }
+      } else {
+        setLatestSignalUpdateCount(0);
+      }
     } catch (error) {
       console.error('Error fetching signal:', error);
     } finally {
@@ -68,25 +95,21 @@ export default function HomeScreen() {
     checkAuth();
     fetchLatestSignal();
 
-    // Subscribe to real-time updates for signals
+    // Subscribe to real-time updates for signals and signal_updates
     const signalsChannel = supabase
       .channel('signals-changes')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'signals'
-        },
-        (payload) => {
-          console.log('Signal update received:', payload);
-          // Refetch the latest signal when any change occurs
-          fetchLatestSignal();
-        }
+        { event: '*', schema: 'public', table: 'signals' },
+        () => { fetchLatestSignal(true); }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'signal_updates' },
+        () => { fetchLatestSignal(true); }
       )
       .subscribe();
 
-    // Cleanup subscriptions on unmount
     return () => {
       supabase.removeChannel(signalsChannel);
     };
@@ -129,7 +152,7 @@ export default function HomeScreen() {
               <Text style={styles.welcomeText}>Welcome back,</Text>
               <Text style={styles.userName}>
                 {(() => {
-                  const name = user?.user_metadata?.full_name || 'User';
+                  const name = user?.user_metadata?.full_name || 'Trader';
                   return name.charAt(0).toUpperCase() + name.slice(1);
                 })()}
               </Text>
@@ -163,7 +186,11 @@ export default function HomeScreen() {
             <ActivityIndicator size="large" color={Colors.gold} />
           </View>
         ) : latestSignal ? (
-          <View style={styles.signalCard}>
+          <TouchableOpacity
+            style={styles.signalCard}
+            onPress={() => router.push(`/signals/${latestSignal.id}`)}
+            activeOpacity={0.85}
+          >
             <View style={styles.signalHeader}>
                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                  <Text style={styles.signalPair}>{latestSignal.trading_pair}</Text>
@@ -178,14 +205,14 @@ export default function HomeScreen() {
                    </Text>
                  )}
                </View>
-              <TouchableOpacity style={[
+              <View style={[
                 styles.sellButton,
                 latestSignal.signal_type === 'buy' && styles.buyButton
               ]}>
                 <Text style={styles.sellButtonText}>
                   {latestSignal.signal_type.toUpperCase()}
                 </Text>
-              </TouchableOpacity>
+              </View>
             </View>
             <View style={styles.signalInfo}>
               <View style={styles.signalInfoItem}>
@@ -240,7 +267,13 @@ export default function HomeScreen() {
                  </View>
                )}
              </View>
-          </View>
+             {latestSignalUpdateCount > 0 && (
+               <View style={styles.signalUpdateBadge}>
+                 <Edit3 size={12} color="#FFF" strokeWidth={2.5} />
+                 <Text style={styles.signalUpdateBadgeText}>{latestSignalUpdateCount} update{latestSignalUpdateCount === 1 ? '' : 's'}</Text>
+               </View>
+             )}
+          </TouchableOpacity>
         ) : (
           <View style={styles.signalCard}>
             <Text style={styles.noSignalText}>No active signals at the moment</Text>
@@ -401,15 +434,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#2A2A2A',
     position: 'relative',
+    overflow: 'visible',
   },
   notificationBadge: {
     position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: -4,
+    right: -4,
+    minWidth: 20,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: '#EF4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 5,
   },
   signalCard: {
     backgroundColor: '#3A3A3A',
@@ -417,6 +454,24 @@ const styles = StyleSheet.create({
     padding: 24,
     marginBottom: 48,
     marginTop: 24,
+    position: 'relative',
+  },
+  signalUpdateBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#EF4444',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    marginTop: 12,
+    alignSelf: 'flex-end',
+  },
+  signalUpdateBadgeText: {
+    color: '#FFF',
+    fontSize: 11,
+    fontFamily: 'Axiforma-Bold',
   },
   signalHeader: {
     flexDirection: 'row',

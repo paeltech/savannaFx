@@ -63,6 +63,7 @@ export default function RootLayout() {
               <Stack.Screen name="home" />
               <Stack.Screen name="profile" />
               <Stack.Screen name="signals" />
+              <Stack.Screen name="signals/[id]" options={{ animation: 'slide_from_right' }} />
               <Stack.Screen name="analysis/index" />
               <Stack.Screen name="analysis/[id]" />
               <Stack.Screen name="academy" />

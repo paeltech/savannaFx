@@ -143,11 +143,17 @@ export default function HelpScreen() {
           <View style={styles.contactCard}>
             <View style={styles.contactRow}>
               <Mail size={18} color={Colors.gold} strokeWidth={2} />
-              <Text style={styles.contactText}>support@savannafx.com</Text>
+              <Text style={styles.contactText}>info@savannafx.co</Text>
             </View>
             <View style={styles.contactRow}>
               <Phone size={18} color={Colors.gold} strokeWidth={2} />
-              <Text style={styles.contactText}>+254 XXX XXX XXX</Text>
+              <Text style={styles.contactText}>+255716885996</Text>
+            </View>
+            <View style={styles.contactRow}>
+              <Text style={styles.contactText}>Dar es salaam, Tanzania</Text>
+            </View>
+            <View style={styles.contactRow}>
+              <Text style={styles.contactText}>www.savannafx.co</Text>
             </View>
           </View>
         </View>
@@ -188,7 +194,7 @@ export default function HelpScreen() {
               style={styles.input}
               value={phone}
               onChangeText={setPhone}
-              placeholder="+254 XXX XXX XXX"
+              placeholder="+255716885996"
               placeholderTextColor="#A0A0A0"
               keyboardType="phone-pad"
               selectionColor={Colors.gold}

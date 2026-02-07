@@ -128,7 +128,7 @@ const Enquiry: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-white font-medium text-sm">Email</div>
-                    <div className="text-rainy-grey text-xs">support@savannafx.co</div>
+                    <div className="text-rainy-grey text-xs">info@savannafx.co</div>
                   </div>
                 </div>
               </CardContent>

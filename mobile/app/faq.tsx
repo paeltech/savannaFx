@@ -73,7 +73,7 @@ export default function FAQScreen() {
     {
       category: 'Education & Support',
       question: 'How do I contact customer support?',
-      answer: 'You can reach us via the Help & Enquiry page in the app, email us at support@savannafx.com, or call us during business hours. We typically respond within 24 hours.',
+      answer: 'You can reach us via the Help & Enquiry page in the app, email us at info@savannafx.co, or call us at +255716885996. We are based in Dar es salaam, Tanzania. Website: www.savannafx.co. We typically respond within 24 hours.',
     },
     {
       category: 'Technical',

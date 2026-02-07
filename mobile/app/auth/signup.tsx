@@ -72,6 +72,16 @@ export default function SignupScreen() {
       }
 
       if (authData.user) {
+        const fullPhoneNumber = phone.trim().startsWith('+') ? phone.trim() : `+${phone.trim()}`;
+        await supabase.rpc('update_user_profile_on_signup', {
+          user_id: authData.user.id,
+          phone_number_param: fullPhoneNumber,
+          phone_verified_param: true,
+          whatsapp_notifications_param: true,
+          email_notifications_param: true,
+          full_name_param: fullName.trim() || null,
+        });
+
         Alert.alert(
           'Success',
           'Account created successfully! Please check your email to verify your account.',

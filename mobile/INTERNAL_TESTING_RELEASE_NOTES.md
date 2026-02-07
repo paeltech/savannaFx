@@ -233,7 +233,7 @@ Please report any bugs, crashes, or issues you encounter:
    - App version (1.0.0)
 
 2. **Feedback Channels:**
-   - Email: support@savannafx.co
+   - Email: info@savannafx.co
    - Include "Internal Testing" in subject line
 
 ### What We're Looking For
@@ -314,4 +314,4 @@ Thank you for participating in the internal testing of SavannaFX Mobile! Your fe
 **Version:** 1.0.0  
 **Build Date:** January 2026  
 **Testing Period:** Internal Testing Phase  
-**Contact:** support@savannafx.co
+**Contact:** info@savannafx.co

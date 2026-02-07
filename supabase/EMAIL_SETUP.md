@@ -150,7 +150,7 @@ If you continue to have issues:
 1. Check Supabase status page: https://status.supabase.com
 2. Review Supabase documentation: https://supabase.com/docs/guides/auth/auth-email-templates
 3. Contact Supabase support
-4. Contact SavannaFX support: support@savannafx.co
+4. Contact SavannaFX support: info@savannafx.co
 
 ## Code Configuration
 

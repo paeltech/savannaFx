@@ -93,8 +93,10 @@ export default function TermsScreen() {
         <Text style={styles.paragraph}>
           If you have any questions about these Terms, please contact us at:
         </Text>
-        <Text style={styles.contactInfo}>Email: support@savannafx.com</Text>
-        <Text style={styles.contactInfo}>Phone: +254 XXX XXX XXX</Text>
+        <Text style={styles.contactInfo}>Email: info@savannafx.co</Text>
+        <Text style={styles.contactInfo}>Phone: +255716885996</Text>
+        <Text style={styles.contactInfo}>Location: Dar es salaam, Tanzania</Text>
+        <Text style={styles.contactInfo}>Website: www.savannafx.co</Text>
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>

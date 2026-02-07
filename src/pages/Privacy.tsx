@@ -238,8 +238,8 @@ const Privacy: React.FC = () => {
                   </li>
                   <li>
                     <strong className="text-white">Contact Us:</strong> Email us at{" "}
-                    <a href="mailto:privacy@savannafx.co" className="text-gold hover:underline">
-                      privacy@savannafx.co
+                    <a href="mailto:info@savannafx.co" className="text-gold hover:underline">
+                      info@savannafx.co
                     </a>{" "}
                     for other data requests
                   </li>
@@ -332,13 +332,16 @@ const Privacy: React.FC = () => {
                 <div className="bg-nero/50 rounded-lg p-6 border border-steel-wool/30">
                   <p className="text-white font-semibold mb-2">SavannaFX</p>
                   <p className="text-rainy-grey mb-1">
-                    <strong className="text-white">Email:</strong> <a href="mailto:privacy@savannafx.co" className="text-gold hover:underline">privacy@savannafx.co</a>
+                    <strong className="text-white">Email:</strong> <a href="mailto:info@savannafx.co" className="text-gold hover:underline">info@savannafx.co</a>
                   </p>
                   <p className="text-rainy-grey mb-1">
-                    <strong className="text-white">Support Email:</strong> <a href="mailto:support@savannafx.co" className="text-gold hover:underline">support@savannafx.co</a>
+                    <strong className="text-white">Phone:</strong> <a href="tel:+255716885996" className="text-gold hover:underline">+255716885996</a>
+                  </p>
+                  <p className="text-rainy-grey mb-1">
+                    <strong className="text-white">Location:</strong> Dar es salaam, Tanzania
                   </p>
                   <p className="text-rainy-grey">
-                    <strong className="text-white">Location:</strong> Dar es Salaam, Tanzania
+                    <strong className="text-white">Website:</strong> <a href="https://www.savannafx.co" target="_blank" rel="noopener noreferrer" className="text-gold hover:underline">www.savannafx.co</a>
                   </p>
                 </div>
               </section>

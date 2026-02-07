@@ -352,7 +352,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
         ) {
           // Email sending specific error
           showError(
-            "Unable to send confirmation email. Please check your email address and try again. If the problem persists, contact support@savannafx.co"
+            "Unable to send confirmation email. Please check your email address and try again. If the problem persists, contact info@savannafx.co"
           );
           console.error("Email sending error:", error);
         } else {
@@ -373,12 +373,14 @@ const SignupForm: React.FC<SignupFormProps> = ({
       // Use RPC function to bypass RLS (user may not have session yet if email confirmation required)
       if (data?.user) {
         const fullPhoneNumber = `${values.countryCode}${values.phoneNumber}`;
+        const fullName = `${values.firstName} ${values.lastName}`.trim();
         const { error: profileError } = await supabase.rpc('update_user_profile_on_signup', {
           user_id: data.user.id,
           phone_number_param: fullPhoneNumber,
           phone_verified_param: true,
           whatsapp_notifications_param: true,
           email_notifications_param: true,
+          full_name_param: fullName || null,
         });
 
         if (profileError) {

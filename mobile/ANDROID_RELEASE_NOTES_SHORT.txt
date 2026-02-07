@@ -4,4 +4,4 @@ First Android release. Features: Trading signals, analysis, educational content,
 
 Testing: Authentication, signals, notifications.
 
-Report issues: support@savannafx.co
+Report issues: info@savannafx.co

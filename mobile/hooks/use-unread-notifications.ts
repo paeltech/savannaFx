@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 
 export function useUnreadNotificationsCount() {
   const [unreadCount, setUnreadCount] = useState(0);
 
-  const fetchUnreadCount = async () => {
+  const fetchUnreadCount = useCallback(async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
@@ -28,7 +28,7 @@ export function useUnreadNotificationsCount() {
     } catch (error) {
       console.error('Error fetching unread notifications count:', error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchUnreadCount();
@@ -52,7 +52,7 @@ export function useUnreadNotificationsCount() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [fetchUnreadCount]);
 
   return { unreadCount, refreshCount: fetchUnreadCount };
 }

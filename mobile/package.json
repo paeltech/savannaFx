@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
+    "start": "EXPO_USE_METRO_WORKSPACE_ROOT=0 expo start",
+    "android": "EXPO_USE_METRO_WORKSPACE_ROOT=0 expo start --android",
+    "ios": "EXPO_USE_METRO_WORKSPACE_ROOT=0 expo start --ios",
+    "web": "EXPO_USE_METRO_WORKSPACE_ROOT=0 expo start --web",
+    "screenshots": "node scripts/take-screenshots.mjs",
     "generate-icons": "node scripts/generate-icons.js"
   },
   "dependencies": {
@@ -35,12 +36,14 @@
     "react-native-safe-area-context": "^5.6.2",
     "react-native-screens": "~4.16.0",
     "react-native-svg": "15.12.1",
+    "react-native-web": "^0.21.0",
     "react-native-webview": "13.15.0",
     "tailwindcss": "^3.4.11",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "playwright": "^1.55.0",
     "react-refresh": "^0.18.0",
     "sharp": "^0.33.5",
     "typescript": "~5.9.2"

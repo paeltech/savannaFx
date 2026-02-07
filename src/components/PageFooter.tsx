@@ -43,8 +43,10 @@ const PageFooter: React.FC = () => {
           <div>
             <h4 className="text-white font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Contact</h4>
             <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-rainy-grey leading-relaxed mb-4 sm:mb-6">
-              <li>Email: support@savannafx.co</li>
+              <li>Email: info@savannafx.co</li>
+              <li>Phone: +255716885996</li>
               <li>Location: Dar es salaam, Tanzania</li>
+              <li>Website: www.savannafx.co</li>
             </ul>
             <Button className="bg-gradient-to-r from-gold-dark to-gold text-cursed-black hover:shadow-lg hover:shadow-gold/20 transition-all duration-300 min-h-[44px] text-xs sm:text-sm w-full sm:w-auto">Subscribe Now</Button>
           </div>

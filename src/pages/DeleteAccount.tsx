@@ -292,8 +292,8 @@ const DeleteAccount: React.FC = () => {
                 it will be cancelled. If you have any outstanding payments or credits, please contact
                 support before deleting your account. For questions or concerns, please contact us
                 at{" "}
-                <a href="mailto:support@savannafx.co" className="text-gold hover:underline">
-                  support@savannafx.co
+                <a href="mailto:info@savannafx.co" className="text-gold hover:underline">
+                  info@savannafx.co
                 </a>
                 .
               </p>

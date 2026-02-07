@@ -12,4 +12,4 @@ Features:
 
 Testing focus: Authentication, signals, notifications, navigation.
 
-Report issues to: support@savannafx.co
+Report issues to: info@savannafx.co

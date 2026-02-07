@@ -8,9 +8,9 @@ import { router } from 'expo-router';
 export default function AboutScreen() {
   const handleContactPress = (type: 'email' | 'phone' | 'website') => {
     const urls = {
-      email: 'mailto:info@savannafx.com',
-      phone: 'tel:+254XXXXXXXXX',
-      website: 'https://savannafx.com',
+      email: 'mailto:info@savannafx.co',
+      phone: 'tel:+255716885996',
+      website: 'https://www.savannafx.co',
     };
     Linking.openURL(urls[type]);
   };
@@ -134,7 +134,7 @@ export default function AboutScreen() {
             </View>
             <View style={styles.contactContent}>
               <Text style={styles.contactLabel}>Email</Text>
-              <Text style={styles.contactValue}>info@savannafx.com</Text>
+              <Text style={styles.contactValue}>info@savannafx.co</Text>
             </View>
           </TouchableOpacity>
 
@@ -147,7 +147,7 @@ export default function AboutScreen() {
             </View>
             <View style={styles.contactContent}>
               <Text style={styles.contactLabel}>Phone</Text>
-              <Text style={styles.contactValue}>+254 XXX XXX XXX</Text>
+              <Text style={styles.contactValue}>+255716885996</Text>
             </View>
           </TouchableOpacity>
 
@@ -157,7 +157,7 @@ export default function AboutScreen() {
             </View>
             <View style={styles.contactContent}>
               <Text style={styles.contactLabel}>Location</Text>
-              <Text style={styles.contactValue}>Nairobi, Kenya</Text>
+              <Text style={styles.contactValue}>Dar es salaam, Tanzania</Text>
             </View>
           </View>
 
@@ -170,7 +170,7 @@ export default function AboutScreen() {
             </View>
             <View style={styles.contactContent}>
               <Text style={styles.contactLabel}>Website</Text>
-              <Text style={styles.contactValue}>www.savannafx.com</Text>
+              <Text style={styles.contactValue}>www.savannafx.co</Text>
             </View>
           </TouchableOpacity>
         </View>
