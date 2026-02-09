@@ -2,9 +2,10 @@ import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, Text, StyleSheet } from 'react-native';
-import type { StackNavigationOptions } from '@react-navigation/stack';
+import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
@@ -13,7 +14,7 @@ SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
-const screenOptions: StackNavigationOptions = {
+const screenOptions: NativeStackNavigationOptions = {
   headerShown: false,
 };
 
@@ -54,12 +55,15 @@ export default function RootLayout() {
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <SafeAreaProvider>
+        <StatusBar style="light" />
         <QueryClientProvider client={queryClient}>
           <View style={{ flex: 1, backgroundColor: '#000000' }}>
             <Stack screenOptions={screenOptions}>
               <Stack.Screen name="index" />
               <Stack.Screen name="auth/login" options={{ animation: 'slide_from_right' }} />
               <Stack.Screen name="auth/signup" options={{ animation: 'slide_from_right' }} />
+              <Stack.Screen name="auth/forgot-password" options={{ animation: 'slide_from_right' }} />
+              <Stack.Screen name="auth/reset-password" options={{ animation: 'slide_from_right' }} />
               <Stack.Screen name="home" />
               <Stack.Screen name="profile" />
               <Stack.Screen name="signals" />
