@@ -8,6 +8,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
+import { PushNotificationProvider } from '../components/PushNotificationProvider';
 
 // Keep splash screen visible while loading fonts
 SplashScreen.preventAutoHideAsync();
@@ -57,6 +58,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <StatusBar style="light" />
         <QueryClientProvider client={queryClient}>
+          <PushNotificationProvider>
           <View style={{ flex: 1, backgroundColor: '#000000' }}>
             <Stack screenOptions={screenOptions}>
               <Stack.Screen name="index" />
@@ -86,6 +88,7 @@ export default function RootLayout() {
               <Stack.Screen name="faq" />
             </Stack>
           </View>
+          </PushNotificationProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
     </ErrorBoundary>

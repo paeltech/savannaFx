@@ -101,6 +101,10 @@ export default function ProfileScreen() {
           text: 'Logout',
           style: 'destructive',
           onPress: async () => {
+            const { data: { session: s } } = await supabase.auth.getSession();
+            if (s?.user) {
+              await supabase.from('push_tokens').delete().eq('user_id', s.user.id);
+            }
             const { error } = await supabase.auth.signOut();
             if (!error) {
               router.replace('/auth/login');
