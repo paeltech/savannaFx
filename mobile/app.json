@@ -46,7 +46,8 @@
         {
           "color": "#F4C464"
         }
-      ]
+      ],
+      "./plugins/withAndroidR8Deobfuscation.js"
     ],
     "extra": {
       "eas": {

@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Users, Search, Shield, UserCheck, Mail, Phone, Calendar, Clock } from "lucide-react";
+import { Users, Search, Shield, UserCheck, User, Mail, Phone, Calendar, Clock } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import supabase from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -31,6 +31,7 @@ import { PageTransition } from "@/lib/animations";
 
 interface UserWithRole {
   user_id: string;
+  full_name?: string | null;
   email: string;
   created_at: string;
   role: "admin" | "moderator" | "user";
@@ -65,8 +66,9 @@ const AdminUsers: React.FC = () => {
 
         // Get user emails from auth.users (we'll need to use a service role or admin function for this)
         // For now, return users with roles and mark emails as unavailable
-        const usersWithRoles = (roles || []).map((role: any) => ({
+        const usersWithRoles = (roles || []).map((role: { user_id: string; created_at: string; role: string }) => ({
           user_id: role.user_id,
+          full_name: null,
           email: "", // Email not available in fallback without service role
           created_at: role.created_at,
           role: role.role,
@@ -74,19 +76,24 @@ const AdminUsers: React.FC = () => {
           phone_number: null,
         }));
 
-        // Fetch phone numbers from user_profiles
+        // Fetch full_name and phone_number from user_profiles
         const userIds = usersWithRoles.map((u: UserWithRole) => u.user_id);
         if (userIds.length > 0) {
           const { data: profiles, error: profilesError } = await supabase
             .from("user_profiles")
-            .select("id, phone_number")
+            .select("id, full_name, phone_number, email")
             .in("id", userIds);
 
           if (!profilesError && profiles) {
-            return usersWithRoles.map((user: UserWithRole) => ({
-              ...user,
-              phone_number: profiles.find((p) => p.id === user.user_id)?.phone_number || null,
-            }));
+            return usersWithRoles.map((user: UserWithRole) => {
+              const profile = profiles.find((p) => p.id === user.user_id);
+              return {
+                ...user,
+                full_name: profile?.full_name ?? null,
+                phone_number: profile?.phone_number ?? null,
+                email: (user.email?.trim() && user.email) || (profile?.email ?? ""),
+              };
+            });
           }
         }
 
@@ -99,20 +106,24 @@ const AdminUsers: React.FC = () => {
         filteredData = filteredData.filter((user: UserWithRole) => user.role === roleFilter);
       }
 
-      // Fetch phone numbers from user_profiles
+      // Fetch full_name, phone_number, email from user_profiles (email in case RPC omits it)
       const userIds = filteredData.map((user: UserWithRole) => user.user_id);
       if (userIds.length > 0) {
         const { data: profiles, error: profilesError } = await supabase
           .from("user_profiles")
-          .select("id, phone_number")
+          .select("id, full_name, phone_number, email")
           .in("id", userIds);
 
         if (!profilesError && profiles) {
-          // Merge phone numbers into users
-          filteredData = filteredData.map((user: UserWithRole) => ({
-            ...user,
-            phone_number: profiles.find((p) => p.id === user.user_id)?.phone_number || null,
-          }));
+          filteredData = filteredData.map((user: UserWithRole) => {
+            const profile = profiles.find((p) => p.id === user.user_id);
+            return {
+              ...user,
+              full_name: profile?.full_name ?? user.full_name ?? null,
+              phone_number: profile?.phone_number ?? user.phone_number ?? null,
+              email: (user.email?.trim() && user.email) || (profile?.email ?? user.email ?? ""),
+            };
+          });
         }
       }
 
@@ -157,7 +168,7 @@ const AdminUsers: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["admin-all-users"] });
       showSuccess("User role updated successfully");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       showError(error.message || "Failed to update user role");
     },
   });
@@ -167,6 +178,7 @@ const AdminUsers: React.FC = () => {
     const query = searchQuery.toLowerCase();
     return (
       user.user_id.toLowerCase().includes(query) ||
+      user.full_name?.toLowerCase().includes(query) ||
       user.email?.toLowerCase().includes(query) ||
       user.phone_number?.toLowerCase().includes(query) ||
       user.role.toLowerCase().includes(query)
@@ -270,7 +282,7 @@ const AdminUsers: React.FC = () => {
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-rainy-grey" size={18} />
                 <Input
-                  placeholder="Search by user ID, email, or phone..."
+                  placeholder="Search by name, email, or phone..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 bg-nero border-steel-wool text-white placeholder:text-rainy-grey"
@@ -318,6 +330,12 @@ const AdminUsers: React.FC = () => {
                         </TableHead>
                         <TableHead className="text-white font-semibold py-4 px-4 whitespace-nowrap">
                           <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 text-gold" />
+                            <span>Full name</span>
+                          </div>
+                        </TableHead>
+                        <TableHead className="text-white font-semibold py-4 px-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
                             <Mail className="h-4 w-4 text-gold" />
                             <span>Email</span>
                           </div>
@@ -354,6 +372,14 @@ const AdminUsers: React.FC = () => {
                               <div className="w-2 h-2 rounded-full bg-gold opacity-0 group-hover:opacity-100 transition-opacity"></div>
                               <span className="font-mono text-sm font-medium">
                                 {user.user_id.substring(0, 8)}...
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-white py-4 px-4">
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4 text-rainy-grey" />
+                              <span className={user.full_name ? "" : "text-rainy-grey italic"}>
+                                {user.full_name || "N/A"}
                               </span>
                             </div>
                           </TableCell>

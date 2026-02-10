@@ -17,6 +17,7 @@ import Sentiment from "./pages/Sentiment";
 import Enquiry from "./pages/Enquiry";
 import LotSize from "./pages/LotSize";
 import Collaborations from "./pages/Collaborations";
+import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import TradeAnalysis from "./pages/TradeAnalysis";
 import NotificationPreferences from "./pages/NotificationPreferences";
@@ -50,6 +51,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/privacy" element={<Privacy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

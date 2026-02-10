@@ -27,6 +27,7 @@ This guide helps you configure email sending in Supabase for SavannaFX signup co
    - `http://localhost:5173/**` (for local development)
    - `https://savannafx.co/**` (for production)
    - `https://*.savannafx.co/**` (if using subdomains)
+   - **Mobile app (forgot password):** `savannafx://auth/reset-password` (so password reset emails open the app)
 
 #### C. Check SMTP Configuration
 
