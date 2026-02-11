@@ -67,7 +67,7 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
     (Constants as unknown as { easConfig?: { projectId?: string } })?.easConfig?.projectId;
 
   if (!projectId) {
-    if (LOG_PUSH) console.warn('[Push] No EAS projectId – set extra.eas.projectId in app.json and use a dev/production build');
+    console.warn('[Push] No EAS projectId – set extra.eas.projectId in app.json and use a dev/production build');
     return null;
   }
 
@@ -78,7 +78,7 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
     if (LOG_PUSH) console.log('[Push] Token obtained');
     return tokenResult.data;
   } catch (e) {
-    if (LOG_PUSH) console.warn('[Push] getExpoPushTokenAsync failed:', e);
+    console.warn('[Push] getExpoPushTokenAsync failed:', e);
     return null;
   }
 }

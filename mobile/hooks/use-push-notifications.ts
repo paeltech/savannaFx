@@ -26,7 +26,9 @@ export function usePushNotifications(userId: string | undefined) {
     (async () => {
       const token = await registerForPushNotificationsAsync();
       if (!isMounted || !token) {
-        if (__DEV__ && !token) console.warn('[Push] No token – check logs above. Use a dev build on a physical device.');
+        if (!token) {
+          console.warn('[Push] No token – use a dev/production build on a physical device with notifications enabled and FCM configured (EAS).');
+        }
         return;
       }
 
@@ -44,7 +46,7 @@ export function usePushNotifications(userId: string | undefined) {
       );
 
       if (error) {
-        if (__DEV__) console.error('[Push] Failed to save token to push_tokens:', error.message, error.details);
+        console.error('[Push] Failed to save token to push_tokens:', error.message, error.details ?? error);
         return;
       }
       if (__DEV__) console.log('[Push] Token saved to push_tokens for user', userId);
