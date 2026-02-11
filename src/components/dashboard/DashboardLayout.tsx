@@ -155,7 +155,7 @@ const Topbar: React.FC<{ onMenuClick?: () => void }> = ({ onMenuClick }) => {
   );
 };
 
-const MobileBottomNav: React.FC = () => {
+const MobileBottomNav: React.FC<{ isAdmin: boolean }> = ({ isAdmin }) => {
   const location = useLocation();
   const bottomNavItems = navItems.filter(item => item.showInBottomNav);
 
@@ -164,22 +164,33 @@ const MobileBottomNav: React.FC = () => {
       <div className="flex items-center justify-around px-2 py-2 safe-area-inset-bottom">
         {bottomNavItems.map((item) => {
           const Icon = item.icon;
-          const isActive = location.pathname === item.to || 
-            (item.to !== "/dashboard" && location.pathname.startsWith(item.to));
-          
+          const isDashboardItem = item.label === "Dashboard";
+          const targetTo = isDashboardItem && isAdmin ? "/admin" : item.to;
+
+          const isActive =
+            location.pathname === targetTo ||
+            (targetTo !== "/dashboard" && location.pathname.startsWith(targetTo));
+
           return (
             <Link
               key={item.to}
-              to={item.to}
+              to={targetTo}
               className={`flex flex-col items-center justify-center min-w-[64px] py-2 px-3 rounded-lg transition-all duration-200 ${
-                isActive 
-                  ? "text-gold bg-nero/50" 
+                isActive
+                  ? "text-gold bg-nero/50"
                   : "text-rainy-grey hover:text-gold hover:bg-nero/30"
               }`}
             >
-              <Icon size={20} className={`mb-1 ${isActive ? "scale-110" : ""} transition-transform duration-200`} />
+              <Icon
+                size={20}
+                className={`mb-1 ${
+                  isActive ? "scale-110" : ""
+                } transition-transform duration-200`}
+              />
               <span className="text-[10px] font-semibold">
-                {item.shortLabel || item.label}
+                {isDashboardItem && isAdmin
+                  ? "Admin"
+                  : item.shortLabel || item.label}
               </span>
               {item.badge && isActive && (
                 <span className="absolute top-1 right-1 w-2 h-2 bg-gold rounded-full" />
@@ -219,19 +230,38 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
               <SidebarMenu className="space-y-1">
                 {navItems.map((item) => {
                   const Icon = item.icon;
-                  const isActive = location.pathname === item.to || 
-                    (item.to !== "/dashboard" && location.pathname.startsWith(item.to));
+                  const isDashboardItem = item.label === "Dashboard";
+                  const targetTo = isDashboardItem && isAdmin ? "/admin" : item.to;
+
+                  const isActive =
+                    location.pathname === targetTo ||
+                    (targetTo !== "/dashboard" &&
+                      location.pathname.startsWith(targetTo));
+
                   return (
                     <SidebarMenuItem key={item.label}>
-                      <Link to={item.to} onClick={() => isMobile && setIsSidebarOpen(false)}>
-                        <SidebarMenuButton 
-                          isActive={isActive} 
+                      <Link
+                        to={targetTo}
+                        onClick={() => isMobile && setIsSidebarOpen(false)}
+                      >
+                        <SidebarMenuButton
+                          isActive={isActive}
                           className={`text-rainy-grey hover:text-gold transition-all duration-200 min-h-[44px] ${
-                            isActive ? "text-gold bg-nero/80 border-l-2 border-gold" : ""
+                            isActive
+                              ? "text-gold bg-nero/80 border-l-2 border-gold"
+                              : ""
                           }`}
                         >
-                          <Icon size={20} />
-                          <span className="font-medium">{item.label}</span>
+                          {isDashboardItem && isAdmin ? (
+                            <Shield size={20} />
+                          ) : (
+                            <Icon size={20} />
+                          )}
+                          <span className="font-medium">
+                            {isDashboardItem && isAdmin
+                              ? "Admin Dashboard"
+                              : item.label}
+                          </span>
                         </SidebarMenuButton>
                       </Link>
                       {item.badge && (
@@ -242,21 +272,6 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
                     </SidebarMenuItem>
                   );
                 })}
-                {isAdmin && (
-                  <SidebarMenuItem>
-                    <Link to="/admin" onClick={() => isMobile && setIsSidebarOpen(false)}>
-                      <SidebarMenuButton 
-                        isActive={location.pathname.startsWith("/admin")} 
-                        className={`text-rainy-grey hover:text-gold transition-all duration-200 min-h-[44px] ${
-                          location.pathname.startsWith("/admin") ? "text-gold bg-nero/80 border-l-2 border-gold" : ""
-                        }`}
-                      >
-                        <Shield size={20} />
-                        <span className="font-medium">Admin Dashboard</span>
-                      </SidebarMenuButton>
-                    </Link>
-                  </SidebarMenuItem>
-                )}
               </SidebarMenu>
             </SidebarContent>
           </SidebarGroup>
@@ -268,7 +283,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
         <div className={`px-3 sm:px-6 py-4 sm:py-6 md:py-8 ${isMobile ? "pb-20" : ""}`}>
           {children}
         </div>
-        {isMobile && <MobileBottomNav />}
+        {isMobile && <MobileBottomNav isAdmin={isAdmin} />}
       </SidebarInset>
     </SidebarProvider>
   );

@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import Dashboard from "./pages/Dashboard";
+import DashboardOrRedirectAdmin from "@/components/auth/DashboardOrRedirectAdmin";
 import DashboardFeature from "./pages/DashboardFeature";
 import TradeWithSavanna from "./pages/TradeWithSavanna";
 import Signals from "./pages/Signals";
@@ -55,7 +55,7 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/privacy" element={<Privacy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+            <Route path="/dashboard" element={<RequireAuth><DashboardOrRedirectAdmin /></RequireAuth>} />
             <Route path="/dashboard/trade-with-savanna" element={<RequireAuth><TradeWithSavanna /></RequireAuth>} />
             <Route path="/dashboard/signals" element={<RequireAuth><Signals /></RequireAuth>} />
             <Route path="/dashboard/course" element={<RequireAuth><CoursePage /></RequireAuth>} />
