@@ -99,6 +99,9 @@ const Notifications: React.FC = () => {
                 <TabsTrigger value="system" className="data-[state=active]:bg-gold data-[state=active]:text-cursed-black">
                   ⚙️ System
                 </TabsTrigger>
+                <TabsTrigger value="tip" className="data-[state=active]:bg-gold data-[state=active]:text-cursed-black">
+                  💡 Tips
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </CardContent>

@@ -18,6 +18,7 @@ import {
   Clock,
   Calendar,
   SignalHigh,
+  Lightbulb,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { PageTransition } from "@/lib/animations";
@@ -303,6 +304,13 @@ const AdminDashboard: React.FC = () => {
             description="Configure pricing and subscriptions"
             Icon={SignalHigh}
             iconBg="bg-blue-600"
+          />
+          <DashboardTile
+            to="/admin/tips"
+            title="Tips & Quotes"
+            description="Daily tips for mobile and push rotation"
+            Icon={Lightbulb}
+            iconBg="bg-amber-700"
           />
         </div>
       </DashboardLayout>

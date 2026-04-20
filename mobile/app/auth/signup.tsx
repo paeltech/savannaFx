@@ -25,12 +25,9 @@ export default function SignupScreen() {
       Alert.alert('Error', 'Please enter your email');
       return false;
     }
-    if (!phone.trim()) {
-      Alert.alert('Error', 'Phone number is required');
-      return false;
-    }
-    if (phone.trim().length < 10) {
-      Alert.alert('Error', 'Please enter a valid phone number');
+    const phoneTrimmed = phone.trim();
+    if (phoneTrimmed.length > 0 && phoneTrimmed.length < 10) {
+      Alert.alert('Error', 'Please enter a valid phone number or leave it blank');
       return false;
     }
     if (!password) {
@@ -54,6 +51,14 @@ export default function SignupScreen() {
     try {
       setLoading(true);
 
+      const phoneTrimmed = phone.trim();
+      const hasPhone = phoneTrimmed.length > 0;
+      const fullPhoneForMetadata = hasPhone
+        ? phoneTrimmed.startsWith('+')
+          ? phoneTrimmed
+          : `+${phoneTrimmed}`
+        : undefined;
+
       // Sign up the user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: email.trim(),
@@ -61,7 +66,7 @@ export default function SignupScreen() {
         options: {
           data: {
             full_name: fullName.trim(),
-            phone: phone.trim(),
+            ...(fullPhoneForMetadata ? { phone: fullPhoneForMetadata } : {}),
           },
         },
       });
@@ -72,12 +77,12 @@ export default function SignupScreen() {
       }
 
       if (authData.user) {
-        const fullPhoneNumber = phone.trim().startsWith('+') ? phone.trim() : `+${phone.trim()}`;
+        const fullPhoneNumber = fullPhoneForMetadata ?? '';
         await supabase.rpc('update_user_profile_on_signup', {
           user_id: authData.user.id,
           phone_number_param: fullPhoneNumber,
-          phone_verified_param: true,
-          whatsapp_notifications_param: true,
+          phone_verified_param: hasPhone,
+          whatsapp_notifications_param: hasPhone,
           email_notifications_param: true,
           full_name_param: fullName.trim() || null,
         });
@@ -167,7 +172,7 @@ export default function SignupScreen() {
             </View>
             <TextInput
               style={styles.input}
-              placeholder="Phone Number *"
+              placeholder="Phone Number (optional)"
               placeholderTextColor="#666666"
               value={phone}
               onChangeText={setPhone}
@@ -235,7 +240,9 @@ export default function SignupScreen() {
           </View>
 
           {/* Required Field Note */}
-          <Text style={styles.requiredNote}>* Phone number is required</Text>
+          <Text style={styles.requiredNote}>
+            Add a phone number for WhatsApp updates (optional).
+          </Text>
 
           {/* Signup Button */}
           <TouchableOpacity

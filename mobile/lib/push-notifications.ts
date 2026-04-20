@@ -105,6 +105,8 @@ export function getRouteFromPushData(data: Record<string, unknown> | null): stri
       return meta.event_id ? `/events/${meta.event_id}` : '/events';
     case 'announcement':
       return meta.analysis_id ? `/analysis/${meta.analysis_id}` : '/analysis';
+    case 'tip':
+      return (data.action_url as string) || '/tips';
     default:
       return (data.action_url as string) || null;
   }

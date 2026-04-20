@@ -15,7 +15,8 @@ import {
   Calculator,
   TrendingDown,
   FolderOpen,
-  Edit3
+  Edit3,
+  Lightbulb
 } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
@@ -306,6 +307,19 @@ export default function HomeScreen() {
               <Text style={styles.featureDescription}>Daily trade pair analysis</Text>
             </TouchableOpacity>
           </View>
+          <TouchableOpacity
+            style={styles.tipsWideCard}
+            onPress={() => router.push('/tips')}
+            activeOpacity={0.85}
+          >
+            <View style={[styles.featureIcon, styles.tipsWideIcon]}>
+              <Lightbulb size={16} color={Colors.gold} strokeWidth={2.5} />
+            </View>
+            <View style={{ flex: 1, marginLeft: 4 }}>
+              <Text style={[styles.featureTitle, { textAlign: 'left' }]}>Tips & Quotes</Text>
+              <Text style={[styles.featureDescription, { textAlign: 'left' }]}>Daily trading wisdom and inspiration</Text>
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* Learn the Craft Section */}
@@ -561,6 +575,17 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 18,
     alignItems: 'flex-start',
+  },
+  tipsWideCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2A2A2A',
+    borderRadius: 16,
+    padding: 18,
+    marginTop: 12,
+  },
+  tipsWideIcon: {
+    marginBottom: 0,
   },
   featureIcon: {
     width: 32,

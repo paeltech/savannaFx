@@ -2,7 +2,7 @@
  * Shared Notification types
  * Used by both web and mobile apps
  */
-export type NotificationType = 'signal' | 'event' | 'announcement' | 'system';
+export type NotificationType = 'signal' | 'event' | 'announcement' | 'system' | 'tip';
 
 export interface NotificationData {
   notification_type: NotificationType;

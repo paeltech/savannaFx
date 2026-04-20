@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Switch, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../shared/constants/colors';
-import { ChevronLeft, Bell, TrendingUp, Calendar, GraduationCap, Users } from 'lucide-react-native';
+import { ChevronLeft, Bell, TrendingUp, Calendar, GraduationCap, Users, Lightbulb } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
 
@@ -16,6 +16,7 @@ export default function NotificationPreferencesScreen() {
     push_analyses: true,
     push_events: true,
     push_courses: true,
+    push_tips: true,
     marketing_emails: false,
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -45,6 +46,7 @@ export default function NotificationPreferencesScreen() {
           push_analyses: data.push_analyses ?? true,
           push_events: data.push_events ?? true,
           push_courses: data.push_courses ?? true,
+          push_tips: data.push_tips ?? true,
           marketing_emails: data.marketing_emails ?? false,
         });
       }
@@ -140,6 +142,13 @@ export default function NotificationPreferencesScreen() {
           description: 'Course updates',
           key: 'push_courses',
           value: preferences.push_courses,
+        },
+        {
+          icon: Lightbulb,
+          label: 'Daily tips & quotes',
+          description: 'Tip of the day on your device',
+          key: 'push_tips',
+          value: preferences.push_tips,
         },
       ],
     },

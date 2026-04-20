@@ -42,9 +42,11 @@ const signupSchema = z.object({
   countryCode: z.string().min(1, "Country code is required"),
   phoneNumber: z
     .string()
-    .min(1, "Phone number is required")
-    .regex(/^[0-9]+$/, "Phone number must contain only digits")
-    .max(15, "Phone number must not exceed 15 digits"),
+    .max(15, "Phone number must not exceed 15 digits")
+    .refine(
+      (v) => v === "" || /^[0-9]+$/.test(v),
+      "Phone number must contain only digits"
+    ),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
@@ -56,10 +58,22 @@ const signupSchema = z.object({
   agreeToTerms: z.boolean().refine((val) => val === true, {
     message: "You must agree to the terms and conditions",
   }),
-}).refine((data) => data.password === data.verifyPassword, {
-  message: "Passwords do not match",
-  path: ["verifyPassword"],
-});
+})
+  .refine((data) => data.password === data.verifyPassword, {
+    message: "Passwords do not match",
+    path: ["verifyPassword"],
+  })
+  .refine(
+    (data) => {
+      const n = data.phoneNumber.trim();
+      if (n.length === 0) return true;
+      return n.length >= 6;
+    },
+    {
+      message: "Phone number looks too short",
+      path: ["phoneNumber"],
+    }
+  );
 
 type SignupFormValues = z.infer<typeof signupSchema>;
 
@@ -296,6 +310,12 @@ const SignupForm: React.FC<SignupFormProps> = ({
       // Get the current origin for the redirect URL after email confirmation
       const redirectUrl = `${window.location.origin}/dashboard`;
 
+      const phoneDigits = values.phoneNumber.trim();
+      const fullPhone =
+        phoneDigits.length > 0
+          ? `${values.countryCode}${phoneDigits}`
+          : undefined;
+
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -304,7 +324,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
           data: {
             first_name: values.firstName,
             last_name: values.lastName,
-            phone: `${values.countryCode}${values.phoneNumber}`,
+            ...(fullPhone ? { phone: fullPhone } : {}),
           },
         },
       });
@@ -372,20 +392,23 @@ const SignupForm: React.FC<SignupFormProps> = ({
       // Create or update user profile with phone number
       // Use RPC function to bypass RLS (user may not have session yet if email confirmation required)
       if (data?.user) {
-        const fullPhoneNumber = `${values.countryCode}${values.phoneNumber}`;
+        const fullPhoneNumber = fullPhone ?? "";
+        const hasPhone = Boolean(fullPhone);
         const fullName = `${values.firstName} ${values.lastName}`.trim();
         const { error: profileError } = await supabase.rpc('update_user_profile_on_signup', {
           user_id: data.user.id,
           phone_number_param: fullPhoneNumber,
-          phone_verified_param: true,
-          whatsapp_notifications_param: true,
+          phone_verified_param: hasPhone,
+          whatsapp_notifications_param: hasPhone,
           email_notifications_param: true,
           full_name_param: fullName || null,
         });
 
         if (profileError) {
           console.error("Error creating/updating user profile:", profileError);
-          showError("Account created but failed to save phone number. Please update it in your profile settings.");
+          showError(
+            "Account created but we couldn't save your profile details. Please update them in your profile settings."
+          );
         }
 
         // Auto-subscribe to monthly signals
@@ -422,7 +445,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
                   status: "active",
                   payment_status: "completed",
                   amount_paid: 0.00,
-                  whatsapp_notifications: true,
+                  whatsapp_notifications: hasPhone,
                   email_notifications: true,
                   telegram_notifications: false,
                   start_date: new Date().toISOString(),
@@ -540,7 +563,8 @@ const SignupForm: React.FC<SignupFormProps> = ({
 
               <div className="space-y-2">
                 <Label className="text-xs sm:text-sm font-medium text-white">
-                  WhatsApp Number
+                  WhatsApp Number{" "}
+                  <span className="text-rainy-grey font-normal">(optional)</span>
                 </Label>
                 <div className="flex gap-2">
                   <FormField
@@ -594,9 +618,9 @@ const SignupForm: React.FC<SignupFormProps> = ({
                   />
                 </div>
                 <p className="text-xs text-rainy-grey mt-1 leading-relaxed">
-                  Select your country code first, then enter your phone number
-                  without the country code or leading zeros. Numbers only
-                  (0-9). Complete number must not exceed 15 digits.
+                  Optional — add your number for WhatsApp updates. Select your
+                  country code, then enter digits only without the country code
+                  or leading zeros (max 15 digits).
                 </p>
               </div>
 

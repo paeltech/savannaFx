@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import { supabase } from '../lib/supabase';
+import { supabase, isInvalidRefreshTokenError } from '../lib/supabase';
 import { Colors } from '../../shared/constants/colors';
 
 export default function IndexScreen() {
@@ -11,8 +11,15 @@ export default function IndexScreen() {
 
   const checkAuth = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const { data: { session }, error } = await supabase.auth.getSession();
+
+      if (error && isInvalidRefreshTokenError(error)) {
+        await supabase.auth.signOut({ scope: 'local' });
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        router.replace('/auth/login');
+        return;
+      }
+
       // Small delay for splash effect
       await new Promise(resolve => setTimeout(resolve, 1500));
 
@@ -22,7 +29,9 @@ export default function IndexScreen() {
         router.replace('/auth/login');
       }
     } catch (error) {
-      console.error('Error checking auth:', error);
+      if (isInvalidRefreshTokenError(error)) {
+        await supabase.auth.signOut({ scope: 'local' });
+      }
       router.replace('/auth/login');
     }
   };

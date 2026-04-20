@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../shared/constants/colors';
-import { ChevronLeft, Bell, CheckCircle2, AlertCircle, Info, TrendingUp, Calendar } from 'lucide-react-native';
+import { ChevronLeft, Bell, CheckCircle2, AlertCircle, Info, TrendingUp, Calendar, Lightbulb } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
 
@@ -113,6 +113,8 @@ export default function NotificationsScreen() {
       case 'announcement':
         if (meta.analysis_id) return `/analysis/${meta.analysis_id}`;
         return '/analysis';
+      case 'tip':
+        return '/tips';
       default:
         return null;
     }
@@ -132,6 +134,8 @@ export default function NotificationsScreen() {
         return <TrendingUp size={20} color={Colors.gold} strokeWidth={2} />;
       case 'event':
         return <Calendar size={20} color={Colors.gold} strokeWidth={2} />;
+      case 'tip':
+        return <Lightbulb size={20} color={Colors.gold} strokeWidth={2} />;
       case 'success':
         return <CheckCircle2 size={20} color="#22C55E" strokeWidth={2} />;
       case 'warning':

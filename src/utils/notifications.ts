@@ -1,7 +1,7 @@
 import supabase from "@/integrations/supabase/client";
-import { TrendingUp, Calendar, Megaphone, Settings } from "lucide-react";
+import { TrendingUp, Calendar, Megaphone, Settings, Lightbulb } from "lucide-react";
 
-export type NotificationType = 'signal' | 'event' | 'announcement' | 'system';
+export type NotificationType = 'signal' | 'event' | 'announcement' | 'system' | 'tip';
 
 export interface NotificationData {
   notification_type: NotificationType;
@@ -75,6 +75,8 @@ export function getNotificationIcon(type: NotificationType) {
       return Megaphone;
     case 'system':
       return Settings;
+    case 'tip':
+      return Lightbulb;
     default:
       return Settings;
   }
@@ -93,6 +95,8 @@ export function getNotificationColor(type: NotificationType): string {
       return 'text-purple-400';
     case 'system':
       return 'text-gray-400';
+    case 'tip':
+      return 'text-amber-400';
     default:
       return 'text-gray-400';
   }

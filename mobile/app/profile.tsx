@@ -15,7 +15,8 @@ import {
   Shield,
   HelpCircle,
   Info,
-  Settings
+  Settings,
+  Lightbulb
 } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
@@ -129,6 +130,12 @@ export default function ProfileScreen() {
       title: 'Notification Preferences',
       subtitle: 'Customize what you receive',
       route: '/notification-preferences',
+    },
+    {
+      icon: Lightbulb,
+      title: 'Tips & Quotes',
+      subtitle: 'Daily trading tips and inspiration',
+      route: '/tips',
     },
     {
       icon: FileText,

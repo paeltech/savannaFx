@@ -9,6 +9,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { PushNotificationProvider } from '../components/PushNotificationProvider';
+import { recoverFromInvalidRefreshToken } from '../lib/supabase';
 
 // Keep splash screen visible while loading fonts
 SplashScreen.preventAutoHideAsync();
@@ -49,6 +50,11 @@ export default function RootLayout() {
     }
   }, [fontError]);
 
+  useEffect(() => {
+    if (!fontsLoaded && !fontError) return;
+    void recoverFromInvalidRefreshToken();
+  }, [fontsLoaded, fontError]);
+
   if (!fontsLoaded && !fontError) {
     return null;
   }
@@ -86,6 +92,7 @@ export default function RootLayout() {
               <Stack.Screen name="privacy" />
               <Stack.Screen name="about" />
               <Stack.Screen name="faq" />
+              <Stack.Screen name="tips" />
             </Stack>
           </View>
           </PushNotificationProvider>

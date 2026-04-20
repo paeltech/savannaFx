@@ -37,6 +37,7 @@ import AdminSentiment from "./pages/admin/AdminSentiment";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminEvents from "./pages/admin/AdminEvents";
 import AdminSignals from "./pages/admin/AdminSignals";
+import AdminTips from "./pages/admin/AdminTips";
 import DebugAdmin from "./pages/DebugAdmin";
 
 const queryClient = new QueryClient();
@@ -81,6 +82,7 @@ const App = () => (
             <Route path="/admin/users" element={<RequireAdmin><AdminUsers /></RequireAdmin>} />
             <Route path="/admin/events" element={<RequireAdmin><AdminEvents /></RequireAdmin>} />
             <Route path="/admin/signals" element={<RequireAdmin><AdminSignals /></RequireAdmin>} />
+            <Route path="/admin/tips" element={<RequireAdmin><AdminTips /></RequireAdmin>} />
             <Route path="/debug-admin" element={<RequireAuth><DebugAdmin /></RequireAuth>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

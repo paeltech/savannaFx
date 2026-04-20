@@ -41,7 +41,7 @@ export function usePushNotifications(userId: string | undefined) {
           updated_at: new Date().toISOString(),
         },
         {
-          onConflict: ['user_id', 'expo_push_token'],
+          onConflict: 'user_id,expo_push_token',
         }
       );
 

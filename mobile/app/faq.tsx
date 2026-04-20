@@ -23,7 +23,7 @@ export default function FAQScreen() {
     {
       category: 'Getting Started',
       question: 'How do I sign up?',
-      answer: 'Download the SavannaFX app, tap "Sign Up" on the login screen, and fill in your details including full name, email, phone number, and password. You\'ll receive a confirmation email to verify your account.',
+      answer: 'Download the SavannaFX app, tap "Sign Up" on the login screen, and fill in your details including full name, email, password, and optionally a phone number for WhatsApp updates. You\'ll receive a confirmation email to verify your account.',
     },
     {
       category: 'Getting Started',
