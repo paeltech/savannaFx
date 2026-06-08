@@ -18,7 +18,7 @@ export default function FAQScreen() {
     {
       category: 'Getting Started',
       question: 'What is SavannaFX?',
-      answer: 'SavannaFX is a comprehensive forex trading platform that provides premium trading signals, market analysis, educational resources, and mentorship to help traders succeed in the forex market.',
+      answer: 'SavannaFX is a forex trading platform that provides trading signals, market analysis, educational resources, and mentorship information to help traders learn and stay informed. Content is for education only, not financial advice.',
     },
     {
       category: 'Getting Started',
@@ -27,8 +27,8 @@ export default function FAQScreen() {
     },
     {
       category: 'Getting Started',
-      question: 'Is there a free trial?',
-      answer: 'Yes! New users get a 7-day free trial to explore all premium features including trading signals and market analysis. No credit card required.',
+      question: 'Is the app free to use?',
+      answer: 'Yes. The SavannaFX mobile app and the education, signals, and analysis content we offer through it are provided at no charge. You can choose what to receive in Profile → Notification Preferences.',
     },
     {
       category: 'Trading Signals',
@@ -46,19 +46,19 @@ export default function FAQScreen() {
       answer: 'We cover major pairs (EUR/USD, GBP/USD, USD/JPY), minor pairs, and some exotic pairs. Our focus is on the most liquid and tradeable pairs.',
     },
     {
-      category: 'Subscription & Payment',
-      question: 'What payment methods do you accept?',
-      answer: 'We accept credit/debit cards, PayPal, and mobile money (M-Pesa for Kenya). All payments are processed securely through encrypted connections.',
+      category: 'Account & notifications',
+      question: 'How do I choose what updates I get?',
+      answer: 'Open Profile → Notification Preferences. You can turn email and push notifications on or off for signals, analyses, events, courses, tips, and marketing messages.',
     },
     {
-      category: 'Subscription & Payment',
-      question: 'Can I cancel my subscription anytime?',
-      answer: 'Yes, you can cancel your subscription at any time from the app settings. Your access will continue until the end of your current billing period.',
+      category: 'Account & notifications',
+      question: 'Do I need to pay for signals or analysis in the app?',
+      answer: 'No. The mobile app does not charge for access to our signals, trade analyses, academy content, or event listings. Use Notification Preferences to opt in to the types of updates you want.',
     },
     {
-      category: 'Subscription & Payment',
-      question: 'Do you offer refunds?',
-      answer: 'We offer a 14-day money-back guarantee if you\'re not satisfied with our service. Contact support within 14 days of purchase for a full refund.',
+      category: 'Account & notifications',
+      question: 'How do I get help with my account?',
+      answer: 'Use the Help & Enquiry screen in the app, or email info@savannafx.co. We typically respond within 24 hours.',
     },
     {
       category: 'Education & Support',
@@ -68,7 +68,7 @@ export default function FAQScreen() {
     {
       category: 'Education & Support',
       question: 'Can I get one-on-one mentorship?',
-      answer: 'Absolutely! We offer personalized one-on-one mentorship packages where you work directly with experienced traders to develop your skills and strategy.',
+      answer: 'You can express interest from the Mentorship and One-on-One screens in the app. Our team will follow up when coaching spots are available. There is no payment step in the mobile app.',
     },
     {
       category: 'Education & Support',

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Image, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors } from '../../shared/constants/colors';
-import { ChevronLeft, Bell, Calendar as CalendarIcon, MapPin, Users, Clock, DollarSign } from 'lucide-react-native';
+import { Colors } from '../../../shared/constants/colors';
+import { ChevronLeft, Bell, Calendar as CalendarIcon, MapPin, Users } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { supabase } from '../lib/supabase';
-import { useUnreadNotificationsCount } from '../hooks/use-unread-notifications';
+import { supabase } from '../../lib/supabase';
+import { useUnreadNotificationsCount } from '../../hooks/use-unread-notifications';
 
 interface Event {
   id: string;
@@ -37,7 +37,7 @@ export default function EventsScreen() {
 
   const fetchEvents = async (showLoading = true) => {
     if (showLoading) setIsLoading(true);
-    
+
     const { data, error } = await supabase
       .from('events')
       .select('*')
@@ -50,7 +50,7 @@ export default function EventsScreen() {
     } else {
       setEvents(data || []);
     }
-    
+
     if (showLoading) setIsLoading(false);
   };
 
@@ -76,8 +76,8 @@ export default function EventsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView 
-        style={styles.scrollView} 
+      <ScrollView
+        style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl
@@ -88,13 +88,12 @@ export default function EventsScreen() {
           />
         }
       >
-        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <ChevronLeft size={24} color={Colors.gold} strokeWidth={2.5} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Events</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.notificationIcon}
             onPress={() => router.push('/notifications')}
           >
@@ -120,15 +119,15 @@ export default function EventsScreen() {
           </View>
         ) : (
           <View style={styles.eventsList}>
-            {events.map((event) => (
+            {events.map((eventItem) => (
               <TouchableOpacity
-                key={event.id}
+                key={eventItem.id}
                 style={styles.eventCard}
-                onPress={() => handleEventPress(event.id)}
+                onPress={() => handleEventPress(eventItem.id)}
               >
-                {event.cover_image_url ? (
+                {eventItem.cover_image_url ? (
                   <Image
-                    source={{ uri: event.cover_image_url }}
+                    source={{ uri: eventItem.cover_image_url }}
                     style={styles.eventImage}
                     resizeMode="cover"
                   />
@@ -138,44 +137,40 @@ export default function EventsScreen() {
                   </View>
                 )}
                 <View style={styles.eventBadges}>
-                  <View style={[
-                    styles.typeBadge,
-                    event.type === 'Virtual' && styles.typeBadgeVirtual,
-                    event.type === 'Physical' && styles.typeBadgePhysical,
-                    event.type === 'Hybrid' && styles.typeBadgeHybrid,
-                  ]}>
-                    <Text style={styles.typeBadgeText}>{event.type}</Text>
-                  </View>
-                  <View style={[
-                    styles.priceBadge,
-                    event.price_type === 'Free' ? styles.priceBadgeFree : styles.priceBadgePaid,
-                  ]}>
-                    <Text style={styles.priceBadgeText}>{event.price_type}</Text>
+                  <View
+                    style={[
+                      styles.typeBadge,
+                      eventItem.type === 'Virtual' && styles.typeBadgeVirtual,
+                      eventItem.type === 'Physical' && styles.typeBadgePhysical,
+                      eventItem.type === 'Hybrid' && styles.typeBadgeHybrid,
+                    ]}
+                  >
+                    <Text style={styles.typeBadgeText}>{eventItem.type}</Text>
                   </View>
                 </View>
                 <View style={styles.eventContent}>
-                  <Text style={styles.eventTitle}>{event.title}</Text>
-                  <Text style={styles.eventOrganizer}>by {event.organizer}</Text>
+                  <Text style={styles.eventTitle}>{eventItem.title}</Text>
+                  <Text style={styles.eventOrganizer}>by {eventItem.organizer}</Text>
                   <Text style={styles.eventDescription} numberOfLines={2}>
-                    {event.description}
+                    {eventItem.description}
                   </Text>
                   <View style={styles.eventMeta}>
                     <View style={styles.eventMetaRow}>
                       <CalendarIcon size={14} color="#A0A0A0" strokeWidth={1.5} />
-                      <Text style={styles.eventMetaText}>{formatDate(event.start_date)}</Text>
+                      <Text style={styles.eventMetaText}>{formatDate(eventItem.start_date)}</Text>
                     </View>
-                    {event.location != null && (
+                    {eventItem.location != null && (
                       <View style={styles.eventMetaRow}>
                         <MapPin size={14} color="#A0A0A0" strokeWidth={1.5} />
                         <Text style={styles.eventMetaText} numberOfLines={1}>
-                          {event.location}
+                          {eventItem.location}
                         </Text>
                       </View>
                     )}
                     <View style={styles.eventMetaRow}>
                       <Users size={14} color="#A0A0A0" strokeWidth={1.5} />
                       <Text style={styles.eventMetaText}>
-                        {event.registration_count || 0}/{event.capacity}
+                        {eventItem.registration_count || 0}/{eventItem.capacity}
                       </Text>
                     </View>
                   </View>
@@ -276,6 +271,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 16,
     overflow: 'hidden',
+    position: 'relative',
   },
   eventImage: {
     width: '100%',
@@ -311,24 +307,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#8B5CF6',
   },
   typeBadgeText: {
-    fontSize: 11,
-    fontFamily: 'Axiforma-Bold',
-    color: '#FFFFFF',
-    textTransform: 'uppercase',
-  },
-  priceBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginLeft: 6,
-  },
-  priceBadgeFree: {
-    backgroundColor: '#22C55E',
-  },
-  priceBadgePaid: {
-    backgroundColor: Colors.gold,
-  },
-  priceBadgeText: {
     fontSize: 11,
     fontFamily: 'Axiforma-Bold',
     color: '#FFFFFF',

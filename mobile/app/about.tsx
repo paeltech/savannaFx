@@ -47,7 +47,7 @@ export default function AboutScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Our Mission</Text>
           <Text style={styles.paragraph}>
-            SavannaFX is dedicated to empowering traders across Africa and beyond with world-class forex education, premium trading signals, and comprehensive market analysis. We believe that with the right knowledge and tools, anyone can master the art of trading.
+            SavannaFX is dedicated to empowering traders across Africa and beyond with world-class forex education, trading signals, and comprehensive market analysis. We believe that with the right knowledge and tools, anyone can master the art of trading.
           </Text>
         </View>
 
@@ -60,7 +60,7 @@ export default function AboutScreen() {
               <TrendingUp size={24} color={Colors.gold} strokeWidth={2} />
             </View>
             <View style={styles.featureContent}>
-              <Text style={styles.featureTitle}>Premium Trading Signals</Text>
+              <Text style={styles.featureTitle}>Trading Signals</Text>
               <Text style={styles.featureDescription}>
                 Real-time forex signals with high accuracy, complete with entry points, stop loss, and take profit levels.
               </Text>

@@ -11,6 +11,7 @@ import {
   Edit, 
   ChevronRight,
   LogOut,
+  Trash2,
   FileText,
   Shield,
   HelpCircle,
@@ -161,6 +162,12 @@ export default function ProfileScreen() {
       subtitle: 'Frequently asked questions',
       route: '/faq',
     },
+    {
+      icon: Trash2,
+      title: 'Delete Account',
+      subtitle: 'Permanently delete your account and data',
+      route: '/delete-account',
+    },
   ];
 
   return (
@@ -257,8 +264,11 @@ export default function ProfileScreen() {
                 </View>
               )}
 
-              <View style={styles.membershipBadge}>
-                <Text style={styles.membershipText}>Premium Member</Text>
+              <View style={styles.accountStatusBadge}>
+                <Text style={styles.accountStatusTitle}>SavannaFX member</Text>
+                <Text style={styles.accountStatusHint}>
+                  Free access. Adjust updates in Notification Preferences.
+                </Text>
               </View>
             </>
           )}
@@ -370,18 +380,31 @@ const styles = StyleSheet.create({
     fontFamily: 'Axiforma-Regular',
     marginLeft: 8,
   },
-  membershipBadge: {
-    backgroundColor: Colors.gold,
+  accountStatusBadge: {
+    marginTop: 16,
     paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 20,
-    marginTop: 12,
+    paddingVertical: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.45)',
+    backgroundColor: '#0F0F0F',
+    alignItems: 'center',
+    maxWidth: '100%',
   },
-  membershipText: {
-    color: '#000000',
-    fontSize: 12,
+  accountStatusTitle: {
+    color: '#FFFFFF',
+    fontSize: 14,
     fontFamily: 'Axiforma-Bold',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  accountStatusHint: {
+    color: '#A0A0A0',
+    fontSize: 12,
+    fontFamily: 'Axiforma-Regular',
+    lineHeight: 18,
+    textAlign: 'center',
   },
   inputContainer: {
     width: '100%',

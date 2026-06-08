@@ -2,20 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../../shared/constants/colors';
-import { 
-  ChevronLeft, 
-  Bell, 
-  Calendar, 
-  TrendingUp, 
-  TrendingDown,
+import {
+  ChevronLeft,
+  Bell,
+  Calendar,
+  TrendingUp,
   AlertCircle,
   ArrowUp,
   ArrowDown,
   Target,
-  Shield,
   FileText,
-  DollarSign,
-  ShoppingCart
 } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
@@ -26,14 +22,11 @@ export default function AnalysisDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [analysis, setAnalysis] = useState<TradeAnalysis | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isPurchased, setIsPurchased] = useState(false);
-  const [checkingPurchase, setCheckingPurchase] = useState(true);
   const { unreadCount } = useUnreadNotificationsCount();
 
   useEffect(() => {
     if (id) {
       fetchAnalysis();
-      checkPurchaseStatus();
     }
   }, [id]);
 
@@ -59,49 +52,6 @@ export default function AnalysisDetailScreen() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const checkPurchaseStatus = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setCheckingPurchase(false);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('trade_analysis_purchases')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('trade_analysis_id', id)
-        .eq('payment_status', 'completed')
-        .single();
-
-      if (!error && data) {
-        setIsPurchased(true);
-      }
-    } catch (error) {
-      console.error('Error checking purchase status:', error);
-    } finally {
-      setCheckingPurchase(false);
-    }
-  };
-
-  const handlePurchase = () => {
-    Alert.alert(
-      'Purchase Analysis',
-      `Would you like to purchase this analysis for $${analysis?.price}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Purchase', 
-          onPress: async () => {
-            // TODO: Implement payment flow
-            Alert.alert('Coming Soon', 'Payment integration will be available soon!');
-          }
-        }
-      ]
-    );
   };
 
   const formatDate = (dateString: string) => {
@@ -132,7 +82,7 @@ export default function AnalysisDetailScreen() {
     return <AlertCircle size={18} color={color} strokeWidth={2} />;
   };
 
-  if (isLoading || checkingPurchase) {
+  if (isLoading) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.loadingContainer}>
@@ -159,14 +109,14 @@ export default function AnalysisDetailScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
         >
           <ChevronLeft size={28} color={Colors.gold} strokeWidth={2.5} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Analysis Details</Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.notificationIcon}
           onPress={() => router.push('/notifications')}
         >
@@ -181,7 +131,7 @@ export default function AnalysisDetailScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false as boolean}
@@ -264,23 +214,16 @@ export default function AnalysisDetailScreen() {
               <TrendingUp size={20} color={Colors.gold} strokeWidth={2} />
               <Text style={styles.sectionTitle}>Technical Analysis</Text>
             </View>
-            {isPurchased ? (
-              <View style={styles.contentContainer}>
-                {Object.entries(analysis.technical_analysis).map(([key, value]) => (
-                  <View key={key} style={styles.analysisItem}>
-                    <Text style={styles.analysisKey}>{key.replace(/_/g, ' ').toUpperCase()}</Text>
-                    <Text style={styles.analysisValue}>
-                      {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            ) : (
-              <View style={styles.lockedContent}>
-                <Shield size={32} color="#3A3A3A" strokeWidth={2} />
-                <Text style={styles.lockedText}>Purchase to unlock full analysis</Text>
-              </View>
-            )}
+            <View style={styles.contentContainer}>
+              {Object.entries(analysis.technical_analysis).map(([key, value]) => (
+                <View key={key} style={styles.analysisItem}>
+                  <Text style={styles.analysisKey}>{key.replace(/_/g, ' ').toUpperCase()}</Text>
+                  <Text style={styles.analysisValue}>
+                    {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                  </Text>
+                </View>
+              ))}
+            </View>
           </View>
         )}
 
@@ -291,63 +234,27 @@ export default function AnalysisDetailScreen() {
               <Target size={20} color={Colors.gold} strokeWidth={2} />
               <Text style={styles.sectionTitle}>Fundamental Analysis</Text>
             </View>
-            {isPurchased ? (
-              <View style={styles.contentContainer}>
-                {Object.entries(analysis.fundamental_analysis).map(([key, value]) => (
-                  <View key={key} style={styles.analysisItem}>
-                    <Text style={styles.analysisKey}>{key.replace(/_/g, ' ').toUpperCase()}</Text>
-                    <Text style={styles.analysisValue}>
-                      {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            ) : (
-              <View style={styles.lockedContent}>
-                <Shield size={32} color="#3A3A3A" strokeWidth={2} />
-                <Text style={styles.lockedText}>Purchase to unlock full analysis</Text>
-              </View>
-            )}
-          </View>
-        )}
-
-        {/* Full Content */}
-        {isPurchased ? (
-          <View style={styles.card}>
-            <View style={styles.sectionHeader}>
-              <FileText size={20} color={Colors.gold} strokeWidth={2} />
-              <Text style={styles.sectionTitle}>Detailed Analysis</Text>
-            </View>
-            <Text style={styles.contentText}>{analysis.content}</Text>
-          </View>
-        ) : (
-          <View style={styles.card}>
-            <View style={styles.lockedContent}>
-              <Shield size={48} color="#3A3A3A" strokeWidth={2} />
-              <Text style={styles.lockedTitle}>Full Analysis Locked</Text>
-              <Text style={styles.lockedSubtext}>
-                Purchase this analysis to access complete technical and fundamental insights
-              </Text>
+            <View style={styles.contentContainer}>
+              {Object.entries(analysis.fundamental_analysis).map(([key, value]) => (
+                <View key={key} style={styles.analysisItem}>
+                  <Text style={styles.analysisKey}>{key.replace(/_/g, ' ').toUpperCase()}</Text>
+                  <Text style={styles.analysisValue}>
+                    {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                  </Text>
+                </View>
+              ))}
             </View>
           </View>
         )}
 
-        {/* Purchase Button */}
-        {!isPurchased && (
-          <TouchableOpacity style={styles.purchaseButton} onPress={handlePurchase}>
-            <ShoppingCart size={20} color="#000000" strokeWidth={2} />
-            <Text style={styles.purchaseButtonText}>
-              Purchase Analysis - ${String(analysis.price)}
-            </Text>
-          </TouchableOpacity>
-        )}
-
-        {isPurchased && (
-          <View style={styles.purchasedBanner}>
-            <Shield size={20} color="#22C55E" strokeWidth={2} />
-            <Text style={styles.purchasedText}>You own this analysis</Text>
+        {/* Detailed Analysis */}
+        <View style={styles.card}>
+          <View style={styles.sectionHeader}>
+            <FileText size={20} color={Colors.gold} strokeWidth={2} />
+            <Text style={styles.sectionTitle}>Detailed Analysis</Text>
           </View>
-        )}
+          <Text style={styles.contentText}>{analysis.content}</Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -566,61 +473,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: 'Axiforma-Regular',
     lineHeight: 24,
-  },
-  lockedContent: {
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  lockedText: {
-    color: '#A0A0A0',
-    fontSize: 14,
-    fontFamily: 'Axiforma-Medium',
-    marginTop: 12,
-  },
-  lockedTitle: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontFamily: 'Axiforma-Bold',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  lockedSubtext: {
-    color: '#A0A0A0',
-    fontSize: 14,
-    fontFamily: 'Axiforma-Regular',
-    textAlign: 'center',
-    paddingHorizontal: 24,
-  },
-  purchaseButton: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: Colors.gold,
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginTop: 8,
-  },
-  purchaseButtonText: {
-    color: '#000000',
-    fontSize: 16,
-    fontFamily: 'Axiforma-Bold',
-    marginLeft: 10,
-  },
-  purchasedBanner: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(34, 197, 94, 0.1)',
-    paddingVertical: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#22C55E',
-    marginTop: 8,
-  },
-  purchasedText: {
-    color: '#22C55E',
-    fontSize: 14,
-    fontFamily: 'Axiforma-Bold',
-    marginLeft: 8,
   },
 });

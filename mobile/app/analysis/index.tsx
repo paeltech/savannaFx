@@ -141,9 +141,9 @@ export default function AnalysisScreen() {
             </View>
           )}
         </View>
-        <View style={styles.priceContainer}>
-          <Text style={styles.priceLabel}>Price</Text>
-          <Text style={styles.priceValue}>${String(analysis.price)}</Text>
+        <View style={styles.cardHeaderMeta}>
+          <Calendar size={14} color="#A0A0A0" strokeWidth={2} />
+          <Text style={styles.cardHeaderMetaText}>{formatDate(analysis.analysis_date)}</Text>
         </View>
       </View>
 
@@ -386,19 +386,20 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginLeft: 4,
   },
-  priceContainer: {
-    alignItems: 'flex-end',
+  cardHeaderMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginTop: 4,
+    maxWidth: '42%',
   },
-  priceLabel: {
+  cardHeaderMetaText: {
     color: '#A0A0A0',
     fontSize: 12,
     fontFamily: 'Axiforma-Regular',
-    marginBottom: 4,
-  },
-  priceValue: {
-    color: Colors.gold,
-    fontSize: 18,
-    fontFamily: 'Axiforma-Bold',
+    marginLeft: 6,
+    flexShrink: 1,
+    textAlign: 'right',
   },
   analysisTitle: {
     color: '#FFFFFF',

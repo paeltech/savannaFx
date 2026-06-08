@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Session } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+import { supabase, isInvalidRefreshTokenError } from '../lib/supabase';
+import { setNotificationHandler } from '../lib/push-notifications';
 import { usePushNotifications, handleInitialNotificationResponse } from '../hooks/use-push-notifications';
 
 type Props = { children: React.ReactNode };
@@ -13,8 +14,17 @@ export function PushNotificationProvider({ children }: Props) {
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
+    setNotificationHandler();
+  }, []);
+
+  useEffect(() => {
     const getInitial = async () => {
-      const { data: { session: s } } = await supabase.auth.getSession();
+      const { data: { session: s }, error } = await supabase.auth.getSession();
+      if (error && isInvalidRefreshTokenError(error)) {
+        await supabase.auth.signOut({ scope: 'local' });
+        setSession(null);
+        return;
+      }
       setSession(s);
     };
     getInitial();

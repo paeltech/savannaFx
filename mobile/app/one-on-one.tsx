@@ -59,7 +59,6 @@ const features: Feature[] = [
 const packages = [
   {
     name: 'Starter',
-    price: 299,
     sessions: 4,
     duration: '1 month',
     features: [
@@ -71,7 +70,6 @@ const packages = [
   },
   {
     name: 'Professional',
-    price: 799,
     sessions: 12,
     duration: '3 months',
     features: [
@@ -86,7 +84,6 @@ const packages = [
   },
   {
     name: 'Elite',
-    price: 1499,
     sessions: 24,
     duration: '6 months',
     features: [
@@ -104,8 +101,8 @@ const packages = [
 export default function OneOnOneScreen() {
   const { unreadCount } = useUnreadNotificationsCount();
   
-  const handleBooking = (packageName: string) => {
-    alert(`Booking ${packageName} package...`);
+  const handleExpressInterest = (packageName: string) => {
+    alert(`Thanks for your interest in the ${packageName} coaching track. Our team will follow up with you.`);
   };
 
   return (
@@ -164,7 +161,7 @@ export default function OneOnOneScreen() {
 
         {/* Packages Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Choose Your Package</Text>
+          <Text style={styles.sectionTitle}>Program options</Text>
           {packages.map((pkg, index) => (
             <View 
               key={index} 
@@ -179,10 +176,7 @@ export default function OneOnOneScreen() {
                 </View>
               )}
               <Text style={styles.packageName}>{pkg.name}</Text>
-              <View style={styles.packagePriceRow}>
-                <Text style={styles.packagePrice}>${pkg.price}</Text>
-                <Text style={styles.packageDuration}>/ {pkg.duration}</Text>
-              </View>
+              <Text style={styles.packageDuration}>{pkg.duration}</Text>
               <Text style={styles.packageSessions}>{pkg.sessions} sessions</Text>
               <View style={styles.packageDivider} />
               {pkg.features.map((feature, idx) => (
@@ -196,9 +190,9 @@ export default function OneOnOneScreen() {
                   styles.bookButton,
                   pkg.popular && styles.bookButtonPopular,
                 ]}
-                onPress={() => handleBooking(pkg.name)}
+                onPress={() => handleExpressInterest(pkg.name)}
               >
-                <Text style={styles.bookButtonText}>Book {pkg.name}</Text>
+                <Text style={styles.bookButtonText}>Express interest · {pkg.name}</Text>
               </TouchableOpacity>
             </View>
           ))}
@@ -378,21 +372,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginBottom: 8,
   },
-  packagePriceRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginBottom: 4,
-  },
-  packagePrice: {
-    fontSize: 32,
-    fontFamily: 'Axiforma-Bold',
-    color: Colors.gold,
-  },
   packageDuration: {
     fontSize: 16,
     fontFamily: 'Axiforma-Regular',
     color: '#A0A0A0',
-    marginLeft: 4,
+    marginBottom: 6,
   },
   packageSessions: {
     fontSize: 14,

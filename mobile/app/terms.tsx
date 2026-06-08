@@ -59,9 +59,9 @@ export default function TermsScreen() {
           ⚠️ WARNING: Trading signals and analyses provided are for educational purposes only and should not be considered as financial advice. Always conduct your own research and consult with a licensed financial advisor before making investment decisions.
         </Text>
 
-        <Text style={styles.sectionTitle}>5. Payment and Subscriptions</Text>
+        <Text style={styles.sectionTitle}>5. Free mobile service and preferences</Text>
         <Text style={styles.paragraph}>
-          Some features of the Service require payment. By subscribing to a paid plan, you agree to pay the fees specified. All fees are non-refundable unless otherwise stated or required by law.
+          This mobile application is offered without charging you fees for signals, analyses, academy content, or event listings shown in the app. You choose what notifications and emails you receive through your in-app notification preferences. Separate websites, future products, or other channels may have different terms; those do not change that this app is provided at no charge unless we notify you otherwise.
         </Text>
 
         <Text style={styles.sectionTitle}>6. Intellectual Property</Text>

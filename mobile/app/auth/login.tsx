@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { supabase } from '../../lib/supabase';
+import { formatAuthErrorMessage } from '../../lib/auth-errors';
+import { supabase, canReachSupabase } from '../../lib/supabase';
 import { Colors } from '../../../shared/constants/colors';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
 
@@ -20,21 +21,31 @@ export default function LoginScreen() {
 
     try {
       setLoading(true);
+
+      const reachable = await canReachSupabase();
+      if (!reachable) {
+        Alert.alert(
+          'Connection problem',
+          'SavannaFX could not reach the server. Check Wi‑Fi or cellular data, turn off VPN if you use one, then try again.'
+        );
+        return;
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
 
       if (error) {
-        Alert.alert('Login Failed', error.message);
+        Alert.alert('Login Failed', formatAuthErrorMessage(error));
         return;
       }
 
       if (data.session) {
         router.replace('/home');
       }
-    } catch (error: any) {
-      Alert.alert('Error', error.message || 'An error occurred');
+    } catch (error: unknown) {
+      Alert.alert('Error', formatAuthErrorMessage(error));
     } finally {
       setLoading(false);
     }

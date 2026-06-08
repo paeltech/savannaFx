@@ -38,11 +38,7 @@ export default function RootLayout() {
     'Axiforma-Book': require('../assets/fonts/Kastelov - Axiforma Book.otf'),
   });
 
-  useEffect(() => {
-    if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded, fontError]);
+  const [bootstrapReady, setBootstrapReady] = useState(false);
 
   useEffect(() => {
     if (fontError) {
@@ -50,12 +46,32 @@ export default function RootLayout() {
     }
   }, [fontError]);
 
+  /* Hide splash and mount tree only after auth storage is validated. Otherwise PushNotificationProvider
+   * and other code race getSession() with recoverFromInvalidRefreshToken and LogBox shows refresh errors. */
   useEffect(() => {
-    if (!fontsLoaded && !fontError) return;
-    void recoverFromInvalidRefreshToken();
+    let cancelled = false;
+
+    async function bootstrap() {
+      if (!fontsLoaded && !fontError) return;
+
+      await recoverFromInvalidRefreshToken();
+      if (cancelled) return;
+
+      setBootstrapReady(true);
+      await SplashScreen.hideAsync();
+    }
+
+    void bootstrap();
+    return () => {
+      cancelled = true;
+    };
   }, [fontsLoaded, fontError]);
 
   if (!fontsLoaded && !fontError) {
+    return null;
+  }
+
+  if (!bootstrapReady) {
     return null;
   }
 
@@ -74,13 +90,15 @@ export default function RootLayout() {
               <Stack.Screen name="auth/reset-password" options={{ animation: 'slide_from_right' }} />
               <Stack.Screen name="home" />
               <Stack.Screen name="profile" />
+              <Stack.Screen name="delete-account" options={{ animation: 'slide_from_right' }} />
               <Stack.Screen name="signals" />
               <Stack.Screen name="signals/[id]" options={{ animation: 'slide_from_right' }} />
               <Stack.Screen name="analysis/index" />
               <Stack.Screen name="analysis/[id]" />
               <Stack.Screen name="academy" />
               <Stack.Screen name="mentorship" />
-              <Stack.Screen name="events" />
+              <Stack.Screen name="events/index" />
+              <Stack.Screen name="events/[id]" options={{ animation: 'slide_from_right' }} />
               <Stack.Screen name="one-on-one" />
               <Stack.Screen name="calculator" />
               <Stack.Screen name="calendar" />

@@ -1,0 +1,44 @@
+App Store Connect — resubmit after Apple review feedback (premium label + subscription notes)
+===========================================================================================
+
+Before you submit the next iOS build
+------------------------------------
+1. Build and submit from the mobile app directory:
+   npx eas-cli build --platform ios --profile production
+   npx eas-cli submit --platform ios --latest
+   (Production profile uses autoIncrement in eas.json so the iOS build number increases each build.)
+
+2. App Store Connect → your app → Features / In-App Purchases & Subscriptions
+   - If the app does not sell anything via StoreKit: remove or do not submit subscription IAP products that are still attached to the app record. That reduces requests for an “expired subscription” demo account.
+
+3. App Store Connect → App Information → App Review Information
+   - Demo account: add a REAL test email + password that signs in and reaches Profile, Home, Signals, Events.
+   - Notes for Review (example below): state clearly there are NO in-app purchases or subscriptions in this build, and point to the fixed “Premium Member” UI.
+
+4. App description / What’s New / keywords
+   - Remove or rewrite phrases that imply subscriptions or paid “premium” tiers if the product is free in-app.
+
+Paste into “Reply to App Review” when you resubmit (edit version + build)
+--------------------------------------------------------------------------
+Guideline 2.1 — Information Needed (expired subscription demo)
+
+SavannaFX (this version) does not include in-app purchases or Apple subscription products. The binary does not implement StoreKit subscription flows. We do not require a subscription to use the app. Please use the demo account in App Review Information to sign in; no purchase or subscription restoration is needed. [If applicable: We have removed unused subscription products from App Store Connect.]
+
+Guideline 2.1(a) — Premium without purchase
+
+Thank you for the report. A profile label displayed “Premium Member” for every user due to a static UI string, not an in-app purchase or entitlement. We have removed that wording in this build and replaced it with accurate copy that does not imply a paid tier. Please test with a new install after signup.
+
+Optional line to combine: We have submitted a new build (version X, build Y) containing these fixes.
+
+Guideline 5.1.1(v) — Account deletion
+-------------------------------------
+In-app path: Profile → Delete Account (or Profile → scroll to Delete Account in settings list).
+Flow: confirm consequences → type DELETE → final alert → permanent deletion in app (no email required).
+
+Deploy Edge Function before testing production deletion:
+  supabase functions deploy delete-user-account
+
+App Review Information → Notes: include screen recording showing signup/login → Profile → Delete Account → full deletion through confirmation.
+
+Example reply:
+SavannaFX supports permanent account deletion in the app under Profile → Delete Account. Users confirm by typing DELETE and receive a final confirmation dialog. Deletion removes the auth account and associated user data from our backend; it is not deactivation. A screen recording is attached in App Review Information.

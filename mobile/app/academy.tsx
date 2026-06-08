@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../shared/constants/colors';
-import { ChevronLeft, Bell, Search, GraduationCap, Clock, BookOpen, Lock } from 'lucide-react-native';
+import { ChevronLeft, Bell, Search, GraduationCap, Clock, BookOpen } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useUnreadNotificationsCount } from '../hooks/use-unread-notifications';
 
@@ -14,8 +14,6 @@ interface Course {
   level: 'Beginner' | 'Advanced';
   lessonsCount: number;
   durationMinutes: number;
-  price: number;
-  premium: boolean;
 }
 
 const courses: Course[] = [
@@ -27,8 +25,6 @@ const courses: Course[] = [
     level: 'Beginner',
     lessonsCount: 11,
     durationMinutes: 3,
-    price: 0,
-    premium: false,
   },
   {
     id: 'goat-strategy',
@@ -38,8 +34,6 @@ const courses: Course[] = [
     level: 'Advanced',
     lessonsCount: 20,
     durationMinutes: 4,
-    price: 199,
-    premium: true,
   },
 ];
 
@@ -160,9 +154,7 @@ export default function AcademyScreen() {
                   onPress={() => handleEnroll(course)}
                 >
                   <GraduationCap size={18} color="#FFFFFF" strokeWidth={2} />
-                  <Text style={styles.enrollButtonText}>
-                    {course.price === 0 ? 'Enroll Now' : `Enroll - $${course.price}`}
-                  </Text>
+                  <Text style={styles.enrollButtonText}>Start course</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -321,22 +313,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Axiforma-Bold',
     color: '#FFFFFF',
     textTransform: 'uppercase',
-  },
-  premiumBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    backgroundColor: 'rgba(212, 175, 55, 0.2)',
-    borderWidth: 1,
-    borderColor: Colors.gold,
-  },
-  premiumBadgeText: {
-    fontSize: 11,
-    fontFamily: 'Axiforma-Bold',
-    color: Colors.gold,
-    marginLeft: 4,
   },
   courseTitle: {
     fontSize: 20,

@@ -42,8 +42,7 @@ export default function PrivacyScreen() {
         </Text>
         <Text style={styles.bulletPoint}>• Name and contact information (email, phone number)</Text>
         <Text style={styles.bulletPoint}>• Account credentials (username, password)</Text>
-        <Text style={styles.bulletPoint}>• Payment information</Text>
-        <Text style={styles.bulletPoint}>• Profile information and preferences</Text>
+        <Text style={styles.bulletPoint}>• Profile information and notification preferences</Text>
 
         <Text style={styles.subsectionTitle}>Usage Information</Text>
         <Text style={styles.paragraph}>
@@ -59,7 +58,7 @@ export default function PrivacyScreen() {
           We use the collected information for various purposes:
         </Text>
         <Text style={styles.bulletPoint}>• To provide, maintain, and improve our services</Text>
-        <Text style={styles.bulletPoint}>• To process transactions and send related information</Text>
+        <Text style={styles.bulletPoint}>• To operate your account and send service-related messages</Text>
         <Text style={styles.bulletPoint}>• To send you technical notices and support messages</Text>
         <Text style={styles.bulletPoint}>• To respond to your comments and questions</Text>
         <Text style={styles.bulletPoint}>• To send you trading signals, analyses, and educational content</Text>
@@ -96,7 +95,7 @@ export default function PrivacyScreen() {
         </Text>
         <Text style={styles.bulletPoint}>• Access your personal information</Text>
         <Text style={styles.bulletPoint}>• Correct inaccurate or incomplete data</Text>
-        <Text style={styles.bulletPoint}>• Request deletion of your data</Text>
+        <Text style={styles.bulletPoint}>• Request deletion of your data (Profile → Delete Account in the app)</Text>
         <Text style={styles.bulletPoint}>• Object to or restrict certain processing</Text>
         <Text style={styles.bulletPoint}>• Data portability</Text>
         <Text style={styles.bulletPoint}>• Withdraw consent at any time</Text>

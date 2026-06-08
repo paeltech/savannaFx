@@ -101,6 +101,7 @@ serve(async (req) => {
       title: row.title,
       body: row.message,
       sound: "default" as const,
+      priority: "high" as const,
       data: {
         action_url: row.action_url ?? undefined,
         notification_id: row.id,

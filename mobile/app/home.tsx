@@ -294,7 +294,7 @@ export default function HomeScreen() {
                 <TrendingUp size={16} color={Colors.gold} strokeWidth={2.5} />
               </View>
               <Text style={styles.featureTitle}>Signals</Text>
-              <Text style={styles.featureDescription}>Premium trade signals</Text>
+              <Text style={styles.featureDescription}>Real-time trade signals</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.featureCard, { marginLeft: 6 }]}

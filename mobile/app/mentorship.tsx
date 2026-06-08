@@ -58,7 +58,7 @@ export default function MentorshipScreen() {
   const { unreadCount } = useUnreadNotificationsCount();
   
   const handleJoin = () => {
-    alert('Redirecting to mentorship registration...');
+    alert('Thanks for your interest. We will contact you when mentorship spots open. There is no payment step in the app.');
   };
 
   return (
@@ -130,15 +130,15 @@ export default function MentorshipScreen() {
 
         {/* CTA Section */}
         <View style={styles.ctaCard}>
-          <Text style={styles.ctaTitle}>Ready to Level Up?</Text>
+          <Text style={styles.ctaTitle}>Interested in mentorship?</Text>
           <Text style={styles.ctaDescription}>
-            Join hundreds of traders who have transformed their trading with our mentorship program
+            Request a spot on the waitlist. Our team will reach out when cohorts open. The app does not collect payment for this.
           </Text>
           <TouchableOpacity style={styles.ctaButton} onPress={handleJoin}>
             <Users size={20} color="#FFFFFF" strokeWidth={2} />
-            <Text style={styles.ctaButtonText}>Join Mentorship Program</Text>
+            <Text style={styles.ctaButtonText}>Join waitlist</Text>
           </TouchableOpacity>
-          <Text style={styles.ctaNote}>Limited spots available</Text>
+          <Text style={styles.ctaNote}>We'll follow up by email or phone</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

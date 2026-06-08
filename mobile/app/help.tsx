@@ -12,11 +12,11 @@ const enquiryTypes = [
   { value: '', label: 'Select enquiry type...' },
   { value: 'general', label: 'General Inquiry' },
   { value: 'trading', label: 'Trading Support' },
-  { value: 'signals', label: 'Signal Subscription' },
+  { value: 'signals', label: 'Trading signals' },
   { value: 'course', label: 'Course Information' },
   { value: 'mentorship', label: 'Mentorship Program' },
   { value: 'technical', label: 'Technical Support' },
-  { value: 'billing', label: 'Billing & Payments' },
+  { value: 'billing', label: 'Account & access' },
   { value: 'partnership', label: 'Partnership Opportunities' },
   { value: 'other', label: 'Other' },
 ];

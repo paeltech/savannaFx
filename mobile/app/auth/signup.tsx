@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { supabase } from '../../lib/supabase';
+import { formatAuthErrorMessage } from '../../lib/auth-errors';
+import { supabase, canReachSupabase } from '../../lib/supabase';
 import { Colors } from '../../../shared/constants/colors';
 import { Mail, Lock, User as UserIcon, Phone, Eye, EyeOff, ChevronLeft } from 'lucide-react-native';
 
@@ -51,6 +52,15 @@ export default function SignupScreen() {
     try {
       setLoading(true);
 
+      const reachable = await canReachSupabase();
+      if (!reachable) {
+        Alert.alert(
+          'Connection problem',
+          'SavannaFX could not reach the server. Check Wi‑Fi or cellular data, turn off VPN if you use one, then try again.'
+        );
+        return;
+      }
+
       const phoneTrimmed = phone.trim();
       const hasPhone = phoneTrimmed.length > 0;
       const fullPhoneForMetadata = hasPhone
@@ -72,13 +82,13 @@ export default function SignupScreen() {
       });
 
       if (authError) {
-        Alert.alert('Signup Failed', authError.message);
+        Alert.alert('Signup Failed', formatAuthErrorMessage(authError));
         return;
       }
 
       if (authData.user) {
         const fullPhoneNumber = fullPhoneForMetadata ?? '';
-        await supabase.rpc('update_user_profile_on_signup', {
+        const { error: profileError } = await supabase.rpc('update_user_profile_on_signup', {
           user_id: authData.user.id,
           phone_number_param: fullPhoneNumber,
           phone_verified_param: hasPhone,
@@ -86,6 +96,10 @@ export default function SignupScreen() {
           email_notifications_param: true,
           full_name_param: fullName.trim() || null,
         });
+
+        if (profileError) {
+          console.warn('Profile update after signup:', profileError.message);
+        }
 
         Alert.alert(
           'Success',
@@ -98,8 +112,8 @@ export default function SignupScreen() {
           ]
         );
       }
-    } catch (error: any) {
-      Alert.alert('Error', error.message || 'An error occurred');
+    } catch (error: unknown) {
+      Alert.alert('Error', formatAuthErrorMessage(error));
     } finally {
       setLoading(false);
     }
