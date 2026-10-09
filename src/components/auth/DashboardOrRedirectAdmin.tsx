@@ -1,16 +1,18 @@
 "use client";
 
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAdmin } from "@/hooks/use-admin";
 import Dashboard from "@/pages/Dashboard";
+import { isMemberView } from "@/lib/member-view";
 
 /**
- * Renders the user Dashboard, or redirects admins to /admin when they land on /dashboard
- * (e.g. after login or direct URL). Keeps a single redirect rule in one place.
+ * Admins land on /admin. A tab opened with ?view=member keeps the member dashboard.
  */
 const DashboardOrRedirectAdmin: React.FC = () => {
   const { isAdmin, loading } = useAdmin();
+  const location = useLocation();
+  const memberView = isMemberView();
 
   if (loading) {
     return (
@@ -23,7 +25,11 @@ const DashboardOrRedirectAdmin: React.FC = () => {
     );
   }
 
-  if (isAdmin) {
+  if (new URLSearchParams(location.search).get("view") === "member") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (isAdmin && !memberView) {
     return <Navigate to="/admin" replace />;
   }
 

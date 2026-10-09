@@ -14,7 +14,7 @@ export interface Signal {
   title: string;
   analysis: string | null;
   confidence_level: "low" | "medium" | "high" | null;
-  status: "active" | "closed" | "cancelled";
+  status: "active" | "closed" | "cancelled" | "inactive";
   created_at: string;
   updated_at: string;
 }

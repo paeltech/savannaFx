@@ -1,317 +1,309 @@
 "use client";
 
 import React from "react";
+import { Link } from "react-router-dom";
 import DashboardLayout from "../components/dashboard/DashboardLayout.tsx";
 import { CardContent } from "@/components/ui/card";
 import SavannaCard from "@/components/dashboard/SavannaCard";
-import DashboardTile from "../components/dashboard/DashboardTile.tsx";
 import { useSupabaseSession } from "@/components/auth/SupabaseSessionProvider";
 import supabase from "@/integrations/supabase/client";
-import {
-  FileText,
-  MessageSquare,
-  Handshake,
-  BarChart3,
-  ShoppingCart,
-  Users,
-  TrendingUp,
-  Clock,
-  Calendar,
-  SignalHigh,
-  Lightbulb,
-} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { PageTransition } from "@/lib/animations";
+import { format } from "date-fns";
 
-interface DashboardStats {
-  enquiries: {
-    total: number;
-    pending: number;
-    inProgress: number;
-    resolved: number;
-  };
-  collaborations: {
-    total: number;
-    pending: number;
-    reviewing: number;
-    approved: number;
-  };
-  tradeAnalyses: {
-    total: number;
-    recent: number;
-  };
-  purchases: {
-    total: number;
-    completed: number;
-    pending: number;
-  };
-  sentimentVotes: {
-    total: number;
-    today: number;
-  };
-  signalSubscriptions: {
-    total: number;
-    active: number;
-    monthly: number;
-    perPip: number;
-  };
+interface PaymentRow {
+  id: string;
+  phone_number: string;
+  subscription_type: string;
+  amount: number;
+  currency: string;
+  status: string;
+  failure_reason: string | null;
+  created_at: string;
 }
+
+interface SubscriptionRow {
+  status: string;
+  payment_status: string;
+  amount_paid: number | string;
+  end_date: string | null;
+  subscription_type: string;
+}
+
+interface EnquiryRow {
+  id: string;
+  name: string;
+  subject: string;
+  status: string;
+  created_at: string;
+}
+
+interface SignalRow {
+  id: string;
+  trading_pair: string;
+  signal_type: string;
+  status: string;
+  created_at: string;
+}
+
+interface Overview {
+  monthRevenue: number;
+  activeMembers: number;
+  planCounts: { daily: number; weekly: number; monthly: number };
+  pendingPayments: number;
+  failedPayments: number;
+  openEnquiries: number;
+  payments: PaymentRow[];
+  enquiries: EnquiryRow[];
+  signals: SignalRow[];
+  paymentsError: string | null;
+}
+
+function isCurrentAccess(row: SubscriptionRow) {
+  if (row.status !== "active" || row.payment_status !== "completed") return false;
+  if (!(Number(row.amount_paid) > 0) || !row.end_date) return false;
+  return new Date(row.end_date).getTime() > Date.now();
+}
+
+const statusClass: Record<string, string> = {
+  completed: "text-green-400",
+  pending: "text-yellow-400",
+  failed: "text-red-400",
+  expired: "text-rainy-grey",
+  voided: "text-rainy-grey",
+  active: "text-green-400",
+  buy: "text-green-400",
+  sell: "text-red-400",
+};
 
 const AdminDashboard: React.FC = () => {
   const { session } = useSupabaseSession();
-  const firstName = session?.user?.user_metadata?.first_name || "Admin";
+  const firstName = session?.user?.user_metadata?.first_name || "there";
 
-  const { data: stats, isLoading } = useQuery<DashboardStats>({
-    queryKey: ["admin-stats"],
+  const { data, isLoading } = useQuery<Overview>({
+    queryKey: ["admin-overview"],
+    refetchInterval: 30000,
     queryFn: async () => {
-      // Fetch enquiries stats
-      const { data: enquiriesData } = await supabase
+      const monthStart = new Date();
+      monthStart.setDate(1);
+      monthStart.setHours(0, 0, 0, 0);
+
+      const [paymentsRes, subscriptionsRes, enquiriesRes, signalsRes] = await Promise.all([
+        supabase
+          .from("signal_payments")
+          .select("id, phone_number, subscription_type, amount, currency, status, failure_reason, created_at")
+          .order("created_at", { ascending: false })
+          .limit(8),
+        supabase
+          .from("signal_subscriptions")
+          .select("status, payment_status, amount_paid, end_date, subscription_type"),
+        supabase
+          .from("enquiries")
+          .select("id, name, subject, status, created_at")
+          .in("status", ["pending", "in_progress"])
+          .order("created_at", { ascending: false })
+          .limit(6),
+        supabase
+          .from("signals")
+          .select("id, trading_pair, signal_type, status, created_at")
+          .order("created_at", { ascending: false })
+          .limit(6),
+      ]);
+
+      const payments = (paymentsRes.data ?? []) as PaymentRow[];
+      const subscriptions = (subscriptionsRes.data ?? []) as SubscriptionRow[];
+      const active = subscriptions.filter(isCurrentAccess);
+
+      const { data: monthPayments } = await supabase
+        .from("signal_payments")
+        .select("amount, currency, status, created_at")
+        .eq("status", "completed")
+        .gte("created_at", monthStart.toISOString());
+
+      const monthRevenue = (monthPayments ?? [])
+        .filter((row) => row.currency === "TZS")
+        .reduce((sum, row) => sum + Number(row.amount), 0);
+
+      const { count: pendingPayments } = await supabase
+        .from("signal_payments")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "pending");
+
+      const { count: failedPayments } = await supabase
+        .from("signal_payments")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "failed");
+
+      const { count: openEnquiryCount } = await supabase
         .from("enquiries")
-        .select("status");
-
-      const enquiries = {
-        total: enquiriesData?.length || 0,
-        pending: enquiriesData?.filter((e) => e.status === "pending").length || 0,
-        inProgress: enquiriesData?.filter((e) => e.status === "in_progress").length || 0,
-        resolved: enquiriesData?.filter((e) => e.status === "resolved").length || 0,
-      };
-
-      // Fetch collaborations stats
-      const { data: collaborationsData } = await supabase
-        .from("collaborations")
-        .select("status");
-
-      const collaborations = {
-        total: collaborationsData?.length || 0,
-        pending: collaborationsData?.filter((c) => c.status === "pending").length || 0,
-        reviewing: collaborationsData?.filter((c) => c.status === "reviewing").length || 0,
-        approved: collaborationsData?.filter((c) => c.status === "approved").length || 0,
-      };
-
-      // Fetch trade analyses stats
-      const { data: tradeAnalysesData } = await supabase
-        .from("trade_analyses")
-        .select("created_at");
-
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-      const tradeAnalyses = {
-        total: tradeAnalysesData?.length || 0,
-        recent: tradeAnalysesData?.filter(
-          (ta) => new Date(ta.created_at) >= oneWeekAgo
-        ).length || 0,
-      };
-
-      // Fetch purchases stats
-      const { data: purchasesData } = await supabase
-        .from("trade_analysis_purchases")
-        .select("payment_status");
-
-      const purchases = {
-        total: purchasesData?.length || 0,
-        completed: purchasesData?.filter((p) => p.payment_status === "completed").length || 0,
-        pending: purchasesData?.filter((p) => p.payment_status === "pending").length || 0,
-      };
-
-      // Fetch sentiment votes stats
-      const { data: votesData } = await supabase
-        .from("sentiment_votes")
-        .select("created_at");
-
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      const sentimentVotes = {
-        total: votesData?.length || 0,
-        today: votesData?.filter((v) => new Date(v.created_at) >= today).length || 0,
-      };
-
-      // Fetch signal subscriptions stats
-      const { data: subscriptionsData } = await supabase
-        .from("signal_subscriptions")
-        .select("status, subscription_type");
-
-      const signalSubscriptions = {
-        total: subscriptionsData?.length || 0,
-        active: subscriptionsData?.filter((s) => s.status === "active").length || 0,
-        monthly: subscriptionsData?.filter((s) => s.subscription_type === "monthly" && s.status === "active").length || 0,
-        perPip: subscriptionsData?.filter((s) => s.subscription_type === "per_pip" && s.status === "active").length || 0,
-      };
+        .select("id", { count: "exact", head: true })
+        .in("status", ["pending", "in_progress"]);
 
       return {
-        enquiries,
-        collaborations,
-        tradeAnalyses,
-        purchases,
-        sentimentVotes,
-        signalSubscriptions,
+        monthRevenue,
+        activeMembers: active.length,
+        planCounts: {
+          daily: active.filter((row) => row.subscription_type === "daily").length,
+          weekly: active.filter((row) => row.subscription_type === "weekly").length,
+          monthly: active.filter((row) => row.subscription_type === "monthly").length,
+        },
+        pendingPayments: pendingPayments ?? 0,
+        failedPayments: failedPayments ?? 0,
+        openEnquiries: openEnquiryCount ?? 0,
+        payments,
+        enquiries: (enquiriesRes.data ?? []) as EnquiryRow[],
+        signals: (signalsRes.data ?? []) as SignalRow[],
+        paymentsError: paymentsRes.error?.message ?? null,
       };
     },
-    refetchInterval: 30000, // Refetch every 30 seconds
   });
+
+  const metrics = [
+    {
+      label: "Collected this month",
+      value: data ? `${data.monthRevenue.toLocaleString()} TZS` : "—",
+      detail: "Completed signal payments",
+    },
+    {
+      label: "Members with access",
+      value: data ? String(data.activeMembers) : "—",
+      detail: data
+        ? `${data.planCounts.daily} daily · ${data.planCounts.weekly} weekly · ${data.planCounts.monthly} monthly`
+        : "Paid and still in date",
+    },
+    {
+      label: "Payments waiting",
+      value: data ? String(data.pendingPayments) : "—",
+      detail: data ? `${data.failedPayments} failed` : "PIN not entered yet",
+    },
+    {
+      label: "Enquiries to answer",
+      value: data ? String(data.openEnquiries) : "—",
+      detail: "Pending or in progress",
+    },
+  ];
 
   return (
     <PageTransition>
       <DashboardLayout>
-        <SavannaCard className="mb-6 sm:mb-8">
-          <CardContent className="p-4 sm:p-6 md:p-8">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-white">
-              Admin Dashboard 👨‍💼
-            </h2>
-            <p className="text-rainy-grey mt-3 sm:mt-4 leading-relaxed text-sm sm:text-base">
-              Welcome back, {firstName}. Manage all platform activities from here.
-            </p>
-          </CardContent>
-        </SavannaCard>
-
-        {/* Statistics Cards */}
-        {isLoading ? (
-          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-            {[...Array(4)].map((_, i) => (
-              <SavannaCard key={i}>
-                <CardContent className="p-4">
-                  <div className="animate-pulse">
-                    <div className="h-4 bg-nero rounded w-3/4 mb-2"></div>
-                    <div className="h-8 bg-nero rounded w-1/2"></div>
-                  </div>
-                </CardContent>
-              </SavannaCard>
-            ))}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-6">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-semibold text-white">
+              {format(new Date(), "EEEE, d MMMM")}
+            </h1>
+            <p className="text-rainy-grey text-sm mt-1">Welcome back, {firstName}.</p>
           </div>
-        ) : (
-          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-            <SavannaCard>
+          <a
+            href="/dashboard?view=member"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center rounded-lg border border-gold/40 px-4 py-2 text-sm text-gold hover:bg-gold/10"
+          >
+            Open member app
+          </a>
+        </div>
+
+        <div className="grid gap-3 grid-cols-2 lg:grid-cols-4 mb-6">
+          {metrics.map((metric) => (
+            <SavannaCard key={metric.label}>
               <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-rainy-grey text-sm mb-1">Total Enquiries</p>
-                    <p className="text-2xl font-semibold text-white">{stats?.enquiries.total || 0}</p>
-                    <p className="text-xs text-rainy-grey mt-1">
-                      {stats?.enquiries.pending || 0} pending
-                    </p>
-                  </div>
-                  <MessageSquare className="text-gold" size={32} />
+                <p className="text-rainy-grey text-xs">{metric.label}</p>
+                <p className="text-white text-xl sm:text-2xl font-semibold mt-1">
+                  {isLoading ? "…" : metric.value}
+                </p>
+                <p className="text-rainy-grey text-xs mt-1">{metric.detail}</p>
+              </CardContent>
+            </SavannaCard>
+          ))}
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-5">
+          <SavannaCard className="lg:col-span-3">
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-white font-medium">Latest payments</h2>
+                <Link to="/admin/signals" className="text-gold text-sm hover:underline">Plans & access</Link>
+              </div>
+              {data?.paymentsError ? (
+                <p className="text-sm text-rainy-grey">{data.paymentsError}</p>
+              ) : !data?.payments.length ? (
+                <p className="text-sm text-rainy-grey">{isLoading ? "Loading…" : "No payments yet."}</p>
+              ) : (
+                <ul className="divide-y divide-steel-wool/40">
+                  {data.payments.map((payment) => (
+                    <li key={payment.id} className="flex items-start justify-between gap-3 py-3 text-sm">
+                      <div>
+                        <p className="text-white">{payment.phone_number}</p>
+                        <p className="text-rainy-grey text-xs mt-0.5 capitalize">
+                          {payment.subscription_type} · {format(new Date(payment.created_at), "d MMM, HH:mm")}
+                        </p>
+                        {payment.failure_reason && (
+                          <p className="text-red-400 text-xs mt-1">{payment.failure_reason}</p>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <p className="text-white">{Number(payment.amount).toLocaleString()} {payment.currency}</p>
+                        <p className={`text-xs capitalize mt-0.5 ${statusClass[payment.status] || "text-rainy-grey"}`}>
+                          {payment.status}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </SavannaCard>
+
+          <div className="lg:col-span-2 space-y-4">
+            <SavannaCard>
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-white font-medium">Open enquiries</h2>
+                  <Link to="/admin/enquiries" className="text-gold text-sm hover:underline">All</Link>
                 </div>
+                {!data?.enquiries.length ? (
+                  <p className="text-sm text-rainy-grey">{isLoading ? "Loading…" : "Nothing waiting."}</p>
+                ) : (
+                  <ul className="space-y-3">
+                    {data.enquiries.map((enquiry) => (
+                      <li key={enquiry.id}>
+                        <p className="text-white text-sm">{enquiry.subject}</p>
+                        <p className="text-rainy-grey text-xs mt-0.5">
+                          {enquiry.name} · {enquiry.status.replace("_", " ")} · {format(new Date(enquiry.created_at), "d MMM")}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </CardContent>
             </SavannaCard>
 
             <SavannaCard>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-rainy-grey text-sm mb-1">Collaborations</p>
-                    <p className="text-2xl font-semibold text-white">
-                      {stats?.collaborations.total || 0}
-                    </p>
-                    <p className="text-xs text-rainy-grey mt-1">
-                      {stats?.collaborations.pending || 0} pending
-                    </p>
-                  </div>
-                  <Handshake className="text-gold" size={32} />
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-white font-medium">Recent signals</h2>
+                  <Link to="/admin/signals" className="text-gold text-sm hover:underline">Manage</Link>
                 </div>
-              </CardContent>
-            </SavannaCard>
-
-            <SavannaCard>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-rainy-grey text-sm mb-1">Trade Analyses</p>
-                    <p className="text-2xl font-semibold text-white">
-                      {stats?.tradeAnalyses.total || 0}
-                    </p>
-                    <p className="text-xs text-rainy-grey mt-1">
-                      {stats?.tradeAnalyses.recent || 0} this week
-                    </p>
-                  </div>
-                  <FileText className="text-gold" size={32} />
-                </div>
-              </CardContent>
-            </SavannaCard>
-
-            <SavannaCard>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-rainy-grey text-sm mb-1">Purchases</p>
-                    <p className="text-2xl font-semibold text-white">{stats?.purchases.total || 0}</p>
-                    <p className="text-xs text-rainy-grey mt-1">
-                      {stats?.purchases.completed || 0} completed
-                    </p>
-                  </div>
-                  <ShoppingCart className="text-gold" size={32} />
-                </div>
+                {!data?.signals.length ? (
+                  <p className="text-sm text-rainy-grey">{isLoading ? "Loading…" : "No signals published."}</p>
+                ) : (
+                  <ul className="space-y-3">
+                    {data.signals.map((signal) => (
+                      <li key={signal.id} className="flex items-center justify-between gap-3 text-sm">
+                        <div>
+                          <p className="text-white">{signal.trading_pair}</p>
+                          <p className="text-rainy-grey text-xs mt-0.5">{format(new Date(signal.created_at), "d MMM, HH:mm")}</p>
+                        </div>
+                        <p className={`uppercase text-xs ${statusClass[signal.signal_type] || "text-rainy-grey"}`}>
+                          {signal.signal_type} · {signal.status}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </CardContent>
             </SavannaCard>
           </div>
-        )}
-
-        {/* Management Sections */}
-        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          <DashboardTile
-            to="/admin/enquiries"
-            title="Manage Enquiries"
-            description="View and respond to user enquiries"
-            Icon={MessageSquare}
-            iconBg="bg-blue-700"
-          />
-          <DashboardTile
-            to="/admin/collaborations"
-            title="Manage Collaborations"
-            description="Review partnership requests"
-            Icon={Handshake}
-            iconBg="bg-purple-700"
-          />
-          <DashboardTile
-            to="/admin/trade-analyses"
-            title="Trade Analyses"
-            description="Create and manage trading analyses"
-            Icon={FileText}
-            iconBg="bg-gold"
-          />
-          <DashboardTile
-            to="/admin/purchases"
-            title="Purchase Management"
-            description="View and manage purchases"
-            Icon={ShoppingCart}
-            iconBg="bg-green-700"
-          />
-          <DashboardTile
-            to="/admin/sentiment"
-            title="Sentiment Analytics"
-            description="View sentiment voting data"
-            Icon={BarChart3}
-            iconBg="bg-teal-700"
-          />
-          <DashboardTile
-            to="/admin/users"
-            title="User Management"
-            description="Manage user roles and permissions"
-            Icon={Users}
-            iconBg="bg-orange-700"
-          />
-          <DashboardTile
-            to="/admin/events"
-            title="Event Management"
-            description="Create and manage platform events"
-            Icon={Calendar}
-            iconBg="bg-indigo-700"
-          />
-          <DashboardTile
-            to="/admin/signals"
-            title="Signal Management"
-            description="Configure pricing and subscriptions"
-            Icon={SignalHigh}
-            iconBg="bg-blue-600"
-          />
-          <DashboardTile
-            to="/admin/tips"
-            title="Tips & Quotes"
-            description="Daily tips for mobile and push rotation"
-            Icon={Lightbulb}
-            iconBg="bg-amber-700"
-          />
         </div>
       </DashboardLayout>
     </PageTransition>

@@ -82,7 +82,7 @@ interface Signal {
   title: string;
   analysis: string | null;
   confidence_level: "low" | "medium" | "high" | null;
-  status: "active" | "closed" | "cancelled";
+  status: "active" | "closed" | "cancelled" | "inactive";
   created_at: string;
   updated_at: string;
 }
@@ -102,6 +102,7 @@ interface WhatsAppGroup {
 
 const pricingSchema = z.object({
   price: z.number().min(0, "Price must be positive"),
+  currency: z.enum(["TZS", "USD"]),
   description: z.string().optional(),
   is_active: z.boolean(),
 });
@@ -164,6 +165,16 @@ function planSuffix(type: string) {
   return "/pip";
 }
 
+const PLAN_ORDER = ["daily", "weekly", "monthly", "per_pip"];
+
+function checkoutIssue(pricing: { price: number; currency: string; is_active: boolean; pricing_type: string }) {
+  if (pricing.pricing_type === "per_pip") return "Per-pip is not offered at checkout.";
+  if (!pricing.is_active) return "Turned off, so members will not see it.";
+  if (pricing.currency !== "TZS") return "Checkout only charges TZS.";
+  if (Math.round(Number(pricing.price)) < 500) return "Checkout requires at least 500 TZS.";
+  return null;
+}
+
 const AdminSignals: React.FC = () => {
   const [selectedPricing, setSelectedPricing] = useState<SignalPricing | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -172,6 +183,8 @@ const AdminSignals: React.FC = () => {
   const [selectedSubscription, setSelectedSubscription] = useState<SignalSubscription | null>(null);
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("signals");
+  const [memberQuery, setMemberQuery] = useState("");
+  const [memberStatus, setMemberStatus] = useState("all");
   const [isRefreshingGroups, setIsRefreshingGroups] = useState(false);
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [signalForHistory, setSignalForHistory] = useState<Signal | null>(null);
@@ -184,6 +197,7 @@ const AdminSignals: React.FC = () => {
     resolver: zodResolver(pricingSchema),
     defaultValues: {
       price: 0,
+      currency: "TZS",
       description: "",
       is_active: true,
     },
@@ -263,6 +277,32 @@ const AdminSignals: React.FC = () => {
       }));
 
       return subscriptionsWithPhone;
+    },
+  });
+
+  const { data: paymentsResult, isLoading: paymentsLoading } = useQuery<{
+    rows: Array<{
+      id: string;
+      phone_number: string;
+      provider: string;
+      subscription_type: string;
+      amount: number;
+      currency: string;
+      status: string;
+      failure_reason: string | null;
+      created_at: string;
+    }>;
+    error: string | null;
+  }>({
+    queryKey: ["signal-payments-admin"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("signal_payments")
+        .select("id, phone_number, provider, subscription_type, amount, currency, status, failure_reason, created_at")
+        .order("created_at", { ascending: false })
+        .limit(40);
+      if (error) return { rows: [], error: error.message };
+      return { rows: data ?? [], error: null };
     },
   });
 
@@ -382,6 +422,7 @@ const AdminSignals: React.FC = () => {
         .from("signal_pricing")
         .update({
           price: values.price,
+          currency: values.currency,
           description: values.description || null,
           is_active: values.is_active,
         })
@@ -405,6 +446,7 @@ const AdminSignals: React.FC = () => {
     setSelectedPricing(pricing);
     form.reset({
       price: pricing.price,
+      currency: pricing.currency === "USD" ? "USD" : "TZS",
       description: pricing.description || "",
       is_active: pricing.is_active,
     });
@@ -769,6 +811,8 @@ const AdminSignals: React.FC = () => {
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { label: string; className: string }> = {
       active: { label: "Active", className: "bg-green-600 text-white" },
+      closed: { label: "Closed", className: "bg-blue-600 text-white" },
+      inactive: { label: "Inactive", className: "bg-gray-600 text-white" },
       cancelled: { label: "Cancelled", className: "bg-red-600 text-white" },
       expired: { label: "Expired", className: "bg-gray-600 text-white" },
       pending: { label: "Pending", className: "bg-yellow-600 text-white" },
@@ -782,6 +826,8 @@ const AdminSignals: React.FC = () => {
       completed: { label: "Completed", className: "bg-green-600 text-white" },
       pending: { label: "Pending", className: "bg-yellow-600 text-white" },
       failed: { label: "Failed", className: "bg-red-600 text-white" },
+      expired: { label: "Expired", className: "bg-gray-600 text-white" },
+      voided: { label: "Voided", className: "bg-gray-600 text-white" },
       refunded: { label: "Refunded", className: "bg-blue-600 text-white" },
     };
     const variant = variants[status] || variants.pending;
@@ -797,6 +843,14 @@ const AdminSignals: React.FC = () => {
     perPipSubscribers: subscriptions?.filter(s => (s.subscription_type === "daily" || s.subscription_type === "weekly") && s.status === "active").length || 0,
   };
 
+  const visibleSubscriptions = (subscriptions ?? []).filter((subscription) => {
+    const phone = subscription.user_profiles?.phone_number || "";
+    const query = memberQuery.replace(/\s/g, "");
+    const matchesQuery = !query || phone.replace(/\s/g, "").includes(query);
+    const matchesStatus = memberStatus === "all" || subscription.status === memberStatus;
+    return matchesQuery && matchesStatus;
+  });
+
   return (
     <PageTransition>
       <DashboardLayout>
@@ -807,9 +861,9 @@ const AdminSignals: React.FC = () => {
               <div className="flex items-center gap-3">
                 <SignalHigh className="text-gold" size={24} />
                 <div>
-                  <h1 className="text-2xl font-semibold text-white">Signal Pricing & Subscriptions</h1>
+                  <h1 className="text-2xl font-semibold text-white">Signals</h1>
                   <p className="text-rainy-grey text-sm mt-1">
-                    Manage signal pricing and view subscription statistics
+                    Publish signals, set the prices members pay, and see who has access.
                   </p>
                 </div>
               </div>
@@ -869,7 +923,7 @@ const AdminSignals: React.FC = () => {
               value="subscriptions"
               className="data-[state=active]:bg-gold data-[state=active]:text-cursed-black text-rainy-grey"
             >
-              Subscriptions & Pricing
+              Plans & access
             </TabsTrigger>
             <TabsTrigger
               value="groups"
@@ -1004,25 +1058,34 @@ const AdminSignals: React.FC = () => {
             {/* Pricing Configuration */}
             <SavannaCard className="mb-6">
               <CardContent className="p-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Pricing Configuration</h2>
+                <div className="mb-4">
+                  <h2 className="text-xl font-semibold text-white">Plans members can buy</h2>
+                  <p className="text-rainy-grey text-sm mt-1">
+                    A plan appears at checkout only when it is active, priced in TZS, and at least 500 TZS.
+                  </p>
+                </div>
                 {pricingLoading ? (
                   <div className="text-center text-rainy-grey py-8">Loading pricing...</div>
                 ) : (
                   <div className="grid md:grid-cols-3 gap-4">
-                    {pricingData?.map((pricing) => (
+                    {[...(pricingData ?? [])]
+                      .sort((a, b) => PLAN_ORDER.indexOf(a.pricing_type) - PLAN_ORDER.indexOf(b.pricing_type))
+                      .map((pricing) => {
+                        const issue = checkoutIssue(pricing);
+                        return (
                       <div
                         key={pricing.id}
                         className="bg-nero border border-steel-wool rounded-lg p-6 space-y-4"
                       >
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-3">
                           <div>
                             <h3 className="text-lg font-semibold text-white capitalize">
                               {planLabel(pricing.pricing_type)}
                             </h3>
                             <p className="text-rainy-grey text-sm mt-1">{pricing.description}</p>
                           </div>
-                          <Badge className={pricing.is_active ? "bg-green-600" : "bg-gray-600"}>
-                            {pricing.is_active ? "Active" : "Inactive"}
+                          <Badge className={issue ? "bg-yellow-700" : "bg-green-600"}>
+                            {issue ? "Hidden" : "At checkout"}
                           </Badge>
                         </div>
                         <div className="flex items-baseline gap-2">
@@ -1033,6 +1096,7 @@ const AdminSignals: React.FC = () => {
                             {planSuffix(pricing.pricing_type)}
                           </span>
                         </div>
+                        <p className="text-sm text-rainy-grey">{issue || "Members can pay for this plan."}</p>
                         {pricing.features && Array.isArray(pricing.features) && (
                           <ul className="space-y-2">
                             {pricing.features.map((feature, idx) => (
@@ -1048,10 +1112,62 @@ const AdminSignals: React.FC = () => {
                           className="w-full bg-gold text-cursed-black hover:bg-gold-dark"
                         >
                           <Edit className="mr-2 h-4 w-4" />
-                          Edit Pricing
+                          Edit plan
                         </Button>
                       </div>
-                    ))}
+                        );
+                      })}
+                  </div>
+                )}
+              </CardContent>
+            </SavannaCard>
+
+            <SavannaCard>
+              <CardContent className="p-6">
+                <div className="mb-4">
+                  <h2 className="text-xl font-semibold text-white">Payment attempts</h2>
+                  <p className="text-rainy-grey text-sm mt-1">
+                    Each mobile-money prompt, including ones still waiting for a PIN or that failed.
+                  </p>
+                </div>
+                {paymentsLoading ? (
+                  <div className="text-center text-rainy-grey py-8">Loading payments...</div>
+                ) : paymentsResult?.error ? (
+                  <p className="text-sm text-rainy-grey">{paymentsResult.error}</p>
+                ) : !paymentsResult?.rows.length ? (
+                  <div className="text-center text-rainy-grey py-8">No payments yet</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-steel-wool">
+                          <TableHead className="text-white">When</TableHead>
+                          <TableHead className="text-white">Phone</TableHead>
+                          <TableHead className="text-white">Plan</TableHead>
+                          <TableHead className="text-white">Provider</TableHead>
+                          <TableHead className="text-white">Amount</TableHead>
+                          <TableHead className="text-white">Status</TableHead>
+                          <TableHead className="text-white">Note</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {paymentsResult.rows.map((payment) => (
+                          <TableRow key={payment.id} className="border-steel-wool">
+                            <TableCell className="text-rainy-grey whitespace-nowrap">
+                              {format(new Date(payment.created_at), "MMM dd, HH:mm")}
+                            </TableCell>
+                            <TableCell className="text-white">{payment.phone_number}</TableCell>
+                            <TableCell className="text-white">{planLabel(payment.subscription_type)}</TableCell>
+                            <TableCell className="text-white capitalize">{payment.provider}</TableCell>
+                            <TableCell className="text-white">
+                              {Number(payment.amount).toLocaleString()} {payment.currency}
+                            </TableCell>
+                            <TableCell>{getPaymentStatusBadge(payment.status)}</TableCell>
+                            <TableCell className="text-rainy-grey max-w-[220px]">{payment.failure_reason || "—"}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
               </CardContent>
@@ -1060,11 +1176,38 @@ const AdminSignals: React.FC = () => {
             {/* Subscriptions Table */}
             <SavannaCard>
               <CardContent className="p-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Recent Subscriptions</h2>
+                <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-4">
+                  <div>
+                    <h2 className="text-xl font-semibold text-white">Member access</h2>
+                    <p className="text-rainy-grey text-sm mt-1">Who currently has a signal subscription.</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={memberQuery}
+                      onChange={(event) => setMemberQuery(event.target.value)}
+                      placeholder="Search phone"
+                      className="bg-nero border-steel-wool text-white w-40"
+                    />
+                    <Select value={memberStatus} onValueChange={setMemberStatus}>
+                      <SelectTrigger className="bg-nero border-steel-wool text-white w-36">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-nero border-steel-wool">
+                        <SelectItem value="all" className="text-white">All statuses</SelectItem>
+                        <SelectItem value="active" className="text-white">Active</SelectItem>
+                        <SelectItem value="expired" className="text-white">Expired</SelectItem>
+                        <SelectItem value="pending" className="text-white">Pending</SelectItem>
+                        <SelectItem value="cancelled" className="text-white">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
                 {subscriptionsLoading ? (
                   <div className="text-center text-rainy-grey py-8">Loading subscriptions...</div>
-                ) : subscriptions?.length === 0 ? (
+                ) : (subscriptions?.length ?? 0) === 0 ? (
                   <div className="text-center text-rainy-grey py-8">No subscriptions yet</div>
+                ) : visibleSubscriptions.length === 0 ? (
+                  <div className="text-center text-rainy-grey py-8">No subscriptions match this filter</div>
                 ) : (
                   <div className="overflow-x-auto">
                     <Table>
@@ -1082,7 +1225,7 @@ const AdminSignals: React.FC = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {subscriptions?.map((subscription) => (
+                        {visibleSubscriptions.map((subscription) => (
                           <TableRow key={subscription.id} className="border-steel-wool hover:bg-nero/50">
                             <TableCell className="text-white">
                               {subscription.user_profiles?.phone_number || "N/A"}
@@ -1141,10 +1284,10 @@ const AdminSignals: React.FC = () => {
               <DialogContent className="bg-black border-steel-wool text-white max-w-md">
                 <DialogHeader>
                   <DialogTitle className="text-white">
-                    Edit {planLabel(selectedPricing?.pricing_type || "")} Pricing
+                    Edit {planLabel(selectedPricing?.pricing_type || "")} plan
                   </DialogTitle>
                   <DialogDescription className="text-rainy-grey">
-                    Update the pricing configuration for this plan
+                    Members only see this plan when it is active, in TZS, and at least 500.
                   </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
@@ -1155,7 +1298,7 @@ const AdminSignals: React.FC = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-white">
-                            Price ({selectedPricing?.currency || "TZS"} {planSuffix(selectedPricing?.pricing_type || "")})
+                            Price {planSuffix(selectedPricing?.pricing_type || "")}
                           </FormLabel>
                           <FormControl>
                             <Input
@@ -1166,6 +1309,42 @@ const AdminSignals: React.FC = () => {
                               onChange={(e) => field.onChange(parseFloat(e.target.value))}
                             />
                           </FormControl>
+                          <FormMessage />
+                          {selectedPricing && checkoutIssue({
+                            price: Number(form.watch("price")) || 0,
+                            currency: form.watch("currency"),
+                            is_active: form.watch("is_active"),
+                            pricing_type: selectedPricing.pricing_type,
+                          }) && (
+                            <p className="text-sm text-yellow-400">
+                              {checkoutIssue({
+                                price: Number(form.watch("price")) || 0,
+                                currency: form.watch("currency"),
+                                is_active: form.watch("is_active"),
+                                pricing_type: selectedPricing.pricing_type,
+                              })}
+                            </p>
+                          )}
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="currency"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-white">Currency</FormLabel>
+                          <Select value={field.value} onValueChange={field.onChange}>
+                            <FormControl>
+                              <SelectTrigger className="bg-nero border-steel-wool text-white">
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-nero border-steel-wool">
+                              <SelectItem value="TZS" className="text-white">TZS</SelectItem>
+                              <SelectItem value="USD" className="text-white">USD</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}

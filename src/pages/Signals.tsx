@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import SignalPaywall from "@/components/signals/SignalPaywall";
-import { fetchPaidSignalAccess } from "@shared/utils/signal-payment";
+import { fetchSignalAccessDetails, accessRemainingLabel, calendarDaysRemaining } from "@shared/utils/signal-payment";
 
 interface Signal {
   id: string;
@@ -48,7 +48,7 @@ interface Signal {
   title: string;
   analysis: string | null;
   confidence_level: "low" | "medium" | "high" | null;
-  status: "active" | "closed" | "cancelled";
+  status: "active" | "closed" | "cancelled" | "inactive";
   created_at: string;
   updated_at: string;
 }
@@ -56,11 +56,13 @@ interface Signal {
 const Signals: React.FC = () => {
   const { session } = useSupabaseSession();
 
-  const { data: isPaidMember, isLoading: accessLoading, refetch: refetchAccess } = useQuery({
-    queryKey: ["signal-access", session?.user?.id],
+  const { data: access, isLoading: accessLoading, refetch: refetchAccess } = useQuery({
+    queryKey: ["signal-access-details", session?.user?.id],
     enabled: !!session?.user?.id,
-    queryFn: () => fetchPaidSignalAccess(supabase, session!.user.id),
+    queryFn: () => fetchSignalAccessDetails(supabase, session!.user.id),
   });
+  const isPaidMember = access?.active ?? false;
+  const daysLeft = access?.endDate ? calendarDaysRemaining(access.endDate) : null;
 
   const { data: signals, isLoading: signalsLoading } = useQuery<Signal[]>({
     queryKey: ["signals", session?.user?.id, isPaidMember],
@@ -93,6 +95,11 @@ const Signals: React.FC = () => {
         label: "Cancelled", 
         className: "bg-gray-600/90 hover:bg-gray-600 text-white border-gray-500/50 shadow-sm",
         icon: <X className="h-3 w-3 mr-1" />
+      },
+      inactive: {
+        label: "Inactive",
+        className: "bg-gray-600/90 hover:bg-gray-600 text-white border-gray-500/50 shadow-sm",
+        icon: <Clock className="h-3 w-3 mr-1" />
       },
     };
     const variant = variants[status] || variants.active;
@@ -151,11 +158,26 @@ const Signals: React.FC = () => {
                   <div>
                     <h1 className="text-xl md:text-2xl font-semibold text-white">Trading Signals</h1>
                     <p className="text-rainy-grey text-sm mt-1">
-                      {isPaidMember ? "Paid member" : "Signals unlock after payment"}
+                      {isPaidMember && access?.endDate
+                        ? `Access until ${format(new Date(access.endDate), "d MMM yyyy")}`
+                        : isPaidMember
+                          ? "Paid member"
+                          : "Signals unlock after payment"}
                     </p>
                   </div>
                 </div>
-                {signals && signals.length > 0 && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  {isPaidMember && access?.endDate && (
+                    <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
+                      daysLeft !== null && daysLeft <= 3
+                        ? "bg-yellow-500/10 border-yellow-500/30"
+                        : "bg-gold/10 border-gold/20"
+                    }`}>
+                      <Clock className={`h-4 w-4 ${daysLeft !== null && daysLeft <= 3 ? "text-yellow-400" : "text-gold"}`} />
+                      <span className="text-white font-semibold">{accessRemainingLabel(access.endDate)}</span>
+                    </div>
+                  )}
+                  {signals && signals.length > 0 && (
                   <div className="flex items-center gap-2 px-4 py-2 bg-gold/10 rounded-lg border border-gold/20">
                     <SignalHigh className="h-4 w-4 text-gold" />
                     <span className="text-white font-semibold">{signals.length}</span>
@@ -163,7 +185,8 @@ const Signals: React.FC = () => {
                       {signals.length === 1 ? 'Signal' : 'Signals'}
                     </span>
                   </div>
-                )}
+                  )}
+                </div>
               </div>
 
                 {accessLoading || !session?.user?.id ? (
