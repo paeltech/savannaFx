@@ -33,6 +33,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import SignalPaywall from "@/components/signals/SignalPaywall";
+import { fetchPaidSignalAccess } from "@shared/utils/signal-payment";
 
 interface Signal {
   id: string;
@@ -54,9 +56,15 @@ interface Signal {
 const Signals: React.FC = () => {
   const { session } = useSupabaseSession();
 
-  // Fetch signals for all users (subscription check removed)
+  const { data: isPaidMember, isLoading: accessLoading, refetch: refetchAccess } = useQuery({
+    queryKey: ["signal-access", session?.user?.id],
+    enabled: !!session?.user?.id,
+    queryFn: () => fetchPaidSignalAccess(supabase, session!.user.id),
+  });
+
   const { data: signals, isLoading: signalsLoading } = useQuery<Signal[]>({
-    queryKey: ["signals"],
+    queryKey: ["signals", session?.user?.id, isPaidMember],
+    enabled: !!isPaidMember,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("signals")
@@ -124,7 +132,6 @@ const Signals: React.FC = () => {
     );
   };
 
-  // Show signals table for all users (subscription check removed)
   return (
     <PageTransition>
       <DashboardLayout>
@@ -144,7 +151,7 @@ const Signals: React.FC = () => {
                   <div>
                     <h1 className="text-xl md:text-2xl font-semibold text-white">Trading Signals</h1>
                     <p className="text-rainy-grey text-sm mt-1">
-                      Access all trading signals
+                      {isPaidMember ? "Paid member" : "Signals unlock after payment"}
                     </p>
                   </div>
                 </div>
@@ -159,7 +166,11 @@ const Signals: React.FC = () => {
                 )}
               </div>
 
-                {signalsLoading ? (
+                {accessLoading || !session?.user?.id ? (
+                  <div className="text-center text-rainy-grey py-8">Loading signals...</div>
+                ) : !isPaidMember ? (
+                  <SignalPaywall onPaid={() => { refetchAccess(); }} />
+                ) : signalsLoading ? (
                   <div className="text-center text-rainy-grey py-8">Loading signals...</div>
                 ) : !signals || signals.length === 0 ? (
                   <div className="text-center text-rainy-grey py-8">

@@ -6,6 +6,8 @@ import { ChevronLeft, Bell, Edit3 } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import type { Signal } from '../../shared/types/signal';
+import { fetchPaidSignalAccess } from '../../shared/utils/signal-payment';
+import SignalPaywall from '../components/SignalPaywall';
 import { useUnreadNotificationsCount } from '../hooks/use-unread-notifications';
 
 export default function SignalsScreen() {
@@ -13,6 +15,7 @@ export default function SignalsScreen() {
   const [updateCountBySignalId, setUpdateCountBySignalId] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null);
   const { unreadCount } = useUnreadNotificationsCount();
 
   const fetchSignals = useCallback(async (isRefreshing = false) => {
@@ -67,10 +70,29 @@ export default function SignalsScreen() {
     }
   }, []);
 
+  const refreshAccess = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      setHasAccess(false);
+      setIsLoading(false);
+      return;
+    }
+    try {
+      setHasAccess(await fetchPaidSignalAccess(supabase, session.user.id));
+    } catch (error) {
+      console.error('Error checking signal access:', error);
+      setHasAccess(false);
+    }
+  }, []);
+
   useEffect(() => {
+    refreshAccess();
+  }, [refreshAccess]);
+
+  useEffect(() => {
+    if (!hasAccess) return;
     fetchSignals();
 
-    // Subscribe to real-time updates for signals and signal_updates
     const channel = supabase
       .channel('signals-changes-page')
       .on(
@@ -88,7 +110,7 @@ export default function SignalsScreen() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchSignals]);
+  }, [fetchSignals, hasAccess]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -252,6 +274,11 @@ export default function SignalsScreen() {
         </TouchableOpacity>
       </View>
 
+      {hasAccess === false ? (
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+          <SignalPaywall onPaid={refreshAccess} />
+        </ScrollView>
+      ) : (
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -304,6 +331,7 @@ export default function SignalsScreen() {
           </>
         )}
       </ScrollView>
+      )}
     </SafeAreaView>
   );
 }

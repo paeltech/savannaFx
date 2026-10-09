@@ -21,6 +21,7 @@ import {
 } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
+import { fetchPaidSignalAccess } from '../../shared/utils/signal-payment';
 
 export default function ProfileScreen() {
   const [user, setUser] = useState<any>(null);
@@ -29,6 +30,7 @@ export default function ProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [isPaidMember, setIsPaidMember] = useState(false);
 
   useEffect(() => {
     fetchUserProfile();
@@ -56,6 +58,13 @@ export default function ProfileScreen() {
         // Use user metadata if profile doesn't exist
         setFullName(session.user.user_metadata?.full_name || '');
         setPhoneNumber(session.user.user_metadata?.phone_number || '');
+      }
+
+      try {
+        setIsPaidMember(await fetchPaidSignalAccess(supabase, session.user.id));
+      } catch (accessError) {
+        console.error('Error checking membership:', accessError);
+        setIsPaidMember(false);
       }
     }
     setIsLoading(false);
@@ -265,9 +274,13 @@ export default function ProfileScreen() {
               )}
 
               <View style={styles.accountStatusBadge}>
-                <Text style={styles.accountStatusTitle}>SavannaFX member</Text>
+                <Text style={styles.accountStatusTitle}>
+                  {isPaidMember ? 'Paid member' : 'Unpaid'}
+                </Text>
                 <Text style={styles.accountStatusHint}>
-                  Free access. Adjust updates in Notification Preferences.
+                  {isPaidMember
+                    ? 'Your signal subscription is active.'
+                    : 'Pay for signals to become a paid member.'}
                 </Text>
               </View>
             </>

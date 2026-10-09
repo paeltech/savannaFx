@@ -1,0 +1,8 @@
+project_id = "iurstpwtdnlmpvwyhqfn"
+
+# Snippe calls this URL without a Supabase JWT. The function checks the webhook signature.
+[functions.snippe-webhook]
+verify_jwt = false
+
+[functions.create-signal-payment]
+verify_jwt = true

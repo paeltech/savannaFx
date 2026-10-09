@@ -43,6 +43,8 @@ import { showSuccess } from "@/utils/toast";
 import { useAdmin } from "@/hooks/use-admin";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSupabaseSession } from "@/components/auth/SupabaseSessionProvider";
+import { useQuery } from "@tanstack/react-query";
+import { fetchPaidSignalAccess } from "@shared/utils/signal-payment";
 
 type NavItem = {
   label: string;
@@ -69,6 +71,21 @@ const navItems: NavItem[] = [
   { label: "Collaborations", icon: Handshake, to: "/dashboard/collaborations" },
   { label: "Live Enquiry", shortLabel: "Support", icon: MessageSquare, to: "/dashboard/enquiry", showInBottomNav: true },
 ];
+
+const MembershipBadge: React.FC = () => {
+  const { session } = useSupabaseSession();
+  const { data: isPaidMember } = useQuery({
+    queryKey: ["signal-access", session?.user?.id],
+    enabled: !!session?.user?.id,
+    queryFn: () => fetchPaidSignalAccess(supabase, session!.user.id),
+  });
+  if (isPaidMember == null) return null;
+  return (
+    <Badge className={isPaidMember ? "bg-gold text-cursed-black" : "border border-steel-wool bg-nero text-rainy-grey"}>
+      {isPaidMember ? "Paid member" : "Unpaid"}
+    </Badge>
+  );
+};
 
 const Topbar: React.FC<{ onMenuClick?: () => void }> = ({ onMenuClick }) => {
   const isMobile = useIsMobile();
@@ -98,6 +115,7 @@ const Topbar: React.FC<{ onMenuClick?: () => void }> = ({ onMenuClick }) => {
       </div>
 
       <div className="flex items-center gap-1 sm:gap-3">
+        <MembershipBadge />
         <Button 
           variant="outline" 
           className="h-8 sm:h-9 border-steel-wool text-rainy-grey hover:bg-nero hover:text-gold hover:border-gold/40 transition-all duration-200 text-xs px-2 sm:px-3 hidden lg:inline-flex"

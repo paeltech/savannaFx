@@ -14,6 +14,8 @@ import { ChevronLeft, Bell, History, Edit3 } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import type { Signal, SignalUpdate } from '../../../shared/types/signal';
+import { fetchPaidSignalAccess } from '../../../shared/utils/signal-payment';
+import SignalPaywall from '../../components/SignalPaywall';
 import { useUnreadNotificationsCount } from '../../hooks/use-unread-notifications';
 
 const FIELD_LABELS: Record<string, string> = {
@@ -35,6 +37,7 @@ export default function SignalDetailScreen() {
   const [signal, setSignal] = useState<Signal | null>(null);
   const [updates, setUpdates] = useState<SignalUpdate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const { unreadCount } = useUnreadNotificationsCount();
 
@@ -69,9 +72,31 @@ export default function SignalDetailScreen() {
     }
   }, [id]);
 
+  const refreshAccess = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      setHasAccess(false);
+      setIsLoading(false);
+      return;
+    }
+    try {
+      const paid = await fetchPaidSignalAccess(supabase, session.user.id);
+      setHasAccess(paid);
+      if (!paid) setIsLoading(false);
+    } catch (error) {
+      console.error('Error checking signal access:', error);
+      setHasAccess(false);
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    if (id) fetchSignalAndUpdates();
-  }, [id, fetchSignalAndUpdates]);
+    refreshAccess();
+  }, [refreshAccess]);
+
+  useEffect(() => {
+    if (id && hasAccess) fetchSignalAndUpdates();
+  }, [id, hasAccess, fetchSignalAndUpdates]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -116,7 +141,7 @@ export default function SignalDetailScreen() {
   const renderValue = (v: number | string | null) =>
     v == null ? '—' : String(v);
 
-  if (isLoading && !signal) {
+  if (hasAccess === null || (isLoading && !signal)) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.header}>
@@ -141,6 +166,23 @@ export default function SignalDetailScreen() {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.gold} />
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (hasAccess === false) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <ChevronLeft size={28} color={Colors.gold} strokeWidth={2.5} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Signal details</Text>
+          <View style={styles.headerPlaceholder} />
+        </View>
+        <ScrollView contentContainerStyle={{ padding: 16 }}>
+          <SignalPaywall onPaid={refreshAccess} />
+        </ScrollView>
       </SafeAreaView>
     );
   }

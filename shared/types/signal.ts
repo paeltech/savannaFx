@@ -21,7 +21,7 @@ export interface Signal {
 
 export interface SignalPricing {
   id: string;
-  pricing_type: "monthly" | "per_pip";
+  pricing_type: "daily" | "weekly" | "monthly" | "per_pip";
   price: number;
   currency: string;
   description: string | null;

@@ -21,6 +21,7 @@ import {
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import type { Signal } from '../../shared/types/signal';
+import { fetchPaidSignalAccess } from '../../shared/utils/signal-payment';
 import { useUnreadNotificationsCount } from '../hooks/use-unread-notifications';
 
 export default function HomeScreen() {
@@ -29,6 +30,7 @@ export default function HomeScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null);
   const { unreadCount: unreadNotificationsCount, refreshCount } = useUnreadNotificationsCount();
 
   // Refresh unread count when screen gains focus (e.g. after marking as read on notifications screen)
@@ -52,6 +54,20 @@ export default function HomeScreen() {
       if (!isRefreshing) {
         setIsLoading(true);
       }
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        setHasAccess(false);
+        setLatestSignal(null);
+        return;
+      }
+      const paid = await fetchPaidSignalAccess(supabase, session.user.id);
+      setHasAccess(paid);
+      if (!paid) {
+        setLatestSignal(null);
+        setLatestSignalUpdateCount(0);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('signals')
         .select('*')
@@ -182,7 +198,16 @@ export default function HomeScreen() {
         </View>
 
         {/* Trading Signal Card */}
-        {isLoading ? (
+        {hasAccess === false ? (
+          <TouchableOpacity
+            style={styles.signalCard}
+            onPress={() => router.push('/signals')}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.signalPair}>Pay for signals</Text>
+            <Text style={[styles.welcomeText, { marginTop: 8 }]}>Unpaid. Choose a plan to receive a USSD prompt.</Text>
+          </TouchableOpacity>
+        ) : isLoading ? (
           <View style={styles.signalCard}>
             <ActivityIndicator size="large" color={Colors.gold} />
           </View>

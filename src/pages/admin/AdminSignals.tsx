@@ -42,7 +42,7 @@ import type { SignalUpdate } from "@shared/types/signal";
 
 interface SignalPricing {
   id: string;
-  pricing_type: "monthly" | "per_pip";
+  pricing_type: "daily" | "weekly" | "monthly" | "per_pip";
   price: number;
   currency: string;
   description: string | null;
@@ -56,7 +56,7 @@ interface SignalSubscription {
   id: string;
   user_id: string;
   pricing_id: string;
-  subscription_type: "monthly" | "per_pip";
+  subscription_type: "daily" | "weekly" | "monthly" | "per_pip";
   status: "active" | "cancelled" | "expired" | "pending";
   payment_status: "pending" | "completed" | "failed" | "refunded";
   amount_paid: number;
@@ -148,6 +148,21 @@ const subscriptionSchema = z.object({
 });
 
 type SubscriptionFormValues = z.infer<typeof subscriptionSchema>;
+
+function planLabel(type: string) {
+  if (type === "daily") return "Daily";
+  if (type === "weekly") return "Weekly";
+  if (type === "monthly") return "Monthly";
+  if (type === "per_pip") return "Per-Pip";
+  return type;
+}
+
+function planSuffix(type: string) {
+  if (type === "daily") return "/day";
+  if (type === "weekly") return "/week";
+  if (type === "monthly") return "/month";
+  return "/pip";
+}
 
 const AdminSignals: React.FC = () => {
   const [selectedPricing, setSelectedPricing] = useState<SignalPricing | null>(null);
@@ -779,7 +794,7 @@ const AdminSignals: React.FC = () => {
     activeSubscriptions: subscriptions?.filter(s => s.status === "active").length || 0,
     totalRevenue: subscriptions?.reduce((sum, s) => sum + Number(s.amount_paid), 0) || 0,
     monthlySubscribers: subscriptions?.filter(s => s.subscription_type === "monthly" && s.status === "active").length || 0,
-    perPipSubscribers: subscriptions?.filter(s => s.subscription_type === "per_pip" && s.status === "active").length || 0,
+    perPipSubscribers: subscriptions?.filter(s => (s.subscription_type === "daily" || s.subscription_type === "weekly") && s.status === "active").length || 0,
   };
 
   return (
@@ -821,7 +836,7 @@ const AdminSignals: React.FC = () => {
                   <DollarSign className="text-gold" size={18} />
                   <span className="text-rainy-grey text-sm">Total Revenue</span>
                 </div>
-                <div className="text-2xl font-bold text-white">${stats.totalRevenue.toFixed(2)}</div>
+                <div className="text-2xl font-bold text-white">{stats.totalRevenue.toLocaleString()} TZS</div>
               </div>
               <div className="bg-nero border border-steel-wool rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
@@ -833,7 +848,7 @@ const AdminSignals: React.FC = () => {
               <div className="bg-nero border border-steel-wool rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <SignalHigh className="text-purple-500" size={18} />
-                  <span className="text-rainy-grey text-sm">Per-Pip Plans</span>
+                  <span className="text-rainy-grey text-sm">Daily & Weekly</span>
                 </div>
                 <div className="text-2xl font-bold text-white">{stats.perPipSubscribers}</div>
               </div>
@@ -993,7 +1008,7 @@ const AdminSignals: React.FC = () => {
                 {pricingLoading ? (
                   <div className="text-center text-rainy-grey py-8">Loading pricing...</div>
                 ) : (
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid md:grid-cols-3 gap-4">
                     {pricingData?.map((pricing) => (
                       <div
                         key={pricing.id}
@@ -1002,7 +1017,7 @@ const AdminSignals: React.FC = () => {
                         <div className="flex items-center justify-between">
                           <div>
                             <h3 className="text-lg font-semibold text-white capitalize">
-                              {pricing.pricing_type === "monthly" ? "Monthly Subscription" : "Per-Pip Payment"}
+                              {planLabel(pricing.pricing_type)}
                             </h3>
                             <p className="text-rainy-grey text-sm mt-1">{pricing.description}</p>
                           </div>
@@ -1012,10 +1027,10 @@ const AdminSignals: React.FC = () => {
                         </div>
                         <div className="flex items-baseline gap-2">
                           <span className="text-3xl font-bold text-gold">
-                            ${pricing.price.toFixed(2)}
+                            {pricing.currency} {Number(pricing.price).toLocaleString()}
                           </span>
                           <span className="text-rainy-grey">
-                            {pricing.pricing_type === "monthly" ? "/month" : "/pip"}
+                            {planSuffix(pricing.pricing_type)}
                           </span>
                         </div>
                         {pricing.features && Array.isArray(pricing.features) && (
@@ -1073,11 +1088,11 @@ const AdminSignals: React.FC = () => {
                               {subscription.user_profiles?.phone_number || "N/A"}
                             </TableCell>
                             <TableCell className="text-white capitalize">
-                              {subscription.subscription_type === "monthly" ? "Monthly" : "Per-Pip"}
+                              {planLabel(subscription.subscription_type)}
                             </TableCell>
                             <TableCell>{getStatusBadge(subscription.status)}</TableCell>
                             <TableCell>{getPaymentStatusBadge(subscription.payment_status)}</TableCell>
-                            <TableCell className="text-white">${subscription.amount_paid.toFixed(2)}</TableCell>
+                            <TableCell className="text-white">{Number(subscription.amount_paid).toLocaleString()} TZS</TableCell>
                             <TableCell className="text-white">
                               {subscription.subscription_type === "per_pip"
                                 ? `${subscription.pips_used}/${subscription.pips_purchased}`
@@ -1126,7 +1141,7 @@ const AdminSignals: React.FC = () => {
               <DialogContent className="bg-black border-steel-wool text-white max-w-md">
                 <DialogHeader>
                   <DialogTitle className="text-white">
-                    Edit {selectedPricing?.pricing_type === "monthly" ? "Monthly" : "Per-Pip"} Pricing
+                    Edit {planLabel(selectedPricing?.pricing_type || "")} Pricing
                   </DialogTitle>
                   <DialogDescription className="text-rainy-grey">
                     Update the pricing configuration for this plan
@@ -1140,7 +1155,7 @@ const AdminSignals: React.FC = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-white">
-                            Price (${selectedPricing?.pricing_type === "monthly" ? "per month" : "per pip"})
+                            Price ({selectedPricing?.currency || "TZS"} {planSuffix(selectedPricing?.pricing_type || "")})
                           </FormLabel>
                           <FormControl>
                             <Input
